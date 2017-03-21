@@ -1,0 +1,188 @@
+{% extends "include/base.html" %}
+{% block title %}
+    <title>META DATA</title>
+{% endblock %}
+{% block name %}
+    META DATA
+{% endblock %}
+{%block content%}
+    <strong> <span style="color:red">本页展示数据非实时，由定时任务收集所得</span></strong>
+    <div class="row">
+        <div class="col-md-12 main ">
+
+            <form role="form" method='post'>
+                {% csrf_token %}
+                <table>
+                    <tr>
+                        <td>
+                            <select id="dbtag" class="form-control col-md-1" name = "choosed">
+                                <option value ="all">all</option>
+                                {% for obj in objlist %}
+                                    {% if obj == choosed_host %}
+                                        <option selected="selected" value ="{{ obj }}">{{ obj }}</option>
+                                    {% else %}
+                                        <option value ="{{ obj }}">{{ obj }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+                <table>
+                    <tr>
+                        <td>
+                            <button type="submit" name='bigtb' class="btn btn-primary" value="1">SHOW TOP 50 BIGTABLE</button >
+                        </td>
+                        <td>
+                            <button type="submit" name='auto_occ' class="btn btn-danger" value="1">SHOW TOP 20 AUTO_INCREMENT USED</button >
+                        </td>
+                        <td>
+                            <button type="submit" name='tb_incre' class="btn btn-success" value="1">SHOW TOP 20 INCREASED TABLE</button >
+                        </td>
+                        <td>
+                            <button type="submit" name='db_sz' class="btn btn-info" value="1">SHOW TOP 10 DB SIZE</button >
+                        </td>
+                        <td>
+                            <button type="submit" name='db_inc' class="btn btn-default" value="1">SHOW TOP 10 DB INCREASED</button >
+                        </td>
+                    </tr>
+                </table>
+
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        {% if data_list %}
+            <table id="mytable" class="table table-condensed" border="1">
+                <thead>
+                <tr class="danger">
+                    {% for colname in collist %}
+                        {% if colname == 'id' %}
+                        {% else %}
+                            <th>{{ colname }}</th>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+                </thead>
+                <tbody  >
+                {% for item in data_list %}
+                    {% if 'id' in collist %}
+                        <tr>
+                            {% for item_detail in item %}
+                                {% if forloop.counter == 1  %}
+                                {% else %}
+                                    <td> <pre>{{ item_detail }}</pre></td>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                    {% else %}
+                        <tr>
+                            {% for item_detail in item %}
+                                <td> <pre>{{ item_detail }}</pre></td>
+                            {% endfor %}
+                        </tr>
+                    {% endif %}
+
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+    <hr />
+    <div class="row">
+        <div class="col-md-3 main ">
+            <select id="days" class="form-control col-md-1">
+                <option value ="7">最近7天</option>
+                <option value ="15">最近15天</option>
+                <option value ="30">最近30天</option>
+            </select>
+        </div>
+        <div class="col-md-3 main ">
+            <button id="last"  class="btn btn-info" value="7">HIST DB SIZE</button >
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 main">
+            <div id="main" style="width: 100%;height:400px;"></div>
+        </div>
+    </div>
+{% endblock %}
+{% block script %}
+    {% include "include/pagejump/tabledata.html" %}
+    <script>
+        $(document).ready(function(){
+            $('#main').hide();
+            $('#last').click(function(){
+                $('#main').show();
+                var dbtag = $('#dbtag').val()
+                var day = $('#days').val()
+                var myChart = echarts.init(document.getElementById('main'));
+                // 显示标题，图例和空的坐标轴
+                myChart.setOption({
+                    title: {
+                        text: '',
+                        left:'10%'
+                    },
+                    tooltip: {},
+                    legend: {
+                        data:['DB占用空间(MB)'],
+                        right:'10%'
+                    },
+                    xAxis: {
+                        data: []
+                    },
+                    yAxis: {},
+                    series: [{
+                        name: 'DB占用空间(MB)',
+                        type: 'bar',
+                        data: []
+                    }]
+                });
+                $.get("{% url 'dbstatus' %}",{'dbtag':dbtag,'day':day}).done(function (data) {
+                    // 填入数据
+                    myChart.setOption({
+                        title: {
+                            text: 'DBTAG: '+dbtag
+                        },
+                        xAxis: {
+                            data: data.xaxis
+                        },
+                        series: [{
+                            // 根据名字对应到相应的系列
+                            name: 'DB占用空间(MB)',
+                            type: 'bar',
+                            boundaryGap : false,
+                            itemStyle: {
+                                normal: {
+                                    color: new echarts.graphic.LinearGradient(
+                                            0, 0, 0, 1,
+                                            [
+                                                {offset: 0, color: '#83bff6'},
+                                                {offset: 0.5, color: '#188df0'},
+                                                {offset: 1, color: '#188df0'}
+                                            ]
+                                    )
+                                },
+                                emphasis: {
+                                    color: new echarts.graphic.LinearGradient(
+                                            0, 0, 0, 1,
+                                            [
+                                                {offset: 0, color: '#2378f7'},
+                                                {offset: 0.7, color: '#2378f7'},
+                                                {offset: 1, color: '#83bff6'}
+                                            ]
+                                    )
+                                }
+                            },
+                            data: data.yaxis
+                        }]
+                    });
+                });
+            })
+        });
+
+
+    </script>
+{% endblock %}
+

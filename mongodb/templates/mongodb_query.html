@@ -1,0 +1,195 @@
+{% extends "include/base.html" %}
+{% block title %}
+    <title>MONGO_QUERY</title>
+{% endblock %}
+{% block name %}
+    欢迎使用MongoDB<span style="color:red">查询</span>功能
+{% endblock %}
+{%block content%}
+    <div id="wrapper">
+        {% include "include/sidebar.html" %}
+
+        <div id="page-content-wrapper">
+            <table >
+                <form role="form" method='post'>
+                    <tr>
+                        <td>
+                            </br>
+                            </br>
+
+                            {% csrf_token %}
+                            CHOOSE :
+                            {#                {%  if choosed_table %}#}
+                            {#                    <select class="form-control col-md-1" name = "tablename">#}
+                            {#                        <option value ="{{ choosed_table }}">{{ choosed_table }}</option>#}
+                            {#                    </select></br>#}
+                            {#                    <a href="/mongo_query/"><input type="button" value="重选数据源" class="btn btn-danger"></a>#}
+                            {#                {% else %}#}
+                            {#                    <select class="form-control col-md-1" name = "tablename">#}
+                            {#                        {% for obj in tablelist %}#}
+                            {#                            <option value ="{{ obj }}">{{ obj }}</option>#}
+                            {#                        {% endfor %}#}
+                            {#                    </select>#}
+                            {#                {% endif %}#}
+
+                            {%  if choosedb %}
+                                {#                                <select class="form-control col-md-1" name = "cx">#}
+                                {#                                    <option value ="{{ choosed_host }}">{{ choosed_host }}</option>#}
+                                {#                                </select></br>#}
+                                <select class="form-control col-md-1" name = "choosedb">
+                                    {% for obj in dblist %}
+                                        {% if obj == choosedb %}
+                                            <option selected="selected" value ="{{ obj }}">{{ obj }}</option>
+                                        {% else %}
+                                            <option value ="{{ obj }}">{{ obj }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select></br>
+                                <a href="/mongodb/query/"><input type="button" value="刷新" class="btn btn-danger"></a>
+                            {% else %}
+                                <select class="form-control col-md-1" name = "choosedb">
+                                    {% for obj in dblist %}
+                                        <option value ="{{ obj }}">{{ obj }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% endif %}
+
+
+
+
+
+
+                            </br>
+                            <button type="submit" name='dbinfo' class="btn btn-success" value="1">库状态</button >
+
+                            <button type="submit" name='gettblist' class="btn btn-primary" value="1">列出表</button >
+                            </br>
+
+                            {%  if tblist %}
+                                <select class="form-control col-md-1" name = "choosed_tb">
+                                    {% for obj in tblist %}
+                                        {% if obj == choosed_tb %}
+                                            <option selected="selected" value ="{{ obj }}">{{ obj }}</option>
+                                        {% else %}
+                                            <option value ="{{ obj }}">{{ obj }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+
+                                请在下面输入查询语句:</br>
+                                {{ form.a }} </br> </br>
+                                <button type="submit" name='query' class="btn btn-primary" value="1">提交查询</button >
+                                <button type="submit" name='tbinfo' class="btn btn-danger" value="1">查看表状态</button >
+                                <button type="submit" name='tbindexinfo' class="btn btn-success" value="1">查看表索引信息</button >
+
+
+                            {% endif %}
+                        </td>
+                        {%  if tblist %}
+                            <td>
+                                <div class="col-md-12">
+                                    <h3>查询注意事项:</h3>
+                                    <p class="bg-danger"> 1. 仅支持单条语句查询 </p>
+                                    <p> 2. 平台默认查询限制是200行
+                                    <p> 3. 简单匹配:{'telephone': 13800111101}</p>
+                                    <p> 4. 区间查询:{'updateTime':{'$gt':1470281159895,'$lt':1470281159897}}</p>
+                                </div>
+                            </td>
+                        {% endif %}
+                    </tr>
+                </form>
+
+
+
+
+            </table>
+
+            </br>
+            {% if data_list %}
+                </br>
+                <table id="mytable" class="table table-condensed" border="1">
+                    <thead>
+                    <tr class="danger">
+                        <th>
+                            Records
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody  >
+                    {% for item in data_list %}
+                        <tr>
+                            <td> {{ item  }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+            {% if info %}
+                </br>
+                <table class="table table-condensed" border="1">
+                    <tbody  >
+                    {% for k,v in info.items %}
+                        <tr>
+                            <td> {{ k }}</td>
+                            <td> {{ v }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+
+            {% endif %}
+            {% if  indinfo %}
+                </br>
+                <table class="table table-condensed" border="1">
+                    <tbody  >
+                    {% for k,v in indinfo.items %}
+                        <tr>
+                            <td>
+                                {{ k }}
+                            </td>
+                            <td>
+                                {% for x,y in v.items %}
+                                    <div class="row">
+                                        <div class="col-md-2 main ">
+                                            {{ x }}
+                                        </div>
+                                        <div class="col-md-2 main ">
+                                            {{ y }}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+{% block script %}
+    {% include "include/pagejump/tabledata.html" %}
+    <script>
+
+        $("#menu-toggle").click(function(e) {
+            e.preventDefault();
+            $("#wrapper").toggleClass("toggled");
+        });
+        function record_cookie() {
+            var fav = document.getElementById("id_favword");
+            myfav =escape(fav.value);
+            {#            myfav = fav.value.replace(/\n/g,"^");#}
+            var expires = new Date();
+            expires.setTime(expires.getTime() + 3500000);
+            pathstr = ';path=/';
+            {#            alert(myfav);#}
+            document.cookie = "myfavword"+"="+myfav+pathstr+';expires='+expires.toGMTString();
+        }
+        function showfav() {
+            var fav = document.getElementById("id_favword");
+            myfav =unescape(fav.value);
+            fav.value = myfav;
+        }
+    </script>
+{% endblock %}
+

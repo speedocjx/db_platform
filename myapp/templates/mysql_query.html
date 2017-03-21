@@ -1,0 +1,167 @@
+{% extends "include/base.html" %}
+{% block title %}
+    <title>MySQL_QUERY</title>
+{% endblock %}
+{% block name %}
+    欢迎使用MySQL数据库<span style="color:red">查询</span>功能
+{% endblock %}
+{%block content%}
+    <div id="wrapper">
+
+        {% include "include/sidebar.html" %}
+        <div id="page-content-wrapper">
+            <form role="form" method='post'>
+                {% csrf_token %}
+                <table >
+                    <tr>
+                        <td>
+                            </br>
+                            </br>
+                            {#                        <form role="form" method='post'>#}
+                            CHOOSE :
+                            {%  if choosed_host %}
+                                {#                                <select class="form-control col-md-1" name = "cx">#}
+                                {#                                    <option value ="{{ choosed_host }}">{{ choosed_host }}</option>#}
+                                {#                                </select></br>#}
+                                <select class="form-control col-md-1" name = "cx">
+                                    {% for obj in objlist %}
+                                        {% if obj == choosed_host %}
+                                            <option selected="selected" value ="{{ obj }}">{{ obj }}</option>
+                                        {% else %}
+                                            <option value ="{{ obj }}">{{ obj }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select></br>
+                                <a href="/mysql_query/"><input type="button" value="刷新数据源" class="btn btn-danger"></a>
+                            {% else %}
+                                <select class="form-control col-md-1" name = "cx">
+                                    {% for obj in objlist %}
+                                        <option value ="{{ obj }}">{{ obj }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% endif %}
+
+                            <div class="row">
+                                <div class="col-md-5">
+                                    {% if db_se %}
+                                        <input type=="text" class="form-control" maxlength="30" placeholder="input dbname for search" value="{{ db_se }}" name="searchdbname">
+                                    {% else %}
+                                        <input type=="text" class="form-control" maxlength="30" placeholder="input dbname for search" name="searchdbname">
+                                    {% endif %}
+
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="submit" name='searchdb' class="btn btn-info" value="1">搜索库</button >
+                                </div>
+                            </div>
+
+                            </br> </br>
+                            请在下面输入查询语句:</br>
+                            {{ form.a }} </br> </br>
+                            <button type="submit" name='query' class="btn btn-primary" value="1">提交</button >
+                            <button type="submit" name='explain' class="btn btn-info" value="1">查看执行计划</button>
+                            {% if perms.myapp.can_export %}
+                                <button type="submit" name='export' class="btn btn-warning" value="1">导出CSV</button>
+                            {% endif %}
+                            <button type="submit" name='sqladvice' class="btn btn-danger" value="1">查询sqladvisor</button>
+
+
+                        </td>
+                        <td>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <h3>查询注意事项:</h3>
+                                    <p class="bg-danger"> 1. 支持单条语句查询，在框中输入多条sql语句默认只识别第一条合规语句</p>
+                                    <p> 2. 平台默认查询和导出限制都是200行
+                                    <p> 3. 增加查询或导出数据行数限制，需提需求给DBA开通权限</p>
+                                    <p> 4. 查看表结构语句如:show create table (dbname.)tablename</p>
+                                    <p> 5. 查看表结构语句如:desc (dbname.)tablename或者show fields in (dbname.)tablename</p>
+                                    <p> 6. 查看执行计划可以直接点击按钮或者输入"explain (extended) select..."然后点击提交</p>
+                                    <p> 7. 查看库中的表名如: show tables (in dbname)</p>
+                                    <p> 8. 查看所有的库名如: show databases</p>
+                                    <p class="bg-danger"> 9. 导出CSV文件为GBK编码格式</p>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+
+            </form >
+            {% if advice %}
+                <table>
+                 <th> ADVICE: </th>
+                    <tr>
+                        <td>
+                        <pre>  {{ advice|linebreaksbr }}</pre>
+                    </td>
+                    </tr>
+                </table>
+            {% endif %}
+            {% if collist %}
+                <table  class="table table-condensed" border="1">
+                    <tr class="danger">
+                        QUERY IN:{{ dbname }}
+                    </tr>
+                    <tr>
+                        {% if a %}
+                            {#                                {{ a|linebreaks }}#}
+                            {{ a|truncatechars:100|linebreaks }}
+                        {% endif %}
+                    </tr>
+                </table>
+                {#                    {% include "include/pagejump/pagebutton.html" %}#}
+
+                <table id="mytable" class="table table-condensed" border="1">
+                    <thead>
+                    <tr class="danger">
+                        {% for colname in collist %}
+                            <th>{{ colname }}</th>
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                    <tbody  >
+                    {% for item in data_list %}
+                        <tr>
+                            {% for item_detail in item %}
+                                <td> <pre>{{ item_detail }}</pre></td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
+
+    </div>
+
+
+
+{% endblock %}
+{% block script %}
+    {% include "include/pagejump/tabledata.html" %}
+
+    <script>
+
+        $("#menu-toggle").click(function(e) {
+            e.preventDefault();
+            $("#wrapper").toggleClass("toggled");
+        });
+        function record_cookie() {
+            var fav = document.getElementById("id_favword");
+            myfav =escape(fav.value);
+            {#            myfav = fav.value.replace(/\n/g,"^");#}
+            var expires = new Date();
+            expires.setTime(expires.getTime() + 3500000);
+            pathstr = ';path=/';
+            {#            alert(myfav);#}
+            document.cookie = "myfavword"+"="+myfav+pathstr+';expires='+expires.toGMTString();
+        }
+
+        function showfav() {
+            var fav = document.getElementById("id_favword");
+            myfav =unescape(fav.value);
+            fav.value = myfav;
+        }
+    </script>
+{% endblock %}

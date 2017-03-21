@@ -1,0 +1,114 @@
+{% extends "include/base.html" %}
+{% block title %}
+    <title>LOG_QUERY</title>
+{% endblock %}
+{% block name %}
+    欢迎使用操作日志查询功能
+{% endblock %}
+{%block content%}
+    <table >
+        <tr>
+            <td>
+                </br>
+                </br>
+
+                <form role="form" method='post'>
+                    {% csrf_token %}
+                    CHOOSE:</br>
+
+
+
+                    {%  if choosed_host %}
+                        <select class="form-control col-md-1" name = "hosttag">
+                            <option value ="{{ choosed_host }}">{{ choosed_host }}</option>
+                        </select></br>
+                        <a href="/log_query/"><input type="button" value="重选数据源" class="btn btn-danger"></a>
+                    {% else %}
+                            <select class="form-control col-md-1" name = "hosttag">
+                        {% for obj in objlist %}
+                            <option value ="{{ obj }}">{{ obj }}</option>
+                        {% endfor %}
+                    </select>
+                    {% endif %}
+
+                    </br>
+                    选择操作类型:</br>
+                    <select class="form-control col-md-1" name = "optype">
+                        {% for obj in optypelist %}
+                            <option value ="{{ obj }}">{{ obj }}</option>
+                        {% endfor %}
+                    </select>
+                    </br>
+
+                    起始时间：{{ form.begin }}
+                    结束时间：{{ form.end }}
+                    <button type="submit"  class="btn btn-primary">提交</button >
+
+                </form>
+            </td>
+            <td>
+                <div class="col-md-12">
+                    <h3>注意事项:</h3>
+                    <p> 1. 设置结束时间应大于开始时间，否则查询以结束时间为准</p>
+                    <p> 2. 输出结果默认按时间倒序</p>
+                    <p> 3. 通过"任务管理界面"执行的语句sqltype为incept</p>
+                </div>
+            </td>
+        </tr>
+
+    </table>
+    {% if datalist %}
+        {% include "include/pagejump/pagebutton.html" %}
+    {% endif %}
+    <table id="mytable" class="table table-condensed" border="1">
+        <thead>
+        <tr class="danger">
+            <th>USER</th>
+            <th>DBTAG</th>
+            <th>DBNAME</th>
+            <th>SQLTEXT</th>
+            <th>CREATE_TIME</th>
+            <th>LOGIN_IP</th>
+            <th>LOGIN_TIME</th>
+            <th>SQLTYPE</th>
+        </tr>
+        </thead>
+        <tbody  >
+        {% for item in datalist %}
+            <tr>
+                <td> {{ item.user }}</td>
+                <td> {{ item.dbtag }}</td>
+                <td> {{ item.dbname }}</td>
+                <td> {{ item.sqltext }}</td>
+                <td> {{ item.create_time|date:"Y-m-d H:i:s" }}</td>
+                <td> {{ item.ipaddr }}</td>
+                <td> {{ item.login_time|date:"Y-m-d H:i:s" }}</td>
+                <td>{{ item.sqltype }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <script type="text/javascript">
+        //jeDate.skin('gray');
+        jeDate({
+            dateCell:"#id_begin",
+            format:"YYYY-MM-DD hh:mm:ss",
+            isinitVal:true,
+            isTime:true, //isClear:false,
+            minDate:"2014-09-19 00:00:00",
+            okfun:function(val){alert(val)}
+        })
+        jeDate({
+            dateCell:"#id_end",
+            format:"YYYY-MM-DD hh:mm:ss",
+            isinitVal:true,
+            isTime:true, //isClear:false,
+            minDate:"2014-09-19 00:00:00",
+            okfun:function(val){alert(val)}
+        })
+    </script>
+{% endblock %}
+{% block script %}
+    {% include "include/pagejump/pagejump.html" %}
+{% endblock %}

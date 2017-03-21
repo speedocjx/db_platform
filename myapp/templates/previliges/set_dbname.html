@@ -1,0 +1,367 @@
+{% extends "include/base.html" %}
+{% block title %}
+    <title>设置DB</title>
+{% endblock %}
+{% block name %}
+    设置DB
+{% endblock %}
+{%block content%}
+    {% if info %}
+        </br>
+        </br>
+        <strong> <span style="color:red">{{ info }}</span></strong>
+    {% endif %}
+    <form role="form" method='post'>
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-3 main ">
+                <table >
+                    <tr>
+                        </br>
+                        </br>
+                        <td>
+                            {% if dblist %}
+                                <strong>DBtag :</strong> </br>
+                                <select class="form-control col-md-3" name = "dbtag_set">
+                                    {% for obj in dblist %}
+                                        {% if obj.dbtag == dbtagname %}
+                                            <option selected="selected" value ="{{ obj.dbtag }}">{{ obj.dbtag }} ({{ obj.dbname }})</option>
+                                        {% else %}
+                                            <option value ="{{ obj.dbtag }}">{{ obj.dbtag }} ({{ obj.dbname }})</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            {% endif %}
+                        </td>
+
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <button type="submit" name='query' class="btn btn-primary" >查询</button>
+                            <button type="submit" name='set' onclick="return confirm('PLEASE COMFIRM')"  class="btn btn-danger" >设置</button>
+                            <button type="submit" name='delete' onclick="return confirm('PLEASE COMFIRM')"  class="btn btn-success" >删除</button>
+                            <button type="submit" name='create' onclick="return confirm('PLEASE COMFIRM')"  class="btn btn-info" >创建</button>
+
+                        </td>
+                    </tr>
+                    <tr>
+
+                        <td>
+                            </br>
+                            <strong>CREATE & SET</strong> </br>
+                            {% if dbtagdt %}
+                                <input type=="text" class="form-control" maxlength="30" placeholder="input Dbtag here" value="{{ dbtagdt.dbtag }}" name="newdbtag">
+                                <input type=="text" class="form-control" maxlength="30" placeholder="input Dbname here" value="{{ dbtagdt.dbname }}" name="newdbname">
+                            {% else %}
+                                <input type=="text" class="form-control" maxlength="30" placeholder="input Dbtag here" name="newdbtag">
+                                <input type=="text" class="form-control" maxlength="30" placeholder="input Dbname here" name="newdbname">
+                            {% endif %}
+                        </td>
+
+                    </tr>
+                    {#                    <tr>#}
+                    {#                        <td>#}
+                    {#                        </td>#}
+                    {#                    </tr>#}
+                </table>
+
+            </div>
+
+            <div class="col-md-5 main ">
+                {% if inslist %}
+                    </br>
+                    </br>
+                    <strong>CHOOSE INSTANCE:</strong> </br>
+                    <select class="form-control col-md-1" size="10" multiple="multiple" name = "dbname_set">
+                        {% for obj in inslist %}
+                            {% if obj in dbtagdt.instance.all %}
+                                <option selected="selected" value ="{{ obj.id }}">{{ obj.ip }} + {{ obj.port }}  ({{ obj.role }})</option>
+                            {% else %}
+                                <option value ="{{ obj.id }}">{{ obj.ip }} + {{ obj.port }}  ({{ obj.role }})</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                {% endif %}
+            </div>
+            <div class="col-md-4 main ">
+                {% if userlist %}
+                    </br>
+                    </br>
+                    <strong>CHOOSE USER:</strong> </br>
+                    <select class="form-control col-md-1" size="10" multiple="multiple" name = "user_set">
+                        {% for obj in userlist %}
+                            {% if obj in dbtagdt.account.all  %}
+                                <option selected="selected" value ="{{ obj.username }}">{{ obj.username }}</option>
+                            {% else %}
+                                <option value ="{{ obj.username }}">{{ obj.username }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                {% endif %}
+            </div>
+
+        </div>
+
+
+        <hr />
+
+
+        <div class="row">
+            <div class="col-md-3 main ">
+                <table >
+                    <tr>
+                        </br>
+                        </br>
+                        <td>
+                            {% if inslist %}
+                                <strong>DB_INSTANCE :</strong> </br>
+                                <select class="form-control col-md-3" name = "ins_set">
+                                    {% for obj in inslist %}
+                                        {% if obj == insname %}
+                                            <option selected="selected" value ="{{ obj.id }}">{{ obj.ip }} + {{ obj.port }} ({{ obj.role }})</option>
+                                        {% else %}
+                                            <option value ="{{ obj.id }}">{{ obj.ip }} + {{ obj.port }} ({{ obj.role }})</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            {% endif %}
+                        </td>
+
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <button type="submit" name='query_ins' class="btn btn-primary" >查询</button>
+                            <button type="submit" name='set_ins' onclick="return confirm('PLEASE COMFIRM')"  class="btn btn-danger" >设置</button>
+                            <button type="submit" name='delete_ins' onclick="return confirm('PLEASE COMFIRM')"  class="btn btn-success" >删除</button>
+                            <button type="submit" name='create_ins' onclick="return confirm('PLEASE COMFIRM')"  class="btn btn-info" >创建</button>
+
+                        </td>
+                    </tr>
+                    {#                    <tr>#}
+                    {##}
+                    {#                        <td>#}
+                    {##}
+                    {#                        </td>#}
+                    {##}
+                    {#                    </tr>#}
+                    {#                    <tr>#}
+                    {#                        <td>#}
+                    {#                        </td>#}
+                    {#                    </tr>#}
+                </table>
+
+            </div>
+            <div class="col-md-5 main ">
+                </br>
+                </br>
+                <strong>CREATE & SET</strong> </br>
+                {% if insname %}
+                    <input type=="text" class="form-control" maxlength="30" placeholder="input IP here" value="{{ insname.ip }}" name="newinsip">
+                    <input type=="text" class="form-control" maxlength="10" placeholder="input PORT here" value="{{ insname.port }}" name="newinsport">
+
+                {% else %}
+                    <input type=="text" class="form-control" maxlength="30" placeholder="input IP here" name="newinsip">
+                    <input type=="text" class="form-control" maxlength="10" placeholder="input PORT here" name="newinsport">
+
+                {% endif %}
+            </div>
+            <div class="col-md-4 main ">
+                </br>
+                </br>
+                <strong>CHOOSE ROLE:</strong></br>
+                <select class="form-control col-md-3"  name="role">
+                    {% if insname %}
+                        {% if insname.role == "all" %}
+                            <option value="all" selected="selected">all</option>
+                        {% else %}
+                            <option value="all" >all</option>
+                        {% endif %}
+                    {% else %}
+                        <option value="all" selected="selected">all</option>
+                    {% endif %}
+                    {% if insname.role == "read" %}
+                        <option value="read" selected="selected">read</option>
+                    {% else %}
+                        <option value="read" >read</option>
+                    {% endif %}
+                    {% if insname.role == "write" %}
+                        <option value="write" selected="selected">write</option>
+                    {% else %}
+                        <option value="write" >write</option>
+                    {% endif %}
+                    {% if insname.role == "idle" %}
+                        <option value="idle" selected="selected">idle</option>
+                    {% else %}
+                        <option value="idle" >idle</option>
+                    {% endif %}
+                </select>
+
+                <select class="form-control col-md-3"  name="dbtype">
+                    {% if insname %}
+                        {% if insname.db_type == "mysql" %}
+                            <option value="mysql" selected="selected">MySQL</option>
+                        {% else %}
+                            <option value="mysql" >MySQL</option>
+                        {% endif %}
+                    {% else %}
+                        <option value="mysql" selected="selected">MySQL</option>
+                    {% endif %}
+                    {% if insname.db_type == "mongodb" %}
+                        <option value="mongodb" selected="selected">Mongodb</option>
+                    {% else %}
+                        <option value="mongodb" >Mongodb</option>
+                    {% endif %}
+                </select>
+            </div>
+
+        </div>
+
+
+
+
+        <hr />
+
+
+
+        <div class="row">
+            <div class="col-md-3 main ">
+                <table >
+                    <tr>
+                        </br>
+                        </br>
+                        <td>
+                            {% if acclist %}
+                                <strong>DB_ACCOUNT :</strong> </br>
+                                <select class="form-control col-md-3" name = "acc_set">
+                                    {% for obj in acclist %}
+                                        {% if obj == account_set %}
+                                            <option selected="selected" value ="{{ obj.id }}">{{ obj.tags }} + {{ obj.role }}</option>
+                                        {% else %}
+                                            <option value ="{{ obj.id }}">{{ obj.tags }} + {{ obj.role }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            {% endif %}
+                        </td>
+
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <button type="submit" name='query_acc' class="btn btn-primary" >查询</button>
+                            <button type="submit" name='set_acc' onclick="return confirm('PLEASE COMFIRM')"  class="btn btn-danger" >设置</button>
+                            <button type="submit" name='delete_acc' onclick="return confirm('PLEASE COMFIRM')"  class="btn btn-success" >删除</button>
+                            <button type="submit" name='create_acc' onclick="return confirm('PLEASE COMFIRM')"  class="btn btn-info" >创建</button>
+
+                        </td>
+                    </tr>
+                    <tr>
+
+                        <td>
+                            </br>
+                            <strong>CREATE & SET</strong> </br>
+                            {% if account_set %}
+                                <input type=="text" class="form-control" maxlength="30" placeholder="input Tags here" value="{{ account_set.tags }}" name="newacctag">
+
+                                <input type=="text" class="form-control" maxlength="30" placeholder="input user here" value="{{ account_set.user }}" name="newaccuser">
+                                <input type=="text" class="form-control" maxlength="30" placeholder="input password here" value="{{ account_set.passwd }}" name="newaccpawd">
+
+                            {% else %}
+                                <input type=="text" class="form-control" maxlength="30" placeholder="input Tags here"   name="newacctag">
+
+                                <input type=="text" class="form-control" maxlength="30" placeholder="input user here"  name="newaccuser">
+                                <input type=="text" class="form-control" maxlength="30" placeholder="input password here"  name="newaccpawd">
+
+                            {% endif %}
+                        </td>
+
+                    </tr>
+                    {#                    <tr>#}
+                    {#                        <td>#}
+                    {#                            <button type="submit" name='create_acc' onclick="return confirm('PLEASE COMFIRM')"  class="btn btn-info" >创建</button>#}
+                    {#                        </td>#}
+                    {#                    </tr>#}
+                </table>
+
+            </div>
+            <div class="col-md-4 main ">
+                </br>
+                </br>
+                {% if dblist %}
+                    <strong>CHOOSE DB:</strong> </br></br>
+                    <select class="form-control col-md-5" multiple="multiple" size="10" name = "accdb_set">
+                        {% for obj in dblist %}
+                            {% if obj in account_set.dbname.all %}
+                                <option selected="selected" value ="{{ obj.dbtag }}">{{ obj.dbtag }} ({{ obj.dbname }})</option>
+                            {% else %}
+                                <option value ="{{ obj.dbtag }}">{{ obj.dbtag }} ({{ obj.dbname }})</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                {% endif %}
+            </div>
+
+            <div class="col-md-3 main ">
+                {% if acc_userlist %}
+                    </br>
+                    </br>
+                    <strong>CHOOSE USER : DEFAULT({{ public_user }})</strong> </br>
+                    <strong>勿随意修改此默认值</strong> </br>
+                    <select class="form-control col-md-1" size="10" multiple="multiple" name = "accuser_set">
+                        {% for obj in acc_userlist %}
+                            {% if account_set %}
+                                {% if obj in account_set.account.all  %}
+                                    <option selected="selected" value ="{{ obj.username }}">{{ obj.username }}</option>
+                                {% else %}
+                                    <option value ="{{ obj.username }}">{{ obj.username }}</option>
+                                {% endif %}
+                            {% else %}
+                                {% if obj.username == public_user %}
+                                    <option selected="selected"  value ="{{ obj.username }}">{{ obj.username }}</option>
+                                {% else %}
+                                    <option value ="{{ obj.username }}">{{ obj.username }}</option>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                {% endif %}
+            </div>
+
+            <div class="col-md-2 main ">
+                </br>
+                </br>
+                <strong>CHOOSE ROLE:</strong></br>
+                </br>
+
+                <select class="form-control col-md-3"  name="acc_role">
+                    {% if  account_set.role == "all" %}
+                        <option value="all" selected="selected">all</option>
+                    {% else %}
+                        <option value="all" >all</option>
+                    {% endif %}
+
+                    {% if  account_set.role == "admin" %}
+                        <option value="admin" selected="selected" >admin</option>
+                    {% else %}
+                        <option value="admin"  >admin</option>
+                    {% endif %}
+
+                    {% if  account_set.role == "read" %}
+                        <option value="read" selected="selected" >read</option>
+                    {% else %}
+                        <option value="read" >read</option>
+                    {% endif %}
+
+                    {% if  account_set.role == "write" %}
+                        <option value="write" selected="selected">write</option>
+                    {% else %}
+                        <option value="write">write</option>
+                    {% endif %}
+                </select>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+

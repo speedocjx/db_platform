@@ -1,0 +1,268 @@
+</br>
+</br>
+<div class="row">
+    <div class="col-md-4 main">
+        <div id="main" style="width: 100%;height:400px;"></div>
+
+    </div>
+    <div class="col-md-4 main">
+        <div id="bing" style="width: 100%;height:400px;"></div>
+
+    </div>
+    <div class="col-md-4 main">
+        <div id="task" style="width: 100%;height:400px;"></div>
+    </div>
+</div>
+
+<div class="col-md-12 main">
+    <div id="inc" style="width: 100%;height:400px;"></div>
+</div>
+
+<script type="text/javascript">
+    var myChart = echarts.init(document.getElementById('main'));
+    var dataAxis = {{ col|safe }};
+    var data = {{ data|safe }};
+    option = {
+        title: {
+            text: '平台操作日志分布',
+            subtext: ''
+        },
+        xAxis: {
+            data: dataAxis,
+            axisLabel: {
+                rotate:45,
+                interval:0 ,
+            },
+            axisTick: {
+                show: false
+            },
+            axisLine: {
+                show: false
+            },
+            z: 10
+        },
+        yAxis: {
+            axisLine: {
+                show: false
+            },
+            axisTick: {
+                show: false
+            },
+            axisLabel: {
+                textStyle: {
+                    color: '#999'
+                }
+            }
+        },
+        dataZoom: [
+            {
+                type: 'inside'
+            }
+        ],
+        series: [
+
+            {
+                type: 'bar',
+                itemStyle: {
+                    normal: {
+                        color: new echarts.graphic.LinearGradient(
+                                0, 0, 0, 1,
+                                [
+                                    {offset: 0, color: '#83bff6'},
+                                    {offset: 0.5, color: '#188df0'},
+                                    {offset: 1, color: '#188df0'}
+                                ]
+                        )
+                    },
+                    emphasis: {
+                        color: new echarts.graphic.LinearGradient(
+                                0, 0, 0, 1,
+                                [
+                                    {offset: 0, color: '#2378f7'},
+                                    {offset: 0.7, color: '#2378f7'},
+                                    {offset: 1, color: '#83bff6'}
+                                ]
+                        )
+                    }
+                },
+                data: data
+            }
+        ]
+    };
+    // Enable data zoom when user click bar.
+    var zoomSize = 6;
+    myChart.on('click', function (params) {
+        console.log(dataAxis[Math.max(params.dataIndex - zoomSize / 2, 0)]);
+        myChart.dispatchAction({
+            type: 'dataZoom',
+            startValue: dataAxis[Math.max(params.dataIndex - zoomSize / 2, 0)],
+            endValue: dataAxis[Math.min(params.dataIndex + zoomSize / 2, data.length - 1)]
+        });
+    });
+    // 使用刚指定的配置项和数据显示图表。
+    myChart.setOption(option);
+</script>
+<script>
+    var myChart1 = echarts.init(document.getElementById('task'));
+    var taskcol ={{ taskcol|safe }}
+    var taskdata ={{ taskdata|safe }}
+    // 指定图表的配置项和数据
+    var option1 = {
+        title: {
+            text: '今日任务状态统计'
+        },
+        tooltip: {},
+        legend: {
+            data:['状态']
+        },
+        xAxis: {
+            data: taskcol
+        },
+        yAxis: {},
+        series: [{
+            name: '状态',
+            type: 'bar',
+            data: taskdata
+        }]
+    };
+
+    // 使用刚指定的配置项和数据显示图表。
+    myChart1.setOption(option1);
+    var text = {{ bingtu|safe }}
+    var myChart_b = echarts.init(document.getElementById('bing'));
+    option_b = {
+        title: {
+            text: '全部任务状态统计'
+        },
+        tooltip: {
+            trigger: 'item',
+            formatter: "{a} <br/>{b}: {c} ({d}%)"
+        },
+        legend: {
+            orient: 'vertical',
+            x: 'right',
+            data:['executed','executed failed','check not passed','check passed','running','NULL']
+        },
+        series: [
+            {
+                name:'任务状态',
+                type:'pie',
+                selectedMode: 'single',
+                radius: ['50%', '72%'],
+                avoidLabelOverlap: false,
+                label: {
+                    normal: {
+                        show: false,
+                        position: 'center'
+                    },
+                    emphasis: {
+                        show: true,
+                        textStyle: {
+                            fontSize: '22',
+                            fontWeight: 'bold'
+                        }
+                    }
+                },
+                labelLine: {
+                    normal: {
+                        show: false
+                    }
+                },
+                data:text
+            }
+        ]
+    };
+
+    myChart_b.setOption(option_b);
+</script>
+
+
+
+
+
+
+
+<script type="text/javascript">
+    var myChartinc = echarts.init(document.getElementById('inc'));
+    var dataAxisinc = {{ inc_col|safe }};
+    var datainc = {{ inc_data|safe }};
+    optioninc = {
+        title: {
+            text: 'AUTO INCREMENT USE TOP10',
+            subtext: ''
+        },
+        xAxis: {
+            data: dataAxisinc,
+            axisLabel: {
+                interval:0 ,
+                rotate:10,
+            },
+            axisTick: {
+                show: false
+            },
+            axisLine: {
+                show: false
+            },
+            z: 10
+        },
+        yAxis: {
+            axisLine: {
+                show: false
+            },
+            axisTick: {
+                show: false
+            },
+            axisLabel: {
+                textStyle: {
+                    color: '#999'
+                }
+            }
+        },
+        dataZoom: [
+            {
+                type: 'inside'
+            }
+        ],
+        series: [
+
+            {
+                type: 'bar',
+                itemStyle: {
+                    normal: {
+                        color: new echarts.graphic.LinearGradient(
+                                0, 0, 0, 1,
+                                [
+                                    {offset: 0, color: '#83bff6'},
+                                    {offset: 0.5, color: '#188df0'},
+                                    {offset: 1, color: '#188df0'}
+                                ]
+                        )
+                    },
+                    emphasis: {
+                        color: new echarts.graphic.LinearGradient(
+                                0, 0, 0, 1,
+                                [
+                                    {offset: 0, color: '#2378f7'},
+                                    {offset: 0.7, color: '#2378f7'},
+                                    {offset: 1, color: '#83bff6'}
+                                ]
+                        )
+                    }
+                },
+                data: datainc
+            }
+        ]
+    };
+    // Enable data zoom when user click bar.
+    var zoomSize = 6;
+    myChartinc.on('click', function (params) {
+        console.log(dataAxisinc[Math.max(params.dataIndex - zoomSize / 2, 0)]);
+        myChartinc.dispatchAction({
+            type: 'dataZoom',
+            startValue: dataAxisinc[Math.max(params.dataIndex - zoomSize / 2, 0)],
+            endValue: dataAxisinc[Math.min(params.dataIndex + zoomSize / 2, datainc.length - 1)]
+        });
+    });
+    // 使用刚指定的配置项和数据显示图表。
+    myChartinc.setOption(optioninc);
+</script>

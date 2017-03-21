@@ -1,0 +1,579 @@
+{% extends "include/base.html" %}
+{% block title %}
+    <title>META_DATA</title>
+{% endblock %}
+{% block name %}
+    欢迎使用MySQL数据库<span style="color:red">表结构查询</span>功能
+{% endblock %}
+{%block content%}
+    <div id="wrapper">
+        <form role="form" method='post'>
+            {% csrf_token %}
+            {% include "include/sidebar.html" %}
+            <div id="page-content-wrapper">
+                <table >
+                    </br>
+                    </br>
+                    CHOOSE :
+                    <tr>
+                        <td>
+
+                            <select class="form-control col-md-1" name = "cx">
+                                {% for obj in objlist %}
+                                    {% if obj == choosed_host %}
+                                        <option selected="selected" value ="{{ obj }}">{{ obj }}</option>
+                                    {% else %}
+                                        <option value ="{{ obj }}">{{ obj }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+
+                        </td>
+                        <td>
+                            <button type="submit" name='query' class="btn btn-primary" value="1">查看表</button >
+
+                        </td>
+
+                        <td>
+                            {% if table_se %}
+                                <input type=="text" class="form-control" maxlength="30" placeholder="search for table_name" value="{{ table_se }}" name="searchname">
+                            {% else %}
+                                <input type=="text" class="form-control" maxlength="30" placeholder="search for table_name" name="searchname">
+
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button type="submit" name='search' class="btn btn-info" value="1">搜索表</button >
+
+                        </td>
+                    </tr>
+                </table>
+                {% if sh_cre %}
+                    <strong> <span style="color:red">{{ dbname }}.{{ tbname }} definition:</span></strong>
+                    <table id="tb" class="table table-condensed" border="1">
+                        <thead>
+                        <tr class="danger">
+                            {% for colname in sh_cre_col %}
+                                <th>{{ colname }}</th>
+                            {% endfor %}
+
+                        </tr>
+                        </thead>
+                        <tbody  >
+                        {% for item in sh_cre %}
+                            <tr>
+                                {% for item_detail in item %}
+                                    <td> {{ item_detail|linebreaks }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+
+
+                {% if tbst %}
+                    <strong> <span style="color:red">{{ dbname }}.{{ tbname }} STATUS:</span></strong>
+                    <table id="tb" class="table table-condensed" border="1">
+                        {#                        <thead>#}
+                        {#                        <tr class="danger">#}
+                        {#                            {% for colname in tbst_col %}#}
+                        {#                                <th>{{ colname }}</th>#}
+                        {#                            {% endfor %}#}
+                        {#                        </tr>#}
+                        {#                        </thead>#}
+                        <tbody  >
+                        {% for item in tbst %}
+                            <tr>
+                                <td>TABLE_NAME</td>
+                                <td> {{ item.2 }}</td>
+                            </tr>
+                            <tr>
+                                <td>TABLE_TYPE</td>
+                                <td> {{ item.3 }}</td>
+                            </tr>
+                            <tr>
+                                <td>ENGINE</td>
+                                <td> {{ item.4 }}</td>
+                            </tr>
+                            <tr>
+                                <td>ROW_FORMAT</td>
+                                <td> {{ item.6 }}</td>
+                            </tr>
+                            <tr>
+                                <td>TABLE_ROWS</td>
+                                <td> {{ item.7 }}</td>
+                            </tr>
+                            <tr>
+                                <td>AVG_ROW_LENGTH</td>
+                                <td> {{ item.8 }}</td>
+                            </tr>
+                            <tr>
+                                <td>DATA_LENGTH</td>
+                                <td> {{ item.9 }}</td>
+                            </tr>
+                            <tr>
+                                <td>MAX_DATA_LENGTH</td>
+                                <td> {{ item.10 }}</td>
+                            </tr>
+                            <tr>
+                                <td>INDEX_LENGTH</td>
+                                <td> {{ item.11 }}</td>
+                            </tr>
+                            <tr>
+                                <td>DATA_FREE</td>
+                                <td> {{ item.12 }}</td>
+                            </tr>
+                            <tr>
+                                <td>AUTO_INCREMENT</td>
+                                <td> {{ item.13 }}</td>
+                            </tr>
+                            <tr>
+                                <td>CREATE_TIME</td>
+                                <td> {{ item.14|date:"Y-m-d H:i:s" }}</td>
+                            </tr>
+                            <tr>
+                                <td>UPDATE_TIME</td>
+                                <td> {{ item.15|date:"Y-m-d H:i:s" }}</td>
+                            </tr>
+                            <tr>
+                                <td>CHECK_TIME</td>
+                                <td> {{ item.16|date:"Y-m-d H:i:s" }}</td>
+                            </tr>
+                            <tr>
+                                <td>TABLE_COLLATION</td>
+                                <td> {{ item.17 }}</td>
+                            </tr>
+                            <tr>
+                                <td>CHECK_OPTIONS</td>
+                                <td> {{ item.19 }}</td>
+                            </tr>
+                            <tr>
+                                <td>TABLE_COMMENT</td>
+                                <td> {{ item.20 }}</td>
+                            </tr>
+
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+
+                {% if field %}
+                    <strong> <span style="color:red">COLUMNS IN {{ dbname }}.{{ tbname }}:</span></strong>
+                    <table id="tb" class="table table-condensed" border="1">
+                        <thead>
+                        <tr class="danger">
+                            {% for colname in col %}
+                                <th>{{ colname }}</th>
+                            {% endfor %}
+
+                        </tr>
+                        </thead>
+                        <tbody  >
+                        {% for item in field %}
+                            <tr>
+                                {% for item_detail in item %}
+                                    <td> {{ item_detail }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+
+                {% if ind_data %}
+                    <strong> <span style="color:red">INDEXES IN {{ dbname }}.{{ tbname }}:</span></strong>
+                    <table id="tb" class="table table-condensed" border="1">
+                        <thead>
+                        <tr class="danger">
+                            {% for colname in ind_col %}
+                                <th>{{ colname }}</th>
+                            {% endfor %}
+
+                        </tr>
+                        </thead>
+                        <tbody  >
+                        {% for item in ind_data %}
+                            <tr>
+                                {% for item_detail in item %}
+                                    <td> {{ item_detail }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+                <div class="row">
+                    <div class="col-xs-6 col-md-6 main">
+                        <div id="main" style="width: 100%;height:400px;"></div>
+                    </div>
+                    <div class="col-xs-6 col-md-6 main">
+                        <div id="main15" style="width: 100%;height:400px;"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12 col-md-12 main">
+                        <div id="main30" style="width: 100%;height:400px;"></div>
+                    </div>
+
+                </div>
+                {% if data_list %}
+                    <strong> <span style="color:red">TABLES IN {{ dbname }}:</span></strong>
+                    {% include "include/pagejump/pagebutton.html" %}
+                    <table id="mytable" class="table table-condensed" border="1">
+                        <thead>
+                        <tr class="danger">
+                            <th>ID</th>
+                            {% for colname in collist %}
+                                <th>{{ colname }}</th>
+                            {% endfor %}
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody  >
+                        {% for item in data_list %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                {% for item_detail in item %}
+                                    {% if forloop.counter == 1 %}
+                                        {#                                        <td> <a href="{% url 'tb_inc_status' %}?dbtag={{ choosed_host }}&tbname={{ item_detail }}">{{ item_detail }}</a></td>#}
+                                        <td class="tbstatus info">  <u>{{ item_detail }} </u> </td>
+
+                                    {% else %}
+                                        <td> {{ item_detail }}</td>
+                                    {% endif %}
+
+                                {% endfor %}
+                                <td><button type="submit" name='structure' value="{{ item.0 }}" class="btn btn-warning" >查看表结构</button></td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+
+            </div>
+
+        </form >
+
+    </div>
+
+
+
+{% endblock %}
+{% block script %}
+    {% include "include/pagejump/pagejump.html" %}
+    {#    {% include "include/pagejump/tabledata.html" %}#}
+
+    <script>
+
+        $("#menu-toggle").click(function(e) {
+            e.preventDefault();
+            $("#wrapper").toggleClass("toggled");
+        });
+        function record_cookie() {
+            var fav = document.getElementById("id_favword");
+            myfav =escape(fav.value);
+            {#            myfav = fav.value.replace(/\n/g,"^");#}
+            var expires = new Date();
+            expires.setTime(expires.getTime() + 3500000);
+            pathstr = ';path=/';
+            {#            alert(myfav);#}
+            document.cookie = "myfavword"+"="+myfav+pathstr+';expires='+expires.toGMTString();
+        }
+
+        function showfav() {
+            var fav = document.getElementById("id_favword");
+            myfav =unescape(fav.value);
+            fav.value = myfav;
+        }
+    </script>
+    {##}
+    {#    <script>#}
+    {#        $(document).ready(function(){#}
+    {#            $('.tbstatus').click(function(){#}
+    {#                var dbtag ="{{ choosed_host }}";#}
+    {#                var tbname = $(this).text();#}
+    {##}
+    {#                $.getJSON("{% url 'tb_inc_status' %}",{'dbtag':dbtag,'tbname':tbname},function(ret){#}
+    {#                    $.each(ret,function(i,n){#}
+    {##}
+    {#                    })#}
+    {#                })#}
+    {#            })#}
+    {#        });#}
+    {#    </script>#}
+
+
+    {#    <script>#}
+    {#    7day status#}
+    {#        $(document).ready(function(){#}
+    {#            $('#main').hide();#}
+    {#            $('.tbstatus').click(function(){#}
+    {#                $('#main').show();#}
+    {#                var dbtag = "{{ choosed_host }}";#}
+    {#                var tbname = $(this).text();#}
+    {#                var myChart = echarts.init(document.getElementById('main'));#}
+    {#                // 显示标题，图例和空的坐标轴#}
+    {#                myChart.setOption({#}
+    {#                    title: {#}
+    {#                        text: '',#}
+    {#                        left:'10%'#}
+    {#                    },#}
+    {#                    tooltip: {},#}
+    {#                    legend: {#}
+    {#                        data:['表占用空间(MB)'],#}
+    {#                        right:'10%'#}
+    {#                    },#}
+    {#                    xAxis: {#}
+    {#                        data: []#}
+    {#                    },#}
+    {#                    yAxis: {},#}
+    {#                    series: [{#}
+    {#                        name: '表占用空间(MB)',#}
+    {#                        type: 'bar',#}
+    {#                        data: []#}
+    {#                    }]#}
+    {#                });#}
+    {#                $.get("{% url 'tb_inc_status' %}",{'dbtag':dbtag,'tbname':tbname}).done(function (data) {#}
+    {#                    // 填入数据#}
+    {#                    myChart.setOption({#}
+    {#                        title: {#}
+    {#                            text: dbtag+'.'+tbname#}
+    {#                        },#}
+    {#                        xAxis: {#}
+    {#                            data: data.xaxis#}
+    {#                        },#}
+    {#                        series: [{#}
+    {#                            // 根据名字对应到相应的系列#}
+    {#                            name: '表占用空间(MB)',#}
+    {#                            type: 'bar',#}
+    {#                            itemStyle: {#}
+    {#                                normal: {#}
+    {#                                    color: new echarts.graphic.LinearGradient(#}
+    {#                                            0, 0, 0, 1,#}
+    {#                                            [#}
+    {#                                                {offset: 0, color: '#83bff6'},#}
+    {#                                                {offset: 0.5, color: '#188df0'},#}
+    {#                                                {offset: 1, color: '#188df0'}#}
+    {#                                            ]#}
+    {#                                    )#}
+    {#                                },#}
+    {#                                emphasis: {#}
+    {#                                    color: new echarts.graphic.LinearGradient(#}
+    {#                                            0, 0, 0, 1,#}
+    {#                                            [#}
+    {#                                                {offset: 0, color: '#2378f7'},#}
+    {#                                                {offset: 0.7, color: '#2378f7'},#}
+    {#                                                {offset: 1, color: '#83bff6'}#}
+    {#                                            ]#}
+    {#                                    )#}
+    {#                                }#}
+    {#                            },#}
+    {#                            data: data.yaxis#}
+    {#                        }]#}
+    {#                    });#}
+    {#                });#}
+    {#            })#}
+    {#        });#}
+    {#    </script>#}
+
+
+    {#    30day status#}
+    <script>
+        $(document).ready(function(){
+            $('#main').hide();
+            $('#main15').hide();
+            $('#main30').hide();
+            $('.tbstatus').click(function(){
+                $('#main').show();
+                $('#main15').show();
+                $('#main30').show();
+                var dbtag = "{{ choosed_host }}";
+                var tbname = $(this).text();
+                var myChart = echarts.init(document.getElementById('main'));
+                var myChart15 = echarts.init(document.getElementById('main15'));
+                var myChart30 = echarts.init(document.getElementById('main30'));
+                // 显示标题，图例和空的坐标轴
+                myChart.setOption({
+                    title: {
+                        text: '',
+                        left:'5%'
+                    },
+                    tooltip: {},
+                    legend: {
+                        data:['表占用空间(MB)'],
+                        right:'10%'
+                    },
+                    xAxis: {
+                        data: []
+                    },
+                    yAxis: {},
+                    series: [{
+                        name: '表占用空间(MB)',
+                        type: 'bar',
+                        data: []
+                    }]
+                });
+
+                myChart15.setOption({
+                    title: {
+                        text: '',
+                        left:'10%'
+                    },
+                    tooltip: {},
+                    legend: {
+                        data:['表占用空间(MB)'],
+                        right:'10%'
+                    },
+                    xAxis: {
+                        data: []
+                    },
+                    yAxis: {},
+                    series: [{
+                        name: '表占用空间(MB)',
+                        type: 'bar',
+                        data: []
+                    }]
+                });
+
+                myChart30.setOption({
+                    title: {
+                        text: '',
+                        left:'10%'
+                    },
+                    tooltip: {},
+                    legend: {
+                        data:['表占用空间(MB)'],
+                        right:'10%'
+                    },
+                    xAxis: {
+                        data: []
+                    },
+                    yAxis: {},
+                    series: [{
+                        name: '表占用空间(MB)',
+                        type: 'bar',
+                        data: []
+                    }]
+                });
+
+                $.get("{% url 'tb_inc_status' %}",{'dbtag':dbtag,'tbname':tbname}).done(function (data) {
+                    // 填入数据
+                    myChart.setOption({
+                        title: {
+                            text:  dbtag+'.'+tbname
+                        },
+                        xAxis: {
+                            data: data.xaxis7
+                        },
+                        series: [{
+                            // 根据名字对应到相应的系列
+                            name: '表占用空间(MB)',
+                            type: 'bar',
+                            itemStyle: {
+                                normal: {
+                                    color: new echarts.graphic.LinearGradient(
+                                            0, 0, 0, 1,
+                                            [
+                                                {offset: 0, color: '#ffd306'},
+                                                {offset: 0.5, color: '#ffffaa'},
+                                                {offset: 1, color: '#ffffaa'}
+                                            ]
+                                    )
+                                },
+{#                                emphasis: {#}
+{#                                    color: new echarts.graphic.LinearGradient(#}
+{#                                            0, 0, 0, 1,#}
+{#                                            [#}
+{#                                                {offset: 0, color: '#2378f7'},#}
+{#                                                {offset: 0.7, color: '#2378f7'},#}
+{#                                                {offset: 1, color: '#83bff6'}#}
+{#                                            ]#}
+{#                                    )#}
+{#                                }#}
+                            },
+                            data: data.yaxis7
+                        }]
+                    });
+
+
+                    myChart15.setOption({
+                        title: {
+                            text: tbname + 'in last 15 days '
+                        },
+                        xAxis: {
+                            data: data.xaxis15
+                        },
+                        series: [{
+                            // 根据名字对应到相应的系列
+                            name: '表占用空间(MB)',
+                            type: 'bar',
+                            itemStyle: {
+                                normal: {
+                                    color: new echarts.graphic.LinearGradient(
+                                            0, 0, 0, 1,
+                                            [
+                                                {offset: 0, color: '#83bff6'},
+                                                {offset: 0.5, color: '#188df0'},
+                                                {offset: 1, color: '#188df0'}
+                                            ]
+                                    )
+                                },
+                                emphasis: {
+                                    color: new echarts.graphic.LinearGradient(
+                                            0, 0, 0, 1,
+                                            [
+                                                {offset: 0, color: '#2378f7'},
+                                                {offset: 0.7, color: '#2378f7'},
+                                                {offset: 1, color: '#83bff6'}
+                                            ]
+                                    )
+                                }
+                            },
+                            data: data.yaxis15
+                        }]
+                    });
+
+                    myChart30.setOption({
+                        title: {
+                            text: tbname + 'in last 30 days '
+                        },
+                        xAxis: {
+                            data: data.xaxis30
+                        },
+                        series: [{
+                            // 根据名字对应到相应的系列
+                            name: '表占用空间(MB)',
+                            type: 'bar',
+                            itemStyle: {
+                                normal: {
+                                    color: new echarts.graphic.LinearGradient(
+                                            0, 0, 0, 1,
+                                            [
+                                                {offset: 0, color: '#b15bff'},
+                                                {offset: 0.5, color: '#d3a4ff'},
+                                                {offset: 1, color: '#d3a4ff'}
+                                            ]
+                                    )
+                                },
+{#                                emphasis: {#}
+{#                                    color: new echarts.graphic.LinearGradient(#}
+{#                                            0, 0, 0, 1,#}
+{#                                            [#}
+{#                                                {offset: 0, color: '#2378f7'},#}
+{#                                                {offset: 0.7, color: '#2378f7'},#}
+{#                                                {offset: 1, color: '#83bff6'}#}
+{#                                            ]#}
+{#                                    )#}
+{#                                }#}
+                            },
+                            data: data.yaxis30
+                        }]
+                    });
+
+
+                });
+            })
+        });
+    </script>
+{% endblock %}

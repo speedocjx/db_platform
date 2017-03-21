@@ -1,0 +1,113 @@
+{% extends "include/base.html" %}
+{% block title %}
+    <title>密码重置</title>
+{% endblock %}
+{% block name %}
+    欢迎使用密码重置功能
+{% endblock %}
+{%block content%}
+    <hr />
+    <span id="errorpwd" style="color: #eea236" >{{ info }}</span>
+
+    <form role="form" method='post'>
+        {% csrf_token %}
+
+
+        <div class="col-md-2 main ">
+            <input id="id_passwd" type="password" class="form-control" maxlength="25" placeholder="type new password here" name="passwd" onkeydown="clearstage()">
+
+            <input id="id_repasswd" type="password" class="form-control" maxlength="25" placeholder="retype password here" name="repasswd" onkeydown="clearstage()" >
+
+            <button id="id_button" type="submit" name='set' onclick="return checkPass();"  class="btn btn-danger" >重置</button>
+        </div>
+    </form>
+{#    <div class="col-md-11">#}
+{#        <div id="map" style="width:1000px;height:500px"></div>#}
+{#    </div>#}
+{#    <script  src="http://api.map.baidu.com/api?v=2.0&ak=zhskfLsPCGPrPQvGb2WsL2mGZsfGO9XT&callback=initialize"></script>#}
+{#    <script type="text/javascript">#}
+{#        function getLocation(){#}
+{#            var options={#}
+{#                enableHighAccuracy:true,#}
+{#                maximumAge:1000#}
+{#            }#}
+{#            if(navigator.geolocation){#}
+{#                //浏览器支持geolocation#}
+{#                navigator.geolocation.getCurrentPosition(onSuccess,onError,options);#}
+{##}
+{#            }else{#}
+{#                //浏览器不支持geolocation#}
+{#                alert("not support");#}
+{#            }#}
+{#        }#}
+{##}
+{#        function onSuccess(position) {#}
+{#            var longitude =position.coords.longitude;#}
+{#            var latitude = position.coords.latitude;#}
+{#            var mp = new BMap.Map('map');#}
+{#            mp.centerAndZoom(new BMap.Point(longitude, latitude), 14);#}
+{#            mp.enableScrollWheelZoom();#}
+{#            mp.addControl(new BMap.NavigationControl());#}
+{#            mp.addControl(new BMap.ScaleControl());#}
+{#            mp.addControl(new BMap.OverviewMapControl());#}
+{#            mp.addControl(new BMap.MapTypeControl());#}
+{#        }#}
+{#        function onError(error){#}
+{#            switch(error.code){#}
+{#                case 1:#}
+{#                    alert("位置服务被拒绝");#}
+{#                    break;#}
+{##}
+{#                case 2:#}
+{#                    alert("暂时获取不到位置信息");#}
+{#                    break;#}
+{##}
+{#                case 3:#}
+{#                    alert("获取信息超时");#}
+{#                    break;#}
+{##}
+{#                case 4:#}
+{#                    alert("未知错误");#}
+{#                    break;#}
+{#            }#}
+{##}
+{#        }#}
+{#        window.onload = getLocation;#}
+{#    </script>#}
+
+
+    <script>
+        function clearstage () {
+            document.getElementById("errorpwd").innerText = "";
+
+        }
+        function checkPass() {
+            var pwd1 = document.getElementById("id_passwd").value;
+            var pwd2 = document.getElementById("id_repasswd").value;
+            if (pwd1.length < 8){
+                document.getElementById("errorpwd").innerText = "密码长度至少8位";
+                return false;
+            }
+            if (pwd1 != pwd2) {
+                document.getElementById("errorpwd").innerText = "两次密码输入不一致";
+                return false;
+            }
+            return true;
+        }
+        {#        function checksame() {#}
+        {#            var pwd1 = document.getElementById("id_passwd").value;#}
+        {#            var pwd2 = document.getElementById("id_repasswd").value;#}
+        {##}
+        {#            if (pwd1 != pwd2 && pwd1.length != 0) {#}
+        {#                document.getElementById("errorpwd").innerText = "两次输入密码不一致";#}
+        {#            }#}
+        {#            else#}
+        {#            {#}
+        {#                document.getElementById("errorpwd").innerText = "";#}
+        {#            }#}
+        {#        }#}
+
+
+    </script>
+{% endblock %}
+

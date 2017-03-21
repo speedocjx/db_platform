@@ -1,0 +1,24 @@
+    <script type="text/javascript">
+        $(function(){
+            var $table=$('#mytable1');//获取表格对象
+            var currentPage=0;//设置当前页默认值为
+            var pageSize=6;//设置每一页要显示的数目
+            $table.bind('paging', function () {
+                $table.find('tbody tr').hide().slice(currentPage*pageSize,(currentPage+1)*pageSize).show();
+//先将tbody中所有的行隐藏，再通过slice结合当前页数和页面显示的数目展现数据
+            });
+            var sumRows=$table.find('tbody tr').length;//获取数据总行数
+            var sumPages=Math.ceil(sumRows/pageSize);//得到总页数
+            var $pager=$('<div class="page"></div>');
+            for(var pageIndex=0;pageIndex<sumPages;pageIndex++){
+                $('<a href="#"><span>'+(pageIndex+1)+'</span></a>').bind("click",{"newPage":pageIndex},function(event){
+                    currentPage=event.data["newPage"];
+                    $table.trigger("paging");
+//为每一个要显示的页数上添加触发分页函数
+                }).appendTo($pager);
+                $pager.append(" ");
+            }
+            $pager.insertAfter($table);
+            $table.trigger("paging");
+        });
+    </script>

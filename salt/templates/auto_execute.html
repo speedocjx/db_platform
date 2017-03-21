@@ -1,0 +1,91 @@
+{% load staticfiles %}
+<div>
+    <div >
+        <div class='row-fluid' >
+            <div class="row-fluid" id="log_div" style="">
+                <button type="button" onclick="refresh_auto()">刷新</button>
+{#                <button type="button" onclick="result_check_auto()">返回结果检查</button>#}
+{#                <div id="result_salt" onchange="$('#progress_stop').hide()" style="height:400px;background-color:black;color:white;overflow-y:auto;" class="well">#}
+                <div id="result_salt" onchange="$('#progress_stop').hide()" style="background:black;color:white;overflow-y:auto" class="well">
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="result_check"></div>
+
+    <script>
+        ajaxCommand('/salt/api/getjobinfo?jid_auto={{jid_auto}}','','result_salt');
+
+        function refresh_auto()
+        {
+            document.getElementById('result_salt').innerHTML="";
+            ajaxCommand('/salt/api/getjobinfo?jid_auto={{jid_auto}}','','result_salt');
+        }
+{#        function ajaxCommand(url,option,id){#}
+{#            var _interVal, commonAjaxXhr,urlRex = /where=(\d+)/ , ajaxWhere = 0, count = 0,#}
+{#                    commonAjax = function(config){//发起ajax请求#}
+{#                        config = $.extend({#}
+{#                            type:'post',#}
+{#                            dataType:'json'#}
+{#                        },config);#}
+{#                        commonAjaxXhr = $.ajax(config);#}
+{#                    },#}
+{#                    _exportCommand = function(url){#}
+{#                        var resultBox = document.getElementById('result');#}
+{#                        if ( 'number' !== typeof ajaxWhere ) return;#}
+{#                        url = url.replace( urlRex,'where=' + ajaxWhere );#}
+{#                        commonAjax({#}
+{#                            url: url,#}
+{#                            type:'get',#}
+{#                            success: function(data){#}
+{#                                ajaxWhere = data.where;#}
+{#                                if ( data.result.length ){#}
+{#                                    count = 0;#}
+{#                                    var commandHtml = data.result.join('');#}
+{#                                    document.getElementById(id).innerHTML += commandHtml ;#}
+{#                                    _exportCommand(url);#}
+{#                                }else{#}
+{#                                    count++;#}
+{#                                    if(count >= 15) return;#}
+{#                                    setTimeout(function(){ _exportCommand(url) }, 1000);#}
+{#                                }#}
+{#                                resultBox.scrollTop = resultBox.scrollHeight;#}
+{#                            }#}
+{#                        });#}
+{#                    };#}
+{#            commonAjax({#}
+{#                url: url+'&option='+option,#}
+{#                type:'get',#}
+{#                dataType: 'text',#}
+{#                success: function(data){#}
+{#                    _exportCommand(data);#}
+{#                }#}
+{#            })#}
+{#        }#}
+
+{#        function result_check_auto()#}
+{#        {#}
+{#            var xmlhttp;#}
+{#            if (window.XMLHttpRequest)#}
+{#            {// code for IE7+, Firefox, Chrome, Opera, Safari#}
+{#                xmlhttp=new XMLHttpRequest();#}
+{#            }#}
+{#            else#}
+{#            {// code for IE6, IE5#}
+{#                xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");#}
+{#            }#}
+{#            xmlhttp.onreadystatechange=function()#}
+{#            {#}
+{#                if (xmlhttp.readyState==4 && xmlhttp.status==200)#}
+{#                {#}
+{#                    document.getElementById('result').innerHTML="";#}
+{#                    document.getElementById('result').innerHTML=xmlhttp.responseText;#}
+{#                }#}
+{#            }#}
+{#            xmlhttp.open("GET","/result_check?jid_auto={{jid_auto}}",true);#}
+{#            xmlhttp.send();#}
+{#        }#}
+    </script>
+
+    </div>

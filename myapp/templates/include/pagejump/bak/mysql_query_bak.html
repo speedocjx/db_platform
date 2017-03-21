@@ -1,0 +1,87 @@
+{% extends "include/base.html" %}
+{% block title %}
+    <title>MySQL_QUERY</title>
+{% endblock %}
+{% block name %}
+    欢迎使用MySQL数据库查询功能
+{% endblock %}
+{%block content%}
+    <table >
+        <tr>
+            <td>
+            </br>
+            </br>
+                <form role="form" method='post'>
+                    {% csrf_token %}
+                    CHOOSE :
+                    {%  if choosed_host %}
+                        <select class="form-control col-md-1" name = "cx">
+                            <option value ="{{ choosed_host }}">{{ choosed_host }}</option>
+                        </select></br>
+                        <a href="/mysql_query/"><input type="button" value="重选数据源" class="btn btn-danger"></a>
+                    {% else %}
+                        <select class="form-control col-md-1" name = "cx">
+                            {% for obj in objlist %}
+                                <option value ="{{ obj }}">{{ obj }}</option>
+                            {% endfor %}
+                        </select>
+                    {% endif %}
+                    </br> </br>
+                    请在下面输入查询语句:</br>
+                    {{ form.a }} </br> </br>
+                    <button type="submit" name='query' class="btn btn-primary" value="1">提交</button >
+                    <button type="submit" name='explain' class="btn btn-info" value="1">查看执行计划</button>
+                {% if perms.myapp.can_export %}
+                    <button type="submit" name='export' class="btn btn-warning" value="1">导出CSV</button>
+                {% endif %}
+                </form >
+            </td>
+            <td>
+                <div class="col-md-12">
+                    <h3>查询注意事项:</h3>
+                    <p class="bg-danger"> 1. 支持单条语句查询，勿在框中重复输入多条sql语句</p>
+                    <p> 2. 平台默认查询和导出限制都是200行
+                    <p> 3. 增加查询或导出数据行数限制，需提需求给DBA开通权限</p>
+                    <p> 4. 查看表结构语句如:show create table (dbname.)tablename</p>
+                    <p> 5. 查看表结构语句如:desc (dbname.)tablename或者show fields in (dbname.)tablename</p>
+                    <p> 6. 查看执行计划可以直接点击按钮或者输入"explain (extended) select..."然后点击提交</p>
+                    <p> 7. 查看库中的表名如: show tables (in dbname)</p>
+                    <p> 8. 查看所有的库名如: show databases</p>
+                    <p class="bg-danger"> 9. 导出CSV文件为GBK编码格式</p>
+
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    {% if collist %}
+        <table  class="table table-condensed" border="1">
+            <tr class="danger">
+                QUERY IN:{{ dbname }}
+            </tr>
+        </table>
+        {% include "include/pagejump/pagebutton.html" %}
+    {% endif %}
+    <table id="mytable" class="table table-condensed" border="1">
+        <thead>
+        <tr class="danger">
+            {% for colname in collist %}
+                <th>{{ colname }}</th>
+            {% endfor %}
+        </tr>
+        </thead>
+        <tbody  >
+        {% for item in data_list %}
+            <tr>
+                {% for item_detail in item %}
+                    <td> {{ item_detail }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}
+{% block script %}
+    {% include "include/pagejump/pagejump.html" %}
+{% endblock %}

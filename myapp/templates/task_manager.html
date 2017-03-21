@@ -1,0 +1,343 @@
+{% extends "include/base.html" %}
+{% block title %}
+    <title>TASK_MANAGER</title>
+{% endblock %}
+{% block name %}
+    欢迎使用任务管理功能
+{% endblock %}
+{%block content%}
+    <form role="form" method='post'>
+        <table >
+            <tr>
+                <td>
+                    </br>
+                    </br>
+
+                    {% csrf_token %}
+                    CHOOSE:</br>
+                    {%  if choosed_host %}
+                        <select class="form-control col-md-1" name = "hosttag">
+                            <option value ="{{ choosed_host }}">{{ choosed_host }}</option>
+                        </select></br>
+                        截止时间：{{ form.end }} </br>
+                        <a href="/task/"><input type="button" value="重选数据源" class="btn btn-danger"></a>
+                    {% else %}
+                        <select class="form-control col-md-1" name = "hosttag">
+                            {% for obj in objlist %}
+                                <option value ="{{ obj }}">{{ obj }}</option>
+                            {% endfor %}
+                        </select>
+                        选择截止时间:</br>{{ form.end }} </br>
+                    {% endif %}
+
+                    <button type="submit" name='commit' class="btn btn-primary">查询任务</button >
+
+
+                </td>
+                <td>
+                    {#                    <div class="col-md-10">#}
+                    <h3>注意事项:</h3>
+                    <p> 1. 输出结果默认按时间倒序</p>
+                    <p> 2. 已执行成功的task状态不能修改</p>
+                    <p> 3. 默认返回最新50项任务</p>
+                    {#                    </div>#}
+                </td>
+            </tr>
+        </table>
+        <script type="text/javascript">
+            jeDate({
+                dateCell:"#id_end",
+                format:"YYYY-MM-DD hh:mm:ss",
+                isinitVal:true,
+                isTime:true, //isClear:false,
+                minDate:"2014-09-19 00:00:00",
+                okfun:function(val){alert(val)}
+            })
+        </script>
+        {% if nllflag %}
+            </br>
+            <strong> {{ nllflag }}</strong>
+        {% endif %}
+        {% if result %}
+            {#            {% include "include/pagejump/pagejump2.html" %}#}
+            <table id="mytable1" class="table table-condensed" border="1">
+                <thead>
+                <tr class="danger">
+                    {% for colname in col %}
+                        <th>{{ colname }}</th>
+                    {% endfor %}
+                </tr>
+                </thead>
+                <tbody  >
+                {% for item in result %}
+                    <tr>
+                        {% for item_detail in item %}
+                            {% if forloop.counter == 6 %}
+                                <td> {{ item_detail|truncatechars:550|linebreaks}}</td>
+                            {% elif forloop.counter == 5 or forloop.counter == 2 %}
+                                <td> {{ item_detail|linebreaks}}</td>
+                            {% else %}
+                                <td> {{ item_detail }}</td>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+
+
+        {% if result_status %}
+            {#            {% include "include/pagejump/pagejump2.html" %}#}
+            <table id="mytable1" class="table table-condensed" border="1">
+                <thead>
+                <tr class="danger">
+                    {% for colname in cols %}
+                        <th>{{ colname }}</th>
+                    {% endfor %}
+                </tr>
+                </thead>
+                <tbody  >
+                {% for item in result_status %}
+                    <tr>
+                        {% if item.myid %}
+                            <td> {{ item.myid }}</td>
+                            <td> {{ item.stage }}</td>
+                            <td> {{ item.errlevel }}</td>
+                            <td> {{ item.stagestatus|linebreaks }}</td>
+                            <td> {{ item.errormessage|linebreaks }}</td>
+                            <td> {{ item.sqltext|linebreaks }}</td>
+                            {#  <td> <a target="_blank" >{{ item.sqltext|linebreaks }}</a></td>#}
+                            <td> {{ item.affectrow }}</td>
+                            {#  <td> {{ item.sequence|truncatechars:10  }}</td>#}
+                            <td> {{ item.sequence  }}</td>
+
+                            <td> {{ item.backup_db}}</td>
+                            <td> {{ item.execute_time }}</td>
+                            <td> {{ item.sqlsha|truncatechars:7 }}</td>
+                            <td> {{ item.create_time|date:"Y-m-d H:i:s"  }}</td>
+                            <td> {{ item.finish_time|date:"Y-m-d H:i:s"  }}</td>
+                        {% else %}
+                            {% for item_detail in item %}
+                                {% if forloop.counter == 6 %}
+                                    <td> {{ item_detail|linebreaks}}</td>
+                                {% elif forloop.counter == 7 %}
+                                    <td> {{ item_detail|truncatechars:150|linebreaks}}</td>
+                                {% else %}
+                                    <td> {{ item_detail }}</td>
+                                {% endif %}
+                            {% endfor %}
+                            {% if perms.myapp.can_admin_task %}
+                                {% if 'SQLSHA1' in cols %}
+                                    {% if '*' in item.2 %}
+                                        <td><button type="submit" name='stop' class="btn btn-danger" value={{ item.2 }}>停止</button></td>
+                                    {% endif %}
+                                {% elif 'TIME' in cols and 'STATE' in cols %}
+                                    <td><button type="submit" name='stop' class="btn btn-danger" value={{ item.0 }}>停止</button></td>
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                    </tr>
+
+                    {% if 'SQLSHA1' in cols %}
+                        <tr>
+                            {% if '*' in item.2 %}
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar" aria-valuenow=item.3 aria-valuemin="0" aria-valuemax="100" style="width: {{ item.3 }}%;" >
+                                        {{ item.3 }}%
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </tr>
+                    {% endif %}
+
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+
+
+
+
+        </br>
+        </br>
+        {% if datalist %}
+            {% include "include/pagejump/pagebutton.html" %}
+        {% endif %}
+        <body onload="checkstatus()">
+        <table id="mytable" class="table table-condensed" border="1">
+            <thead>
+            <tr class="danger">
+                <th>ID</th>
+                <th>提交人</th>
+                <th>执行人</th>
+                <th>DBTAG</th>
+                <th>SQL语句</th>
+                <th>创建时间</th>
+                <th>修改时间</th>
+                <th>任务状态</th>
+                <th>预约时间</th>
+                <th>执行说明</th>
+                <th>操作</th>
+                <th></th>
+                <th></th>
+                {% if perms.myapp.can_admin_task %}
+                    <th>选择时间</br> {{ form2.sche_time }}</th>
+                {% endif %}
+                <th></th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody  >
+            {% for item in datalist %}
+                <tr>
+                    {#                    <td>{{ item.id }}  </td>#}
+
+                    <td>{{ item.id }} <input type="checkbox" size="100" name="choosedlist" value={{ item.id }}>  </td>
+                    <td> {{ item.user }}</td>
+                    <td>{{ item.operator }}</td>
+                    <td> {{ item.dbtag }}</td>
+                    <td> {{ item.sqltext|truncatechars:100|linebreaks }}</td>
+                    {#                    <td><input type=="text" class="form-control" name="accountname" value="{{ item.sqltext }}"></td>#}
+                    <td> {{ item.create_time|date:"Y-m-d H:i:s" }}</td>
+                    <td> {{ item.update_time|date:"Y-m-d H:i:s" }}</td>
+                    <td > {{ item.status }}</td>
+                    <td > {{ item.sche_time|date:"Y-m-d H:i" }}</td>
+                    <td > {{ item.specification|truncatechars:30|linebreaks}}</td>
+                    {% if perms.myapp.can_admin_task or perms.myapp.can_delete_task %}
+                        <td><button type="submit" name='delete' class="btn btn-primary" value={{ item.id }}>删除</button></td>
+                    {% endif %}
+                    <td><button type="submit" name='check' class="btn btn-warning" value={{ item.id }}>审核</button></td>
+                    {% if perms.myapp.can_admin_task %}
+                        <td><button type="submit" name='exec' onclick="return confirm('PLEASE COMFIRM')"  class="btn btn-danger" value={{ item.id }}>执行</button></td>
+                        <td><button type="submit" name='appoint' onclick="return confirm('PLEASE COMFIRM')"  class="btn btn-success" value={{ item.id }}>预约时间执行</button></td>
+                    {% endif %}
+                    <td><button type="submit" name='see_running' class="btn btn-info" value={{ item.id }}>状态</button></td>
+                    <td><button type="submit" name='update' class="btn btn-warning" value={{ item.id }}>查询修改</button></td>
+                </tr>
+            {% endfor %}
+
+
+            <script>
+                jeDate({
+                    dateCell:"#id_sche_time",
+                    format:"YYYY-MM-DD hh:mm:ss",
+                    isinitVal:true,
+                    isTime:true, //isClear:false,
+                    minDate:"2014-09-19 00:00:00",
+                    okfun:function(val){alert(val)}
+                })
+                function checkstatus() {
+                    var tableId = document.getElementById("mytable");
+                    var str = "";
+                    for (var i = 1; i < tableId.rows.length; i++) {
+                        var value = tableId.rows[i].cells[6];
+                        if (value.innerText == "executed") {
+                            value.setAttribute("class", "success");
+
+                        }
+                        else if (value.innerText == "check passed") {
+                            value.setAttribute("class", "warning");
+
+                        }
+                        else if (value.innerText == "running") {
+                            value.setAttribute("class", "active");
+                        }
+                        else {
+                            value.setAttribute("class", "danger");
+                        }
+                        var sched = tableId.rows[i].cells[7];
+                        if (sched.innerText == "2199-01-01 00:00"){
+                            sched.innerText='NOT SCHEDULED';
+                            sched.setAttribute("class", "danger");
+
+                        }
+                        else{
+                            sched.setAttribute("class", "active");
+
+                        }
+                    }
+                }
+                function checkbox () {
+                    var str=document.getElementsByName("choosedlist");
+                    var n = str.length;
+                    var k = 0;
+                    for (var i=0; i<n;i++){
+                        if(str[i].checked){
+                            k = 1;
+                        }
+                    }
+                    if(k==0){
+                        alert("请勾选TASK!");
+                        return false;
+                    }
+                }
+
+            </script>
+
+            </tbody>
+        </table>
+        <div class="row">
+            <div class="col-md-1">
+                <select class="form-control" name = "charset">
+                    <option value ="UTF8">UTF8</option>
+                    <option value ="GB18030">GB18030</option>
+                </select>
+            </div>
+            <div  class="col-md-1">
+                <button type="submit" name='export_task' class="btn btn-warning"  onclick="return checkbox()"  >导出选中的任务</button>
+            </div>
+
+        </div>
+        </body>
+    </form>
+    <script type="text/javascript">
+
+
+        {#        var mystatus = document.getElementById("taskstatus");#}
+        {#        for (i=0;i<=mystatus.length-1;i++)#}
+        {#        {#}
+        {##}
+        {#            if (mystatus[i].innerHTML == 'check not passed') {#}
+        {#                mystatus[i].class = "bg-danger";#}
+        {#            }#}
+        {#        }#}
+        //jeDate.skin('gray');
+        {#        jeDate({#}
+        {#            dateCell:"#id_begin",#}
+        {#            format:"YYYY-MM-DD hh:mm:ss",#}
+        {#            isinitVal:true,#}
+        {#            isTime:true, //isClear:false,#}
+        {#            minDate:"2014-09-19 00:00:00",#}
+        {#            okfun:function(val){alert(val)}#}
+        {#        })#}
+        {#        jeDate({#}
+        {#            dateCell:"#id_end",#}
+        {#            format:"YYYY-MM-DD hh:mm:ss",#}
+        {#            isinitVal:true,#}
+        {#            isTime:true, //isClear:false,#}
+        {#            minDate:"2014-09-19 00:00:00",#}
+        {#            okfun:function(val){alert(val)}#}
+        {#        })#}
+    </script>
+{% endblock %}
+{% block script %}
+    {% include "include/pagejump/pagejump.html" %}
+    {#    <script>#}
+    {#    $(document).ready(function(){#}
+    {#        $('#mytable1').DataTable();#}
+    {#    });#}
+    {#</script>#}
+    <script>
+        $(document).ready(function(){
+            $('#mytable1').DataTable({
+                "lengthMenu": [[5,25,100], [5,25,100]],
+                "order": []
+
+            });
+
+        });
+    </script>
+
+
+{% endblock %}

@@ -1,0 +1,70 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% block  title %}
+        <title>DATABASE_PLATFORM</title>
+    {% endblock %}
+    {% block head %}
+        <!-- Bootstrap theme -->
+        <link href="{% static 'bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+        <script src="{% static 'bootstrap/js/jquery-3.1.1.min.js' %}"></script>
+        <link href="{% static 'bootstrap/css/bootstrap-theme.min.css' %}" rel="stylesheet">
+        <link href="{% static 'bootstrap/css/jquery.dataTables.min.css' %}" rel="stylesheet">
+        <!-- DataTables CSS -->
+        {#        <link href="{% static "datatables-plugins/integration/bootstrap/3/dataTables.bootstrap.css" %}" rel="stylesheet">#}
+        {##}
+        {#        <!-- DataTables Responsive CSS -->#}
+        {#        <link href="{% static "datatables-responsive/css/dataTables.responsive.css" %}" rel="stylesheet">#}
+
+        <link href="{% static 'bootstrap/js/jquery-3.1.1.min.js' %}" rel="stylesheet">
+
+        <link href="{% static 'bootstrap/css/simple-sidebar.css' %}" rel="stylesheet">
+        <script src="{% static 'bootstrap/js/bootstrap.min.js' %}" rel="stylesheet"></script>
+        <script src="{% static 'bootstrap/js/jquery.dataTables.min.js' %}" rel="stylesheet"></script>
+
+        <script src="{% static 'bootstrap/js/myfunc.js' %}" rel="stylesheet"></script>
+        <script src="{% static 'bootstrap/js/echarts.min.js' %}" rel="stylesheet"></script>
+        <script type="text/javascript" src="{% static 'jedate/jedate.js' %}"></script>
+        <script type="text/javascript" src="{% static 'jedate/extra.js' %}"></script>
+
+        {#        <!-- DataTables JavaScript -->#}
+        {#        <script src="{% static "datatables/media/js/jquery.dataTables.min.js" %}"></script>#}
+        {#        <script src="{% static "datatables-plugins/integration/bootstrap/3/dataTables.bootstrap.min.js" %}"></script>#}
+    {% endblock %}
+
+</head>
+<body >
+{%block nav%}
+    {% include "include/nav.html" %}
+{% endblock %}
+
+
+<div class="container-fluid">
+    <div class="row" >
+
+        <div class="col-xs-10 col-md-12 main ">
+            <!--Body content-->
+            <h1 style="font-size:25px">{% block name %}欢迎使用数据库管理平台 {% endblock %}</h1>
+
+
+            <!-- 载入左侧菜单指向的jsp（或html等）页面内容 -->
+            <div id="content">
+                {%block content%}
+                    {% include "chart/basechart.html" %}
+                {% endblock %}
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% block foot %}
+    {% include "include/foot.html" %}
+{% endblock %}
+{% block script %}
+{% endblock %}
+</body>
+</html>

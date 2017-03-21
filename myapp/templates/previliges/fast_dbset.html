@@ -1,0 +1,88 @@
+{% extends "include/base.html" %}
+{% block title %}
+    <title>快速创建DB</title>
+{% endblock %}
+{% block name %}
+    快速创建DB
+{% endblock %}
+{%block content%}
+    {% if info %}
+        </br>
+        </br>
+        <strong> <span style="color:red">{{ info }}</span></strong>
+    {% endif %}
+
+    <form role="form" method='post'>
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-7 main ">
+                <hr />
+                <table>
+                    <tr>
+                        <td>
+                            {#                            {% if inslist %}#}
+                            <strong>CHOOSE INS OR CREATE NEW</strong> </br>
+                            <select class="form-control col-md-3" name = "ins_set">
+                                <option value ="">------------------------------</option>
+                                {% for obj in inslist %}
+                                    {% if obj == insname %}
+                                        <option selected="selected" value ="{{ obj.id }}">{{ obj.ip }} + {{ obj.port }} ({{ obj.role }})</option>
+                                    {% else %}
+                                        <option value ="{{ obj.id }}">{{ obj.ip }} + {{ obj.port }} ({{ obj.role }})</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                            {#                            {% endif %}#}
+                        </td>
+
+                        <td>
+                            </br>
+
+                            <input type=="text" class="form-control" maxlength="30" placeholder="input IP here" name="newinsip">
+                        </td>
+                        <td>
+                            </br>
+                            <input type=="text" class="form-control" maxlength="10" placeholder="input PORT here" name="newinsport">
+
+                        </td>
+                        <td>
+                            </br>
+                            <select class="form-control col-md-3"  name="dbtype">
+                                <option value="mysql" selected="selected">MySQL</option>
+                                <option value="mongodb" >Mongodb</option>
+                            </select>
+
+                        </td>
+                    </tr>
+
+                </table>
+
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3 main ">
+                <hr />
+                <strong>INPUT DBNAME WITH IT'S TAG below:</strong>
+
+                <input type=="text" class="form-control" required="required" maxlength="30" placeholder="input Dbtag here (eg:mysql-djangodb)" name="newdbtag">
+
+                <input type=="text" class="form-control" required="required" maxlength="30" placeholder="input Dbname here (eg:djangodb)" name="newdbname">
+
+                <hr />
+                <strong>DB_ACCOUNT FOR NORMAL USE: </strong>
+                <input type=="text" class="form-control" maxlength="30" placeholder="input username here" name="newname_all">
+                <input type=="text" class="form-control" maxlength="20" placeholder="input password here" name="newpass_all">
+                <hr />
+
+                <strong>DB_ACCOUNT FOR USING INCEPTION (optional):  </strong>
+                <input type=="text" class="form-control" maxlength="30" placeholder="input username here" name="newname_admin">
+                <input type=="text" class="form-control" maxlength="20" placeholder="input password here" name="newpass_admin">
+                <button type="submit" name='create' onclick="return confirm('PLEASE COMFIRM')"  class="btn btn-info" >创建</button>
+
+            </div>
+        </div>
+
+    </form>
+
+{% endblock %}
+

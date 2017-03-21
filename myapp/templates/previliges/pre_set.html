@@ -1,0 +1,167 @@
+{% extends "include/base.html" %}
+{% block title %}
+    <title>用户账户</title>
+{% endblock %}
+{% block name %}
+    用户权限设置
+{% endblock %}
+{%block content%}
+    {% if info %}
+        </br>
+        </br>
+        <strong> <span style="color:red">{{ info }}</span></strong>
+    {% endif %}
+    <form role="form" method='post'>
+        {% csrf_token %}
+        <table >
+            <tr>
+                </br>
+                </br>
+                <td>
+                    <strong>CHOOSE USERNAME:</strong>
+                    <select class="form-control col-md-1" name = "account">
+                        {% for obj in userlist %}
+                            {% if obj.username == username %}
+                                <option selected="selected" value ="{{ obj.username }}">{{ obj.username }}</option>
+                            {% else %}
+                                <option value ="{{ obj.username }}">{{ obj.username }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <button type="submit" name='query' class="btn btn-primary" >查询</button>
+                    <button type="submit" name='set' onclick="return confirm('PLEASE COMFIRM')"  class="btn btn-danger" >设置权限</button>
+                    <button type="submit" name='reset' onclick="return confirm('PLEASE COMFIRM')"  class="btn btn-success" >用户权限清空</button>
+                    <button type="submit" name='delete' onclick="return confirm('PLEASE COMFIRM')"  class="btn btn-default" >删除用户</button>
+
+                </td>
+            </tr>
+            <tr>
+
+                {% if mail %}
+                    <td>
+                        </br>
+                        <input type=="text" class="form-control" maxlength="60" value="{{ mail }}" placeholder="input email here" name="newmail">
+                    </td>
+                {% else %}
+                    <td>
+                        </br>
+                        <input type=="text" class="form-control" maxlength="60" placeholder="input email here" name="newmail">
+                    </td>
+                {% endif %}
+                {% if username %}
+                    <td>
+                        </br>
+                        <input type=="text" class="form-control" maxlength="30" value="{{ username }}" placeholder="input username here" name="newname">
+                    </td>
+                {% else %}
+                    <td>
+                        </br>
+                        <input type=="text" class="form-control" maxlength="30" placeholder="input username here" name="newname">
+                    </td>
+                {% endif %}
+
+
+                <td>
+                    </br>
+                    <input type=="text" class="form-control" maxlength="20" placeholder="input password here" name="newpasswd">
+                </td>
+
+
+
+            </tr>
+            <tr>
+                <td>
+                    <button type="submit" name='create' onclick="return confirm('PLEASE COMFIRM')"  class="btn btn-info" >创建账号</button>
+                </td>
+            </tr>
+        </table>
+
+        {% if usergroup %}
+            </br>
+            <strong>CHOOSE USERGROUP FOR USER :</strong>
+            <select class="form-control col-md-1" multiple="multiple" size=10 name = "user_group">
+                {% for obj in usergroup %}
+                    {% if obj in usergp %}
+                        <option selected = "selected" value ="{{ obj }}">{{ obj }}</option>
+                    {% else %}
+                        <option value ="{{ obj }}">{{ obj }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        {% endif %}
+        </br>
+        <strong>CHOOSE DBGROUP FOR USER :</strong>
+        <table id="mytable" class="table table-condensed" border="1">
+            <thead>
+            <tr class="danger">
+                <th>ID</th>
+                <th>GROUP_NAME</th>
+                <th>DBLIST</th>
+                <th>USERACCOUNT</th>
+                <th>勾选GROUP</th>
+            </tr>
+            </thead>
+            <tbody  >
+            {% for item in grouplist %}
+                <tr>
+                    <td>{{ item.id }}</td>
+                    <td>{{ item.groupname }}</td>
+                    <td>
+                        {% for i in item.dbname.all %}
+                            {% if forloop.counter < 9 %}
+                                {{i.dbtag}}  + {{ i.dbname }} </br>
+                            {% elif forloop.counter == 9 %}
+                                ...
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for i in item.account.all %}
+                            {% if forloop.counter < 9 %}
+                                {{i.username}} </br>
+                            {% elif forloop.counter == 9 %}
+                                ...
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                    {% if item in dbgp %}
+                        <td><input type="checkbox" checked="1" size="100" name="choosedlist" value={{ item.id }}></td>
+                    {% else %}
+                        <td><input type="checkbox" size="100" name="choosedlist" value={{ item.id }}></td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+
+        {#                    <select class="form-control col-md-1" multiple="multiple" name = "grouplist" size="10">#}
+        {#                        {% for obj in grouplist %}#}
+        {#                            <option value ="{{ obj }}">{{ obj }}</option>#}
+        {#                        {% endfor %}#}
+        {#                    </select>#}
+        {% if dblist %}
+            </br>
+            <strong>CHOOSE DB FOR USER (optional) :</strong>
+            <select class="form-control col-md-1" multiple="multiple" size=10 name = "user_dblist">
+                {% for obj in dblist %}
+                    {% if obj in userdblist %}
+                        <option selected = "selected" value ="{{ obj.dbtag }}">{{ obj.dbtag }}</option>
+                    {% else %}
+                        <option value ="{{ obj.dbtag }}">{{ obj.dbtag }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        {% endif %}
+
+    </form >
+
+
+{% endblock %}
+{% block script %}
+    {% include "include/pagejump/pagejump.html" %}
+{% endblock %}

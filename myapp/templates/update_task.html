@@ -1,0 +1,113 @@
+{% extends "include/base.html" %}
+{% block title %}
+    <title>TASK_UPDATE</title>
+{% endblock %}
+{% block name %}
+    TASK DETAIL
+{% endblock %}
+{%block content%}
+    {% if str %}
+        <h2><span style="color:red">{{ str }}</span></h2>
+    {% endif %}
+    <form role="form" method='post'>
+        {% csrf_token %}
+        {% if data %}
+            <table class="table table-condensed" border="1">
+                <tbody>
+                <tr>
+                    <td>id</td>
+                    <td>{{ data.id }}</td>
+                </tr>
+
+                <tr>
+                    <td>USER</td>
+                    <td>{{ data.user }}</td>
+                </tr>
+
+                <tr>
+                    <td>DBTAG</td>
+
+                    {% if perms.myapp.can_see_inception or perms.myapp.can_update_task  or perms.myapp.can_admin_task %}
+                        <td>
+                            <div class="col-md-3 main">
+                                <select class="form-control col-md-1" name = "hosttag">
+                                    {% for obj in objlist %}
+                                        {% if obj == choosed_host or obj == data.dbtag %}
+                                            <option selected="selected" value ="{{ obj }}">{{ obj }}</option>
+                                        {% else %}
+                                            <option value ="{{ obj }}">{{ obj }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" name='new_task' onclick="return confirm('PLEASE COMFIRM')"  class="btn btn-warning">执行环境变更</button>
+
+                                {% if db_se %}
+                                    <input type=="text" class="form-control" maxlength="30" placeholder="search for dbname" value="{{ db_se }}" name="searchname">
+                                {% else %}
+                                    <input type=="text" class="form-control" maxlength="30" placeholder="search for dbname" name="searchname">
+                                {% endif %}
+                                <button type="submit" name='searchdb' class="btn btn-info" value="1">搜索库</button >
+                            </div>
+                        </td>
+                    {% else %}
+                        <td>{{ data.dbtag }}</td>
+                    {% endif %}
+                </tr>
+
+                <tr>
+                    <td>创建时间</td>
+                    <td>{{ data.create_time|date:"Y-m-d H:i:s"  }}</td>
+                </tr>
+
+                <tr>
+                    <td>修改时间</td>
+                    <td>{{ data.update_time|date:"Y-m-d H:i:s"  }}</td>
+                </tr>
+                <tr>
+                    <td>任务状态</td>
+                    {% if perms.myapp.can_admin_task %}
+                        <td>
+                            <input  type=="text" maxlength="20" value="{{ data.status }}" placeholder="input status here" name="status"> ('executed','executed failed','check not passed','check passed','running','appointed','NULL')
+                        </td>
+                    {% else %}
+                        <td>{{ data.status }}</td>
+                    {% endif %}
+
+
+                </tr>
+                {% if perms.myapp.can_update_task or perms.myapp.can_admin_task %}
+
+                    <tr>
+                        <td>SQL语句</td>
+                        <td>
+                            <textarea cols="40" rows="10" name="sqltext">{{ data.sqltext }}</textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>执行说明</td>
+                        <td>
+                            <textarea cols="40" rows="10" maxlength="30" placeholder="最多输入30个字，超过部分将会被截断" name="specify">{{ data.specification }}</textarea>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td>SQL语句</td>
+                        <td>{{ data.sqltext }}</td>
+                    </tr>
+                    <tr>
+                        <td>执行说明</td>
+                        <td>{{ data.specification }}</td>
+                    </tr>
+                {% endif %}
+
+                </tbody>
+            </table>
+
+            {% if perms.myapp.can_update_task or perms.myapp.can_admin_task  %}
+                <td><button type="submit" name='update' onclick="return confirm('PLEASE COMFIRM')"  class="btn btn-warning">更新sql相关信息</button></td>
+            {% endif %}
+
+        {% endif %}
+    </form>
+{% endblock %}
+

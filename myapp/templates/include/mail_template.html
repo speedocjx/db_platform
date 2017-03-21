@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+</head>
+<body>
+{% if tmp %}
+    <pre> {{ tmp }}</pre>
+{% endif %}
+{% if result_status %}
+    <table id="mytable1" class="table table-condensed" border="1">
+        <thead>
+        <tr class="danger">
+            <th> myid </th>
+            <th> stage </th>
+            <th> errlevel </th>
+            <th> stagestatus </th>
+            <th> errormessage </th>
+            <th> sqltext </th>
+            <th> affectrow </th>
+            <th> backup_db </th>
+            <th> execute_time </th>
+            <th> create_time </th>
+            <th> finish_time </th>
+        </tr>
+        </thead>
+        <tbody  >
+        {% for item in result_status %}
+            <tr>
+                <td> {{ item.myid }}</td>
+                <td> {{ item.stage }}</td>
+                <td> {{ item.errlevel }}</td>
+                <td> {{ item.stagestatus|linebreaks }}</td>
+                <td> {{ item.errormessage|linebreaks }}</td>
+                <td> {{ item.sqltext|linebreaks }}</td>
+                <td> {{ item.affectrow }}</td>
+                <td> {{ item.backup_db}}</td>
+                <td> {{ item.execute_time }}</td>
+                <td> {{ item.create_time|date:"Y-m-d H:i:s"  }}</td>
+                <td> {{ item.finish_time|date:"Y-m-d H:i:s"  }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+{% if sqllist %}
+    <table id="mytable1" class="table table-condensed" border="1">
+        <thead>
+        <tr class="danger">
+            <th> ID </th>
+            <th> SQL </th>
+        </tr>
+        </thead>
+        <tbody  >
+        {% for item in sqllist %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td> <pre>{{ item }}</pre></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+</body>
+</html>

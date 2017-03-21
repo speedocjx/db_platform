@@ -1,0 +1,412 @@
+{% extends "include/base.html" %}
+{% block title %}
+    <title>权限查询</title>
+{% endblock %}
+{% block name %}
+    欢迎使用权限查询功能
+{% endblock %}
+{%block content%}
+    <table >
+        <tr>
+            <form role="form" method='post'>
+                <td>
+                    </br>
+                    </br>
+
+                    {% csrf_token %}
+                    CHOOSE :
+                    <select class="form-control col-md-1" name = "cx">
+                        {% for obj in objlist %}
+                            {% if obj == choosed_host %}
+                                <option selected="selected" value ="{{ obj }}">{{ obj }}</option>
+                            {% else %}
+                                <option value ="{{ obj }}">{{ obj }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                    </br> </br>
+                    <input type=="text" class="form-control" maxlength="30" placeholder="input username for query" name="accountname">
+
+                    <select class="form-control col-md-1" name = "choosed_gp">
+                        {% for obj in usergroup %}
+                            {% if obj in dbgroup %}
+                                <option selected = "selected" value ="{{ obj.groupname }}">{{ obj.groupname }}</option>
+                            {% else %}
+                                <option value ="{{ obj.groupname }}">{{ obj.groupname }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                    <select class="form-control col-md-3" name = "ins_set">
+                        {% for obj in inslist %}
+                            {% if obj == insname %}
+                                <option selected="selected" value ="{{ obj.id }}">{{ obj.ip }} + {{ obj.port }} ({{ obj.role }})</option>
+                            {% else %}
+                                <option value ="{{ obj.id }}">{{ obj.ip }} + {{ obj.port }} ({{ obj.role }})</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    </br>
+                    </br>
+                    </br>
+                    <button type="submit" name="querydb" value="1" class="btn btn-success">查询</button > </br>
+                    <button type="submit" name="queryuser"  value="1" class="btn btn-primary">查询</button > </br>
+                    <button type="submit" name="querygp" value="1" class="btn btn-danger">查询</button > (DB_GROUP)</br>
+                    <button type="submit" name="queryins" value="1" class="btn btn-info">查询</button >
+
+                </td>
+            </form >
+            <td>
+                <div class="col-md-12">
+                    <h1>注意事项:</h1>
+                    <p class="bg-danger"> 1. 可以按库查询，按用户名查询，按DBgroup名查询,按实例查询</p>
+                    <p class="bg-success"> 2. 如果用户名输入有问题，返回空</p>
+                </div>
+            </td>
+        </tr>
+    </table>
+    {% if ins_list %}
+        INSTANCE:</br>
+        <table id="instable" class="table table-condensed" border="1">
+            <thead>
+            <tr class="danger">
+                <th>IP_ADDRESS</th>
+                <th>DB_PORT</th>
+                <th>INSTANCE_ROLE</th>
+            </tr>
+            </thead>
+            <tbody  >
+            {% for item in ins_list %}
+                <tr>
+                    <td> {{ item.ip }}</td>
+                    <td> {{ item.port }}</td>
+                    <td> {{ item.role }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    {% if acc %}
+        USERS :</br>
+        {% include "include/pagejump/pagejump2.html" %}
+        <table id="mytable1" class="table table-condensed" border="1">
+            <thead>
+            <tr class="danger">
+                <th>USERACCOUNT</th>
+            </tr>
+            </thead>
+            <tbody  >
+            {% for account in acc %}
+                <tr>
+                    <td> {{ account.username }}  </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </br>
+        </br>
+    {% endif %}
+
+    {% if gp %}
+
+
+        EXISTS IN GROUPS</br>
+        <table id="account" class="table table-condensed" border="1">
+            <thead>
+            <tr class="danger">
+                <th>GROUPNAME</th>
+                <th>DB in GROUP</th>
+            </tr>
+            </thead>
+            <tbody  >
+            {% for item in gp %}
+                <tr>
+                    <td> {{ item.groupname }}  </td>
+                    <td>
+
+                        {%for i in  item.dbname.all %}
+                            {{ i.dbtag }}({{ i.dbname }}),
+
+                        {% endfor %}
+                    </td>
+
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+    {% endif %}
+
+    {% if data_list %}
+        {% include "include/pagejump/pagebutton.html" %}
+        <table id="mytable" class="table table-condensed" border="1">
+            <thead>
+            <tr class="danger">
+                <th>ACCOUNTTAG + ROLE</th>
+                <th>DB_ACCOUNT</th>
+                <th>DBNAME</th>
+                <th>USER_ACCOUNT</th>
+            </tr>
+            </thead>
+            <tbody  >
+            {% for item in data_list %}
+                <tr>
+                    <td> {{ item.tags }} + {{ item.role }}</td>
+                    <td> {{ item.user }}</td>
+                    <td>
+                        {% for i in item.dbname.all %}
+                            {{i.dbtag}}+{{ i.dbname }} </br>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for i in item.account.all %}
+                            {{i.username}} </br>
+                        {% endfor %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    {% if userdblist %}
+        <strong><span style="color:red">{{ info }}</span></strong>
+        <table id="userlist" class="table table-condensed" border="1">
+            <thead>
+            <tr class="danger">
+                <th>DBTAG</th>
+                <th>DBNAME</th>
+                <th>INSTANCE</th>
+                <th>USER FOR THIS DB</th>
+            </tr>
+            </thead>
+            <tbody  >
+            {% for db in userdblist %}
+                <tr>
+                    <td> {{ db.dbtag }}  </td>
+                    <td> {{ db.dbname }}  </td>
+                    <td>
+                        {% for i in db.instance.all %}
+                            {{i.ip}} + {{ i.port }} +{{ i.role }} </br>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for i in db.account.all %}
+                            {% if forloop.counter < 9 %}
+                                {{i.username}} ,
+                            {% elif forloop.counter == 9 %}
+                                ...
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+
+    {% if dbgp %}
+        <strong>DB_GROUP FOR THE USER:</strong>
+        <table id="mytable" class="table table-condensed" border="1">
+            <thead>
+            <tr class="danger">
+                <th>ID</th>
+                <th>GROUP_NAME</th>
+                <th>DBLIST</th>
+                <th>USERACCOUNT</th>
+            </tr>
+            </thead>
+            <tbody  >
+            {% for item in dbgp %}
+                <tr>
+                    <td>{{ item.id }}</td>
+                    <td>{{ item.groupname }}</td>
+                    <td>
+                        {% for i in item.dbname.all %}
+                            {{i.dbtag}}  + {{ i.dbname }} </br>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for i in item.account.all %}
+                            {{i.username}} ,
+                        {% endfor %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+
+    {% if usergp %}
+        <strong>GROUP FOR THE USER:</strong>
+        <table id="mytable" class="table table-condensed" border="1">
+            <thead>
+            <tr class="danger">
+                <th>GROUPNAME</th>
+                <th>PERMISSION</th>
+            </tr>
+            </thead>
+            <tbody  >
+            {% for item in usergp %}
+                <tr>
+                    <td>{{ item }}</td>
+                    <td>
+                        {% for i in item.permissions.all %}
+                            {{ i.codename }} ,
+                        {% endfor %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    {% if ur %}
+        <strong>PERMISSIONS FOR THE USER:</strong>
+        <table class="table table-condensed" border="1">
+            <thead>
+            <tr class="danger">
+
+                <th>PERMISSION</th>
+            </tr>
+            </thead>
+            <tbody  >
+            <tr>
+                <td>
+                    {% for item in ur.get_all_permissions %}
+
+                        {{ item }} &nbsp;&nbsp;
+
+
+                    {% endfor %}
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    {% endif %}
+
+    {% if pri %}
+        <strong>PRIVILEGES FOR THE USER:</strong>
+        <table class="table table-condensed" border="1">
+            <thead>
+            <tr class="danger">
+                <th>SELECT_LIMIT</th>
+                <th>EXPORT_LIMIT</th>
+            </tr>
+            </thead>
+            <tbody  >
+            {% for item in pri %}
+                <tr>
+                    <td>{{ item.codename  }}</td>
+                    <td>{{ item  }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+
+
+    {% if profile %}
+        <table class="table table-condensed" border="1">
+            <thead>
+            <tr class="danger">
+                <th>SELECT_LIMIT</th>
+                <th>EXPORT_LIMIT</th>
+            </tr>
+            </thead>
+            <tbody  >
+            <tr>
+                <td>{{ profile.select_limit }}</td>
+                <td>
+                    {{ profile.export_limit }}
+                </td>
+            </tr>
+
+            </tbody>
+        </table>
+    {% endif %}
+
+
+    {% if dbgroup %}
+        <table class="table table-condensed" border="1">
+            <thead>
+            <tr class="danger">
+                <th>ID</th>
+                <th>GROUP_NAME</th>
+                <th>DBLIST</th>
+                <th>USERACCOUNT</th>
+            </tr>
+            </thead>
+            <tbody  >
+            {% for item in dbgroup %}
+                <tr>
+                    <td>{{ item.id }}</td>
+                    <td>{{ item.groupname }}</td>
+                    <td>
+                        {% for i in item.dbname.all %}
+                            {{i.dbtag}}  + {{ i.dbname }} </br>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for i in item.account.all %}
+                            {{i.username}} </br>
+                        {% endfor %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+
+
+    {% if insname %}
+
+        <table class="table table-condensed" border="1">
+            <thead>
+            <tr class="danger">
+                <th>BRO_INS</th>
+            </tr>
+            </thead>
+            <tbody  >
+            {% for item in bro %}
+                <tr>
+
+                    <td>{{ item.ip}}+{{ item.port }} + {{ item.role }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <table class="table table-condensed" border="1">
+            <thead>
+            <tr class="danger">
+                <th>DB</th>
+                <th>USERACCOUNT</th>
+            </tr>
+            </thead>
+            <tbody  >
+            {% for item in insname.db_name_set.all %}
+                <tr>
+
+                    <td>{{ item.dbtag }}+{{ item.dbname }}</td>
+                    <td>
+                        {% for i in item.account.all %}
+                            {{i.username}} ,
+                        {% endfor %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+{% endblock %}
+{% block script %}
+    {% include "include/pagejump/pagejump.html" %}
+{% endblock %}

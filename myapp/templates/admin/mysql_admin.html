@@ -1,0 +1,222 @@
+{% extends "include/base.html" %}
+{% block title %}
+    <title>INS STATUS</title>
+{% endblock %}
+{% block name %}
+    欢迎使用MySQL<span style="color:red">实例状态查询</span>功能
+{% endblock %}
+{%block content%}
+    <div id="wrapper">
+        <form role="form" method='post'>
+            {% csrf_token %}
+            {% include "include/sidebar.html" %}
+            <div id="page-content-wrapper">
+                <table >
+                    </br>
+                    </br>
+                    CHOOSE :
+                    <tr>
+                        <td>
+                            <select class="form-control col-md-3" name = "ins_set">
+                                {% for obj in inslist %}
+                                    {% if obj == insname %}
+                                        <option selected="selected" value ="{{ obj.id }}">{{ obj.ip }} + {{ obj.port }} ({{ obj.role }})</option>
+                                    {% else %}
+                                        <option value ="{{ obj.id }}">{{ obj.ip }} + {{ obj.port }} ({{ obj.role }})</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button type="submit" name='fullpro' class="btn btn-primary" value="1">SHOW FULL PROCESSLIST</button >
+                        </td>
+                        <td>
+                            <button type="submit" name='showactive' class="btn btn-info" value="1">SHOW ACTIVE</button >
+                        </td>
+                        <td>
+                            <button type="submit" name='showengine' class="btn btn-danger" value="1">SHOW ENGINE INNODB STATUS</button >
+                        </td>
+                        <td>
+                            <button type="submit" name='showmutex' class="btn btn-success" value="1">SHOW ENGINE INNODB MUTEX</button >
+                        </td>
+                    </tr>
+                </table>
+                </br>
+                <table>
+                    <tr>
+                        <td>
+                            <button type="submit" name='slavestatus' class="btn btn-primary" value="1">SHOW SLAVE STATUS</button >
+                        </td>
+                        <td>
+                            <button type="submit" name='showbigtb' class="btn btn-default" value="1">SHOW TOP 20 BIGTABLES</button >
+                        </td>
+                        <td>
+                            <button type="submit" name='showinc' class="btn btn-danger" value="1">SHOW TOP 100 AUTO_INCREMENT USED</button >
+                        </td>
+
+                    </tr>
+
+                </table>
+
+                </br>
+                </br>
+
+                <table>
+                    <tr>
+                        <td>
+                            {% if vir %}
+                                <input type=="text" class="form-control" maxlength="25" placeholder="input search_value here" value="{{ vir }}" name="variables">
+                            {% else %}
+                                <input type=="text" class="form-control" maxlength="25" placeholder="input search_value here" name="variables">
+                            {% endif %}
+                        </td>
+
+                    </tr>
+                    <tr>
+
+                        <td>
+                            <button type="submit" name='showstatus' class="btn btn-primary" value="1">SHOW SYSTEM STATUS</button >
+                        </td>
+                        <td>
+                            <button type="submit" name='showvari' class="btn btn-success" value="1">SHOW SYSTEM VARIABLES</button >
+                        </td>
+                        <td>
+                            <button type="submit" name='search' class="btn btn-danger" value="1">IP SEARCH</button >
+                        </td>
+                    </tr>
+                </table>
+
+
+                <strong> <span style="color:red">{{ info }}</span></strong>
+                <hr/>
+                <strong> <span style="color:red">SELF DB_SET</span></strong>
+                <table>
+                    <tr>
+                        <td>
+                            {% if selfsql %}
+                                <textarea cols="40" style="resize: none" rows="3" maxlength="100" placeholder="input sentence here" name="selfsql">{{ selfsql }}</textarea>
+
+                            {% else %}
+                                <textarea cols="40" style="resize: none" rows="3" maxlength="100" placeholder="input sentence here" name="selfsql"></textarea>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button type="submit" name='execute' class="btn btn-danger" value="1">执行</button >
+                        </td>
+                </table>
+
+
+                {% if bro %}
+                    <table class="table table-condensed" border="1">
+                        <thead>
+                        <tr class="danger">
+                            <th>BRO_INS</th>
+                        </tr>
+                        </thead>
+                        <tbody  >
+                        {% for item in bro %}
+                            <tr>
+
+                                <td>{{ item.ip}}+{{ item.port }} + {{ item.role }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+
+                {% if data_list %}
+                    {% include "include/pagejump/pagebutton.html" %}
+                    <table id="mytable" class="table table-condensed" border="1">
+                        <thead>
+                        <tr class="danger">
+                            {% for colname in collist %}
+                                <th>{{ colname }}</th>
+                            {% endfor %}
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody  >
+                        {% for item in data_list %}
+                            <tr>
+                                {% for item_detail in item %}
+                                    <td> <pre>{{ item_detail }}</pre></td>
+                                {% endfor %}
+                                <td><input type="checkbox" size="100" name="choosedlist" value={{ item.0 }}></td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <button type="submit" name='kill_list' class="btn btn-success" value="1">KILL SELECTED</button >
+
+
+                {% endif %}
+
+
+
+                {% if datalist %}
+                    {% include "include/pagejump/pagebutton.html" %}
+
+                    <table id="mytable" class="table table-condensed" border="1">
+                        <thead>
+                        <tr class="danger">
+                            {% for colname in col %}
+                                <th>{{ colname }}</th>
+                            {% endfor %}
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody  >
+                        {% for item in datalist %}
+                            <tr>
+                                {% for item_detail in item %}
+                                    <td> <pre>{{ item_detail }}</pre></td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+
+                {% endif %}
+
+
+
+            </div>
+
+        </form >
+    </div>
+
+
+
+{% endblock %}
+{% block script %}
+    {% include "include/pagejump/pagejump.html" %}
+
+    <script>
+
+        $("#menu-toggle").click(function(e) {
+            e.preventDefault();
+            $("#wrapper").toggleClass("toggled");
+        });
+        function record_cookie() {
+            var fav = document.getElementById("id_favword");
+            myfav =escape(fav.value);
+            {#            myfav = fav.value.replace(/\n/g,"^");#}
+            var expires = new Date();
+            expires.setTime(expires.getTime() + 3500000);
+            pathstr = ';path=/';
+            {#            alert(myfav);#}
+            document.cookie = "myfavword"+"="+myfav+pathstr+';expires='+expires.toGMTString();
+        }
+
+        function showfav() {
+            var fav = document.getElementById("id_favword");
+            myfav =unescape(fav.value);
+            fav.value = myfav;
+        }
+    </script>
+{% endblock %}

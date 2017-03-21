@@ -1,0 +1,103 @@
+{% extends "include/base.html" %}
+{% block title %}
+    <title>设置USER_GROUP</title>
+{% endblock %}
+{% block name %}
+    设置USER_GROUP
+{% endblock %}
+{%block content%}
+    {% if info %}
+        </br>
+        </br>
+        <strong> <span style="color:red">{{ info }}</span></strong>
+    {% endif %}
+    <form role="form" method='post'>
+        {% csrf_token %}
+        <div class="col-md-2 main ">
+            <table >
+                <tr>
+                    </br>
+                    </br>
+                    <td>
+                        {% if grouplist %}
+                            <strong>CHOOSE GROUP</strong> </br>
+                            <select class="form-control col-md-1" name = "group_set">
+                                {% for obj in grouplist %}
+                                    {% if obj.name == groupname %}
+                                        <option selected="selected" value ="{{ obj.name }}">{{ obj.name }}</option>
+                                    {% else %}
+                                        <option value ="{{ obj.name }}">{{ obj.name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        {% endif %}
+                    </td>
+
+                </tr>
+
+                <tr>
+                    <td>
+                        <button type="submit" name='query' class="btn btn-primary" >查询</button>
+                        <button type="submit" name='set' onclick="return confirm('PLEASE COMFIRM')"  class="btn btn-danger" >设置</button>
+                        <button type="submit" name='delete' onclick="return confirm('PLEASE COMFIRM')"  class="btn btn-success" >删除</button>
+                    </td>
+                </tr>
+                <tr>
+
+                    <td>
+                        </br>
+                        <strong>CREATE & SET</strong> </br>
+                        {% if groupname %}
+                            <input type=="text" class="form-control" maxlength="30" value="{{ groupname }}" placeholder="input name here" name="newname">
+
+                        {% else %}
+                            <input type=="text" class="form-control" maxlength="30" placeholder="input name here" name="newname">
+
+                        {% endif %}
+                    </td>
+
+                </tr>
+                <tr>
+                    <td>
+                        <button type="submit" name='create' onclick="return confirm('PLEASE COMFIRM')"  class="btn btn-info" >创建</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="col-md-5 main ">
+            {% if perlist %}
+                </br>
+                <strong>CHOOSE PERMISSION:</strong> </br>
+                <select class="form-control col-md-1" size="10" multiple="multiple" name = "per_set">
+                    {% for obj in perlist %}
+                        {% if obj in s_perlist %}
+                            <option selected="selected" value ="{{ obj.codename }}">{{ obj }}</option>
+                        {% else %}
+                            <option value ="{{ obj.codename }}">{{ obj }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            {% endif %}
+        </div>
+        <div class="col-md-5 main ">
+            {% if userlist %}
+                </br>
+                <strong>CHOOSE USER:</strong> </br>
+                <select class="form-control col-md-1" size="10" multiple="multiple" name = "user_set">
+                    {% for obj in userlist %}
+                        {% if obj.username == public_user %}
+                        {% else %}
+                            {% if obj in s_userlist %}
+                                <option selected="selected" value ="{{ obj.username }}">{{ obj.username }}</option>
+                            {% else %}
+                                <option value ="{{ obj.username }}">{{ obj.username }}</option>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            {% endif %}
+        </div>
+    </form>
+
+{% endblock %}
+

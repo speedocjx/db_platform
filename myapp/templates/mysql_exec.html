@@ -1,0 +1,144 @@
+{% extends "include/base.html" %}
+{% block title %}
+    <title>MySQL_EXEC</title>
+{% endblock %}
+{% block name %}
+    欢迎使用MySQL数据库<span style="color:red">执行</span>功能
+{% endblock %}
+{%block content%}
+    <div id="wrapper">
+        <form role="form" method='post'>
+            {% csrf_token %}
+
+            {% include "include/sidebar.html" %}
+            <div id="page-content-wrapper">
+
+
+                <table >
+                    <tr>
+                        <td>
+                            </br>
+                            </br>
+                            CHOOSE :
+                            {%  if choosed_host %}
+                                {#                                <select class="form-control col-md-1" name = "cx">#}
+                                {#                                    <option value ="{{ choosed_host }}">{{ choosed_host }}</option>#}
+                                {#                                </select></br>#}
+                                {#                                #}
+                                <select class="form-control col-md-1" name = "cx">
+                                    {% for obj in objlist %}
+                                        {% if obj == choosed_host %}
+                                            <option selected="selected" value ="{{ obj }}">{{ obj }}</option>
+                                        {% else %}
+                                            <option value ="{{ obj }}">{{ obj }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select></br>
+                                <a href="/mysql_exec/"><input type="button" value="刷新数据源" class="btn btn-danger"></a>
+                            {% else %}
+                                <select class="form-control col-md-1" name = "cx">
+                                    {% for obj in objlist %}
+                                        <option value ="{{ obj }}">{{ obj }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% endif %}
+                            <div class="row">
+                                <div class="col-md-5">
+                                    {% if db_se %}
+                                        <input type=="text" class="form-control" maxlength="30" placeholder="input dbname for search" value="{{ db_se }}" name="searchdbname">
+                                    {% else %}
+                                        <input type=="text" class="form-control" maxlength="30" placeholder="input dbname for search" name="searchdbname">
+                                    {% endif %}
+
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="submit" name='searchdb' class="btn btn-info" value="1">搜索库</button >
+                                </div>
+                            </div>
+                            </br> </br>
+                            请在下面输入单条语句:</br>
+                            {{ form.a }} </br> </br>
+                            <button type="submit" name="commit" onclick="return confirm('PLEASE COMFIRM')" class="btn btn-primary">执行</button >
+                            <button type="submit" name="check" class="btn btn-danger">检查语句</button >
+
+                        </td>
+                        <td>
+                            <div class="col-md-12">
+                                <h1>注意事项:</h1>
+                                <p class="bg-danger"> 1. 只支持"单条语句"执行，勿在框中重复输入多条sql语句(默认只识别第一条合规语句)</p>
+                                <p class="bg-info"> 2. 点击"检查语句"后，如果返回的结果中"errlevel"都为0,则语句没问题,不然请查看"errormessage"中的提示</p>
+                                <p class="bg-danger"> 3. 建议在所有的表名前加上库名限定，如dbname.tablename</p>
+                                <p> 4. 如果返回"Don't have permission to..."则说明你的账户没有执行相关命令的权限</p>
+                                <p> 5. 需要权限请提申请给DBA开通平台权限</p>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+
+                {% if collist %}
+                    <table  class="table table-condensed" border="1">
+                        <tr class="danger">
+                            <td>
+                                {{ dbname }}
+                            </td>
+                        </tr>
+                        {% if sql %}
+                            <tr>
+                                <td>
+                                    {#                                {{ a|linebreaks }}#}
+                                    {{ sql|truncatechars:100|linebreaks }}
+
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </table>
+                    {% include "include/pagejump/pagebutton.html" %}
+                {% endif %}
+                <table id="mytable" class="table table-condensed" border="1">
+                    <thead>
+                    <tr class="danger">
+                        {% for colname in collist %}
+                            <th>{{ colname }}</th>
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                    <tbody  >
+                    {% for item in data_mysql %}
+                        <tr>
+                            {% for item_detail in item %}
+                                <td> {{ item_detail }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div >
+        </form >
+    </div>
+{% endblock %}
+{% block script %}
+    {% include "include/pagejump/pagejump.html" %}
+    <script>
+
+        $("#menu-toggle").click(function(e) {
+            e.preventDefault();
+            $("#wrapper").toggleClass("toggled");
+        });
+        function record_cookie() {
+            var fav = document.getElementById("id_favword");
+            myfav =escape(fav.value);
+            {#            myfav = fav.value.replace(/\n/g,"^");#}
+            var expires = new Date();
+            expires.setTime(expires.getTime() + 3500000);
+            pathstr = ';path=/';
+            {#            alert(myfav);#}
+            document.cookie = "myfavword"+"="+myfav+pathstr+';expires='+expires.toGMTString();
+        }
+
+        function showfav() {
+            var fav = document.getElementById("id_favword");
+            myfav =unescape(fav.value);
+            fav.value = myfav;
+        }
+    </script>
+{% endblock %}

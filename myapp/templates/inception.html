@@ -1,0 +1,114 @@
+{% extends "include/base.html" %}
+{% block title %}
+    <title>TASK_UPLOAD</title>
+{% endblock %}
+{% block name %}
+    欢迎使用MySQL数据库语句审核功能
+{% endblock %}
+{%block content%}
+    <table >
+        <tr>
+            <td>
+                </br>
+                </br>
+                <form role="form" method='post' enctype="multipart/form-data" >
+                    {% csrf_token %}
+                    CHOOSE :
+                    {%  if choosed_host %}
+                        {#                        <select class="form-control col-md-1" name = "cx">#}
+                        {#                            <option value ="{{ choosed_host }}">{{ choosed_host }}</option>#}
+                        {#                        </select></br>#}
+                        {#                        <a href="/sqlcheck/"><input type="button" value="重选数据源" class="btn btn-danger"></a>#}
+
+                        <select class="form-control col-md-1" name = "cx">
+                            {% for obj in objlist %}
+                                {% if obj == choosed_host %}
+                                    <option selected="selected" value ="{{ obj }}">{{ obj }}</option>
+                                {% else %}
+                                    <option value ="{{ obj }}">{{ obj }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select></br>
+                        <a href="/sqlcheck/"><input type="button" value="刷新数据源" class="btn btn-danger"></a>
+
+                    {% else %}
+                        <select class="form-control col-md-1" name = "cx">
+                            {% for obj in objlist %}
+                                <option value ="{{ obj }}">{{ obj }}</option>
+                            {% endfor %}
+                        </select>
+                    {% endif %}
+                    <div class="row">
+                        <div class="col-md-5">
+                            {% if db_se %}
+                                <input type=="text" class="form-control" maxlength="30" placeholder="input dbname for search" value="{{ db_se }}" name="searchdbname">
+                            {% else %}
+                                <input type=="text" class="form-control" maxlength="30" placeholder="input dbname for search" name="searchdbname">
+                            {% endif %}
+
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" name='searchdb' class="btn btn-info" value="1">搜索库</button >
+                        </div>
+                    </div>
+                    </br> </br>
+                    请输入要审核的SQL脚本:</br>
+                    {{ form.a }} </br> </br>
+                    {{ upform.filename }}
+                    <input type=="text" maxlength="30" class="form-control" placeholder="执行说明，可选，最多30字" name="specification">
+                    <button type="submit" name='check' class="btn btn-primary">审核</button >
+                    <button type="submit" name='upload' class="btn btn-warning">脚本上传</button >
+                    <button type="submit" name='addtask' onclick="return confirm('PLEASE COMFIRM')" class="btn btn-danger">提交任务</button >
+                </form >
+            </td>
+            <td>
+                <div class="col-md-12">
+                    <h3>查询注意事项:</h3>
+                    <p class="bg-danger"> 1. 支持多条语句一起审核</p>
+                    <p class="bg-info"> 2. 点击"检查语句"后，如果返回的结果中"errlevel"都为0,则语句没问题,不然请查看"errormessage"中的提示</p>
+                    <p class="bg-danger"> 3. 建议在所有的表名前加上库名限定，如dbname.tablename</p>
+                    <p class="bg-danger"> 4. 同一张表的DDL和DML语句请拆分成不同的任务提交 </p>
+                </div>
+            </td>
+        </tr>
+    </table>
+    {% if split %}
+        <strong> <span style="color:red">请根据审核提示，拆分任务提交 </br> </span></strong>
+    {% endif %}
+    {{ status }}
+    {% if collist %}
+        {% include "include/pagejump/pagebutton.html" %}
+    {% endif %}
+    <table id="mytable" class="table table-condensed" border="1">
+        <thead>
+        <tr class="danger">
+            {% for colname in collist %}
+                {% if forloop.counter <= 7 %}
+                    <th>{{ colname }}</th>
+                {% endif %}
+            {% endfor %}
+        </tr>
+        </thead>
+        <tbody  >
+        {% for item in data_list %}
+            <tr>
+                {% for item_detail in item %}
+                    {% if forloop.counter <= 7 %}
+                        {% if forloop.counter == 6 %}
+                            <td> {{ item_detail|truncatechars:250|linebreaks}}</td>
+                        {% elif forloop.counter == 5 or forloop.counter == 2 %}
+                            <td> {{ item_detail|linebreaks}}</td>
+                        {% else %}
+                            <td> {{ item_detail }}</td>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}
+{% block script %}
+    {% include "include/pagejump/pagejump.html" %}
+{% endblock %}

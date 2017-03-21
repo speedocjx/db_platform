@@ -1,0 +1,74 @@
+{% extends "include/base.html" %}
+{% block title %}
+    <title >LOGIN_IN</title>
+{% endblock %}
+{%block content%}
+    {% if password_is_wrong %}
+        <div class="alert alert-error">
+            <p style="color: red;">错误! 用户名或密码错误</p>
+        </div>
+    {% endif %}
+
+    <div class="col-md-3 main ">
+    <hr/>
+        <form role="form" action="" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <table>
+                    {{ form }}
+
+{#                    <tr>#}
+{#                        <td>{{ form.username.label }}     </td>#}
+{#                        <td>{{ form.username }}</td>#}
+{#                        </br>#}
+{#                    </tr>#}
+{##}
+{#                    <tr>#}
+{#                        <td> {{ form.password.label }} </br>  </td>#}
+{##}
+{#                        <td>{{ form.password }} </br>   </td>#}
+{#                    </tr>#}
+                    <tr>
+                        <td><strong>{{ myform.mycaptcha.label }}</strong> </td>
+
+                        <td>{{ myform.mycaptcha }}  </td>
+
+                    </tr>
+                </table>
+                <input type="submit" value="登录" class="btn btn-primary">
+{#                <input type="button" onclick="return confirm('请联系DBA')" value="忘记密码" class="btn btn-danger">#}
+                <a href="/accounts/login/"><input type="button" value="忘记密码" class="btn btn-danger"></a>
+            </div>
+        </form>
+        {% ifequal error 1 %}
+            错误登录次数过多，请稍后重试
+        {% endifequal %}
+        {% ifequal chaerror 1 %}
+            验证码错误
+        {% endifequal %}
+
+    </div>
+    {#    <script>#}
+    {#        $('#js-captcha-refresh').click(function(){#}
+    {#            $.get("?newsn=1", function(result){#}
+    {#                alert(result);#}
+    {#                $('.captcha').attr("src",result);#}
+    {#                $('#id_captcha_0').attr("value",result.split('/')[3]);#}
+    {#            });#}
+    {#            return false;#}
+    {#        });#}
+    {#    </script>#}
+
+
+    <script type="text/javascript">
+        $('.captcha').click(function(){ //点击图片刷新
+            var tmp = Math.random().toString();
+            $.get("?newsn=1&tmp="+tmp, function(result){
+                $('.captcha').attr("src", result);
+                $('#id_captcha_0').attr("value", result.split('/')[3]);
+            });
+            return false;
+        });
+    </script>
+
+{% endblock %}

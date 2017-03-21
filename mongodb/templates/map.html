@@ -1,0 +1,310 @@
+{% extends "include/base.html" %}
+{% block title %}
+    <title>地图</title>
+{% endblock %}
+<style type="text/css">
+    body, html{width: 100%;height: 100%;margin:0;font-family:"微软雅黑";}
+    #r-result,#r-result table{width:100%;font-size:12px;}
+</style>
+{% block name %}
+    欢迎使用地图功能-.-
+{% endblock %}
+
+
+{%block content%}
+    <hr />
+    <div class="row">
+        <div class="col-md-3">
+            <input id="begin" type=="text" class="form-control" maxlength="30" placeholder="输入起点"  >
+            <div id="searchResultPanel" style="border:1px solid #C0C0C0;width:150px;height:auto; display:none;"></div>
+
+        </div>
+        <div class="col-md-3">
+            <input id="dest" type=="text" class="form-control" maxlength="20" placeholder="输入终点" >
+            <div id="searchResultPanel" style="border:1px solid #C0C0C0;width:150px;height:auto; display:none;"></div>
+
+        </div>
+        <div class="col-md-6">
+            <button type="submit" id='search_pub' class="btn btn-primary" value="1">搜索公交线路</button >
+            <button type="submit" id='search_dri' class="btn btn-info" value="1">搜索驾驶路线</button >
+            <button type="submit" id='search_walk' class="btn btn-success" value="1">搜索步行路线</button >
+            <a href="{% url 'map' %}"><input type="button" value="刷新" class="btn btn-danger"></a>
+
+        </div>
+    </div>
+    </div>
+    <div class="row">
+        <div class="col-md-8">
+            <div id="map" class="col-md-12" style="width: 100%;height: 768px; margin:0"></div>
+        </div>
+        <div class="col-md-4">
+            <div id="r-result"  style="display:none;"></div>
+
+        </div>
+    </div>
+
+
+    <script  src="http://api.map.baidu.com/api?v=2.0&ak=zhskfLsPCGPrPQvGb2WsL2mGZsfGO9XT&callback=initialize"></script>
+
+
+
+
+    <script type="text/javascript">
+        var poi_be;
+        var poi_des;
+        var mp;
+        var transit;
+        $('#search_dri').click(function(){
+            mp.clearOverlays();
+            document.getElementById('r-result').style.display="none";
+            {#                document.getElementById('search_walk').style.display="none";#}
+            {#                document.getElementById('search_pub').style.display="none";#}
+            {#                alert($('#r-result').val());#}
+            {#                alert($('#r-result').innerHTML);#}
+            var dest = $('#dest').val();
+            var begin = $('#begin').val();
+            transit = new BMap.DrivingRoute(mp, {
+                renderOptions: {
+                    map: mp,
+                    panel: "r-result",
+                    enableDragging : true, //起终点可进行拖拽
+                    autoViewport: true
+                },
+                onResultsHtmlSet : function(){$("#r-result").show()}
+            });
+            transit.clearResults();
+            transit.search(poi_be,poi_des);
+        });
+
+        $('#search_walk').click(function(){
+            mp.clearOverlays();
+            document.getElementById('r-result').style.display="none";
+            {#document.getElementById('search_pub').style.display="none";#}
+            {#                document.getElementById('search_dri').style.display="none";#}
+            var dest = $('#dest').val();
+            var begin = $('#begin').val();
+            transit = new BMap.WalkingRoute(mp, {
+                renderOptions: {
+                    map: mp,
+                    panel: "r-result",
+                    autoViewport: true
+                },
+                onResultsHtmlSet : function(){$("#r-result").show()}
+            });
+            transit.clearResults();
+            transit.search(poi_be,poi_des);
+        });
+
+        $('#search_pub').click(function(){
+            mp.clearOverlays();
+            document.getElementById('r-result').style.display="none";
+            {#                document.getElementById('search_walk').style.display="none";#}
+
+            var dest = $('#dest').val();
+            var begin = $('#begin').val();
+            transit = new BMap.TransitRoute(mp, {
+                renderOptions: {
+                    map: mp,
+                    panel: "r-result",
+                    enableDragging : true,
+                    autoViewport: true
+                },
+                onResultsHtmlSet:function () {
+                    $("#r-result").show();
+                }
+            });
+            transit.clearResults();
+            transit.search(poi_be,poi_des);
+        });
+        function getLocation(){
+            var options={
+                enableHighAccuracy:true,
+                maximumAge:1000
+            }
+            if(navigator.geolocation){
+                //浏览器支持geolocation
+                navigator.geolocation.getCurrentPosition(onSuccess,onError,options);
+            }else{
+                flag=2;
+                //浏览器不支持geolocation
+                alert("not support");
+            }
+        }
+
+        function onSuccess(position) {
+
+            mp = newmap();
+
+            var longitude =position.coords.longitude;
+            var latitude = position.coords.latitude;
+            var point = new BMap.Point(longitude, latitude);
+            mp.centerAndZoom(point, 15);
+            var convertor = new BMap.Convertor();
+            var pointArr = [];
+            pointArr.push(point);
+            convertor.translate(pointArr, 1, 5, translateCallback);
+        }
+
+        //坐标转换完之后的回调函数
+        translateCallback = function (data){
+            if(data.status === 0) {
+                var marker1 = new BMap.Marker(data.points[0]);
+                mp.addOverlay(marker1);
+                {#                var label = new BMap.Label("我的位置",{offset:new BMap.Size(20,-10)});#}
+                {#                marker1.setLabel(label); //添加百度label#}
+                mp.setCenter(data.points[0]);
+
+
+            }
+        }
+
+        function onError(error){
+            mp = newmap();
+
+            switch(error.code){
+                case 1:
+                    alert("位置服务被拒绝");
+                    break;
+
+                case 2:
+                    alert("暂时获取不到位置信息");
+                    break;
+
+                case 3:
+                    alert("获取信息超时");
+                    break;
+
+                case 4:
+                    alert("未知错误");
+                    break;
+            }
+
+        }
+        function G(id){
+            return document.getElementById(id);
+        }
+        function newmap(){
+            var map = new BMap.Map('map');
+            map.centerAndZoom("上海", 16);
+            map.enableScrollWheelZoom();
+            map.addControl(new BMap.NavigationControl());
+            map.addControl(new BMap.ScaleControl());
+            map.addControl(new BMap.OverviewMapControl());
+            map.addControl(new BMap.MapTypeControl());
+
+
+            var size = new BMap.Size(100, 20);
+            map.addControl(new BMap.CityListControl({
+                anchor: BMAP_ANCHOR_TOP_LEFT,
+                offset: size,
+                // 切换城市之间事件
+                // onChangeBefore: function(){
+                //    alert('before');
+                // },
+                // 切换城市之后事件
+                // onChangeAfter:function(){
+                //   alert('after');
+                // }
+            }));
+            {#            map.addTileLayer(new BMap.PanoramaCoverageLayer());#}
+            {#            var stCtrl = new BMap.PanoramaControl(); //构造全景控件#}
+            {#        #}
+            {#            map.addControl(stCtrl);//添加全景控件#}
+
+            {#            var ctrl = new BMapLib.TrafficControl({#}
+            {#                showPanel: false //是否显示路况提示面板#}
+            {#            });#}
+            {#            map.addControl(ctrl);#}
+            {#            ctrl.setAnchor(BMAP_ANCHOR_BOTTOM_RIGHT);#}
+            return map;
+        }
+
+        window.onload = function(){
+            var flag=1;
+            getLocation();
+
+            var ac = new BMap.Autocomplete(    //建立一个自动完成的对象
+                    {"input" : "begin"
+                        ,"location" : mp
+                    });
+            var ac2 = new BMap.Autocomplete(    //建立一个自动完成的对象
+                    {"input" : "dest"
+                        ,"location" : mp
+                    });
+            ac2.addEventListener("onhighlight", function(e) {  //鼠标放在下拉列表上的事件
+                var str = "";
+                var _value = e.fromitem.value;
+                var value = "";
+                if (e.fromitem.index > -1) {
+                    value = _value.province +  _value.city +  _value.district +  _value.street +  _value.business;
+                }
+                str = "FromItem<br />index = " + e.fromitem.index + "<br />value = " + value;
+
+                value = "";
+                if (e.toitem.index > -1) {
+                    _value = e.toitem.value;
+                    value = _value.province +  _value.city +  _value.district +  _value.street +  _value.business;
+                }
+                str += "<br />ToItem<br />index = " + e.toitem.index + "<br />value = " + value;
+                G("searchResultPanel").innerHTML = str;
+            });
+            ac.addEventListener("onhighlight", function(e) {  //鼠标放在下拉列表上的事件
+                var str = "";
+                var _value = e.fromitem.value;
+                var value = "";
+                if (e.fromitem.index > -1) {
+                    value = _value.province +  _value.city +  _value.district +  _value.street +  _value.business;
+                }
+                str = "FromItem<br />index = " + e.fromitem.index + "<br />value = " + value;
+
+                value = "";
+                if (e.toitem.index > -1) {
+                    _value = e.toitem.value;
+                    value = _value.province +  _value.city +  _value.district +  _value.street +  _value.business;
+                }
+                str += "<br />ToItem<br />index = " + e.toitem.index + "<br />value = " + value;
+                G("searchResultPanel").innerHTML = str;
+            });
+            var myValue;
+
+            ac.addEventListener("onconfirm", function(e) {    //鼠标点击下拉列表后的事件
+                var _value = e.item.value;
+                myValue = _value.province +  _value.city +  _value.district +  _value.street +  _value.business;
+                G("searchResultPanel").innerHTML ="onconfirm<br />index = " + e.item.index + "<br />myValue = " + myValue;
+                setPlace(1);
+
+            });
+            ac2.addEventListener("onconfirm", function(e) {    //鼠标点击下拉列表后的事件
+                var _value = e.item.value;
+                myValue = _value.province +  _value.city +  _value.district +  _value.street +  _value.business;
+                G("searchResultPanel").innerHTML ="onconfirm<br />index = " + e.item.index + "<br />myValue = " + myValue;
+                setPlace(2);
+            });
+
+            function setPlace(x){
+                var pp;
+                mp.clearOverlays();    //清除地图上所有覆盖物
+                function myFun(){
+                    pp = local.getResults().getPoi(0).point;    //获取第一个智能搜索的结果
+
+                    if(x==1)
+                    {
+                        poi_be=pp;
+                    }
+                    else if(x==2)
+                    {
+                        poi_des=pp;
+                    }
+                    mp.centerAndZoom(pp, 18);
+                    mp.addOverlay(new BMap.Marker(pp));//添加标注
+                }
+                var local = new BMap.LocalSearch(mp, { //智能搜索
+                    onSearchComplete: myFun
+                });
+                local.search(myValue);
+
+            }
+        };
+    </script>
+{% endblock %}
+

@@ -1,0 +1,75 @@
+{% extends "include/base.html" %}
+{% block title %}
+    <title>OPERATION LIST</title>
+{% endblock %}
+{% block name %}
+    欢迎使用<span style="color:red">SALTSTACK操作记录查询</span>功能
+{% endblock %}
+{%block content%}
+    <div id="wrapper">
+        <div>
+            {% if info %}
+                <span style="color:red">{{ info }}</span>
+            {% endif %}
+        </div>
+
+        <table  class="table table-condensed" border="1">
+            {% for i in sqllist %}
+                <tr>
+                    <td>
+                        {{ forloop.counter }}
+                    </td>
+                    <td>
+                        <pre>{{ i }}</pre>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    {#    <button id="dict"  class="btn btn-success" value="1">test</button >#}
+
+
+{% endblock %}
+{% block script %}
+    {#        <script>#}
+    {#            function checknum() {#}
+    {#                var num = document.getElementById('id_begin_pos').value;#}
+    {#                if (num) {#}
+    {#                    if (!isNaN(num)) {#}
+    {#                        return true;#}
+    {#                    }#}
+    {#                    else {#}
+    {#                        alert('请输入正确的POS(数字)');#}
+    {#                        return false;#}
+    {#                    }#}
+    {#                }#}
+    {#            }#}
+    {##}
+    {#        </script>#}
+
+    <script>
+        jeDate({
+            dateCell:"#id_begin_time",
+            format:"YYYY-MM-DD hh:mm:ss",
+            isinitVal:true,
+            isTime:true, //isClear:false,
+            minDate:"2014-09-19 00:00:00",
+            okfun:function(val){alert(val)}
+        })
+    </script>
+
+    {#        <script>#}
+    {#            $(document).ready(function(){#}
+    {##}
+    {#                $('#dict').click(function(){#}
+    {#                    var dbtag = $('#ins').val()#}
+    {#                    $.getJSON("{% url 'test' %}",{'dbtag':dbtag},function(ret){#}
+    {#                        $.each(ret,function(i,n){#}
+    {#                            alert(n);#}
+    {#                        })#}
+    {#                    })#}
+    {#                })#}
+    {#            });#}
+    {#        </script>#}
+{% endblock %}

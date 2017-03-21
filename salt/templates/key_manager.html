@@ -1,0 +1,84 @@
+{% extends "include/base.html" %}
+{% block title %}
+    <title>SALT_KEY</title>
+{% endblock %}
+{% block name %}
+    欢迎使用<span style="color:red">KEY管理</span>功能
+{% endblock %}
+{%block content%}
+    <div class='row'>
+        <div class="col-md-10 main ">
+            <form role="form" method='post' class="form-inline"  style="margin-bottom:0;">
+                {% csrf_token %}
+                <hr/>
+                <button type="submit" name='listall' class="btn btn-info" value="1">LIST_ALL_KEYS</button >
+                <hr/>
+                {#                {% include "include/pagejump/pagebutton.html" %}#}
+
+                {% if keys_all %}
+                    <table class="display" cellspacing="0" width="100%" id="mytable">
+                        <thead>
+                        <tr>
+                            <th>Minions</th>
+                            <th>Keys Status</th>
+                            <th>Accept Key</th>
+                            <th>Reject Key</th>
+                            <th>Delete Key</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for hostname in keys_all.minions_pre %}
+                            <tr class="even gradeC">
+                                <td>{{ hostname }}</td>
+                                <td>Unaccepted</td>
+                                <td><button type="submit" class="btn btn-success btn-xs" value="{{ hostname }}" name="accept">Accept Key</button></td>
+                                <td><button type="submit" class="btn btn-warning btn-xs" value="{{ hostname }}" name="reject">Reject Key</button></td>
+                                <td><button type="submit" class="btn btn-danger btn-xs" value="{{ hostname }}" name="delete">Delete Key</button></td>
+                            </tr>
+                        {% endfor %}
+                        {% for hostname in keys_all.minions_denied %}
+                            <tr class="odd gradeA">
+                                <td>{{ hostname }}</td>
+                                <td>Denied</td>
+                                <td><button type="submit" class="btn btn-success btn-xs" value="{{ hostname }}" name="accept">Accept Key</button></td>
+                                <td><button type="submit" class="btn btn-warning btn-xs" value="{{ hostname }}" name="reject">Reject Key</button></td>
+                                <td><button type="submit" class="btn btn-danger btn-xs" value="{{ hostname }}" name="delete">Delete Key</button></td>
+                            </tr>
+                        {% endfor %}
+                        {% for hostname in keys_all.minions_rejected %}
+                            <tr class="even gradeA">
+                                <td>{{ hostname }}</td>
+                                <td>Rejected</td>
+                                <td><button type="submit" class="btn btn-success btn-xs" value="{{ hostname }}" name="accept">Accept Key</button></td>
+                                <td><button type="submit" class="btn btn-warning btn-xs" value="{{ hostname }}" name="reject">Reject Key</button></td>
+                                <td><button type="submit" class="btn btn-danger btn-xs" value="{{ hostname }}" name="delete">Delete Key</button></td>
+                            </tr>
+                        {% endfor %}
+                        {% for hostname in keys_all.minions %}
+                            <tr class="odd gradeX">
+                                <td>{{ hostname }}</td>
+                                <td>Accepted</td>
+                                <td><button type="submit" class="btn btn-success btn-xs" value="{{ hostname }}" name="accept">Accept Key</button></td>
+                                <td><button type="submit" class="btn btn-warning btn-xs" value="{{ hostname }}" name="reject">Reject Key</button></td>
+                                <td><button type="submit" class="btn btn-danger btn-xs" value="{{ hostname }}" name="delete">Delete Key</button></td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                    <hr/>
+                {% endif %}
+
+            </form>
+        </div>
+    </div>
+
+
+    <div class='row-fluid' id='instances'>
+
+    </div>
+{% endblock %}
+
+{% block script %}
+    {% include "include/pagejump/tabledata.html" %}
+
+{% endblock %}
