@@ -231,7 +231,7 @@
                     var tableId = document.getElementById("mytable");
                     var str = "";
                     for (var i = 1; i < tableId.rows.length; i++) {
-                        var value = tableId.rows[i].cells[6];
+                        var value = tableId.rows[i].cells[7];
                         if (value.innerText == "executed") {
                             value.setAttribute("class", "success");
 
@@ -246,7 +246,7 @@
                         else {
                             value.setAttribute("class", "danger");
                         }
-                        var sched = tableId.rows[i].cells[7];
+                        var sched = tableId.rows[i].cells[8];
                         if (sched.innerText == "2199-01-01 00:00"){
                             sched.innerText='NOT SCHEDULED';
                             sched.setAttribute("class", "danger");

@@ -85,6 +85,12 @@ class SaltAPI(object):
         jid = content['return'][0]['jid']
         return jid
 
+# get async job detail according to jid
+    def getdetail(self, arg):
+        params = {'client': 'runner', 'fun': 'jobs.lookup_jid', 'jid': arg}
+        obj = urllib.urlencode(params)
+        content = self.postRequest(obj)
+        return content
 
 
 
@@ -244,6 +250,8 @@ def is_valid_ip(ip):
         raise
     return True
 
+def get_salt_record():
+    return Saltrecord.objects.all()
 
 def record_salt(user,jid,fun,tgt,arg):
     create_time = datetime.datetime.now()

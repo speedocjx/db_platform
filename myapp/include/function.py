@@ -1,6 +1,7 @@
 #!/bin/env python
 #-*-coding:utf-8-*-
 import MySQLdb,sys,string,time,datetime,uuid,commands
+from myapp.include.encrypt import prpcrypt
 from django.contrib.auth.models import User,Permission,ContentType,Group
 from myapp.models import Db_name,Db_account,Db_instance,Oper_log,Login_log,Db_group
 from myapp.form import LoginForm,Captcha
@@ -300,21 +301,23 @@ def get_advice(hosttag, sql, request):
             tar_port = a.instance.filter(role='all')[0].port
             # tar_host = a.instance.all()[0].ip
             # tar_port = a.instance.all()[0].port
+        pc = prpcrypt()
         for i in a.db_account_set.all():
             if i.role != 'write' and i.role != 'admin':
                 # find the specified account for the user
                 if i.account.all().filter(username=request.user.username):
                     tar_username = i.user
-                    tar_passwd = i.passwd
+                    tar_passwd = pc.decrypt(i.passwd)
                     break
         # not find specified account for the user ,specified the public account to the user
+
         if not vars().has_key('tar_username'):
             for i in a.db_account_set.all():
                 if i.role != 'write' and i.role != 'admin':
                     # find the specified account for the user
                     if i.account.all().filter(username=public_user):
                         tar_username = i.user
-                        tar_passwd = i.passwd
+                        tar_passwd = pc.decrypt(i.passwd)
                         break
         # print tar_port+tar_passwd+tar_username+tar_host
         sql=sql.replace('"','\\"').replace('`', '\`')[:-1]
@@ -354,12 +357,13 @@ def get_mysql_data(hosttag,sql,useraccount,request,limitnum):
         tar_port = a.instance.filter(role='all')[0].port
         # tar_host = a.instance.all()[0].ip
         # tar_port = a.instance.all()[0].port
+    pc = prpcrypt()
     for i in a.db_account_set.all():
         if i.role!='write' and i.role!='admin':
             # find the specified account for the user
             if i.account.all().filter(username=useraccount):
                 tar_username = i.user
-                tar_passwd = i.passwd
+                tar_passwd = pc.decrypt(i.passwd)
                 break
     #not find specified account for the user ,specified the public account to the user
     if not vars().has_key('tar_username'):
@@ -368,7 +372,7 @@ def get_mysql_data(hosttag,sql,useraccount,request,limitnum):
                 # find the specified account for the user
                 if i.account.all().filter(username=public_user):
                     tar_username = i.user
-                    tar_passwd = i.passwd
+                    tar_passwd = pc.decrypt(i.passwd)
                     break
     #print tar_port+tar_passwd+tar_username+tar_host
     try:
@@ -605,13 +609,14 @@ def run_mysql_exec(hosttag,sql,useraccount,request):
             wrongmsg = "select \"" +str(e).replace('"',"\"")+"\""
             results,col = mysql_query(wrongmsg,user,passwd,host,int(port),dbname)
             return results,col,tar_dbname
+    pc = prpcrypt()
     #find the useraccount and passwd for the user
     for i in a.db_account_set.all():
         if i.role != 'read' and i.role != 'admin':
             #find the specified account for the user
             if i.account.all().filter(username=useraccount):
                 tar_username = i.user
-                tar_passwd = i.passwd
+                tar_passwd = pc.decrypt(i.passwd)
                 break
     #not find specified account for the user ,specified the public account to the user
     if not vars().has_key('tar_username'):
@@ -620,7 +625,7 @@ def run_mysql_exec(hosttag,sql,useraccount,request):
                 # find the specified account for the user
                 if i.account.all().filter(username=public_user):
                     tar_username = i.user
-                    tar_passwd = i.passwd
+                    tar_passwd = pc.decrypt(i.passwd)
                     break
     try:
         #之前根据check_mysql_exec判断过权限，如果是select则说明没权限，不记录日志

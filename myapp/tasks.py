@@ -5,7 +5,7 @@ from myapp.models import User_profile,Db_account,Db_instance,Oper_log,Task,Incep
 from myapp.include import inception as incept,binlog2sql
 from django.core.mail import EmailMessage,send_mail,EmailMultiAlternatives
 from django.template import loader
-
+from myapp.include.encrypt import prpcrypt
 
 @task
 def process_runtask(hosttag,sqltext,mytask):
@@ -36,11 +36,12 @@ def process_runtask(hosttag,sqltext,mytask):
 @task
 def parse_binlog(insname,binname,begintime,tbname,dbselected,username,countnum,flash_back):
     flag = True
+    pc = prpcrypt()
     for a in insname.db_name_set.all():
         for i in a.db_account_set.all():
             if i.role == 'admin':
                 tar_username = i.user
-                tar_passwd = i.passwd
+                tar_passwd = pc.decrypt(i.passwd)
                 flag = False
                 break
         if flag == False:
@@ -111,7 +112,7 @@ def sendmail_task(task):
 
 def sendmail (title,mailto,html_content):
     try:
-        msg = EmailMultiAlternatives(title, html_content, 'xx@xxx.com', mailto)
+        msg = EmailMultiAlternatives(title, html_content, 'xxx@xx.com', mailto)
         msg.attach_alternative(html_content, "text/html")
         msg.send()
     except Exception,e:

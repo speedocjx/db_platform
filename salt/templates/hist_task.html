@@ -13,18 +13,48 @@
             {% endif %}
         </div>
 
-        <table  class="table table-condensed" border="1">
-            {% for i in sqllist %}
+        <table id="mytable" class="table table-condensed" border="1">
+            <thead>
+            <tr class="danger">
+                <th> ID</th>
+                <th> JID</th>
+                <th> 操作人</th>
+                <th> operation</th>
+                <th>arg </th>
+                <th> tgt</th>
+                <th>create_time </th>
+            </tr>
+            </thead>
+            <tbody  >
+            {% for item in posts.object_list %}
                 <tr>
-                    <td>
-                        {{ forloop.counter }}
-                    </td>
-                    <td>
-                        <pre>{{ i }}</pre>
-                    </td>
+                    <td> {{ posts.start_index|add:forloop.counter0 }} </td>
+                    <td> <a href="{% url 'record_detail' %}?jid={{ item.jid }}">{{ item.jid }}</a></td>
+                    <td> {{ item.user }} </td>
+                    <td> {{ item.operation }} </td>
+                    <td> {{ item.arg }} </td>
+                    <td> {{ item.tgt }} </td>
+                    <td> {{ item.create_time }} </td>
                 </tr>
             {% endfor %}
+            </tbody>
         </table>
+
+     <nav>
+            <ul class="pager">
+                {% if posts.has_previous %}
+                    <li class="previous"><a href="?page={{ posts.previous_page_number }}"><span aria-hidden="true">&larr;</span>前一页</a></li>
+                {% else %}
+                    <li class="previous disabled"><a><span aria-hidden="true">&larr;</span>前一页</a></li>
+                {% endif %}
+                <li><a>第{{ posts.number }}页/共{{ posts.paginator.num_pages }}页</a></li>
+                {% if posts.has_next %}
+                    <li class="next"><a href="?page={{ posts.next_page_number }}">下一页<span aria-hidden="true">&rarr;</span></a></li>
+                {% else %}
+                    <li class="next disabled"><a>下一页<span aria-hidden="true">&rarr;</span></a></li>
+                {% endif %}
+            </ul>
+        </nav>
     </div>
 
     {#    <button id="dict"  class="btn btn-success" value="1">test</button >#}
@@ -32,21 +62,6 @@
 
 {% endblock %}
 {% block script %}
-    {#        <script>#}
-    {#            function checknum() {#}
-    {#                var num = document.getElementById('id_begin_pos').value;#}
-    {#                if (num) {#}
-    {#                    if (!isNaN(num)) {#}
-    {#                        return true;#}
-    {#                    }#}
-    {#                    else {#}
-    {#                        alert('请输入正确的POS(数字)');#}
-    {#                        return false;#}
-    {#                    }#}
-    {#                }#}
-    {#            }#}
-    {##}
-    {#        </script>#}
 
     <script>
         jeDate({
@@ -59,17 +74,4 @@
         })
     </script>
 
-    {#        <script>#}
-    {#            $(document).ready(function(){#}
-    {##}
-    {#                $('#dict').click(function(){#}
-    {#                    var dbtag = $('#ins').val()#}
-    {#                    $.getJSON("{% url 'test' %}",{'dbtag':dbtag},function(ret){#}
-    {#                        $.each(ret,function(i,n){#}
-    {#                            alert(n);#}
-    {#                        })#}
-    {#                    })#}
-    {#                })#}
-    {#            });#}
-    {#        </script>#}
 {% endblock %}

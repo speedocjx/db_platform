@@ -1126,6 +1126,9 @@ def set_dbname(request):
             except Exception,e:
                 info = "DELETE db_account FAILED!"
                 return render(request, 'previliges/set_dbname.html', locals())
+        elif request.POST.has_key('encrypt'):
+            pri.encrypt_passwd()
+            return render(request, 'previliges/set_dbname.html', locals())
     else:
         pri.check_pubuser()
         return render(request, 'previliges/set_dbname.html', locals())

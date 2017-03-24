@@ -12,4 +12,5 @@ urlpatterns = patterns(
     url(r'^api/getjobinfo$','getjobinfo', name='getjobinfo'),
     url(r'^key_con/$','key_con', name='key_con'),
     url(r'^hist_salt/$','hist_salt', name='hist_salt'),
+    url(r'^record_detail/$','record_detail', name='record_detail'),
 )

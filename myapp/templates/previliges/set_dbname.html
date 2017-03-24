@@ -1,4 +1,5 @@
 {% extends "include/base.html" %}
+{% load cus_filter %}
 {% block title %}
     <title>设置DB</title>
 {% endblock %}
@@ -254,7 +255,7 @@
                             <button type="submit" name='set_acc' onclick="return confirm('PLEASE COMFIRM')"  class="btn btn-danger" >设置</button>
                             <button type="submit" name='delete_acc' onclick="return confirm('PLEASE COMFIRM')"  class="btn btn-success" >删除</button>
                             <button type="submit" name='create_acc' onclick="return confirm('PLEASE COMFIRM')"  class="btn btn-info" >创建</button>
-
+{#                            <button type="submit" name='encrypt' onclick="return confirm('PLEASE COMFIRM')"  class="btn btn-info" >encrypt</button>#}
                         </td>
                     </tr>
                     <tr>
@@ -266,7 +267,7 @@
                                 <input type=="text" class="form-control" maxlength="30" placeholder="input Tags here" value="{{ account_set.tags }}" name="newacctag">
 
                                 <input type=="text" class="form-control" maxlength="30" placeholder="input user here" value="{{ account_set.user }}" name="newaccuser">
-                                <input type=="text" class="form-control" maxlength="30" placeholder="input password here" value="{{ account_set.passwd }}" name="newaccpawd">
+                                <input type=="text" class="form-control" maxlength="30" placeholder="input password here" value="{{ account_set.passwd|descrypt }}" name="newaccpawd">
 
                             {% else %}
                                 <input type=="text" class="form-control" maxlength="30" placeholder="input Tags here"   name="newacctag">

@@ -3,7 +3,7 @@ from myapp.models import Db_name, Db_account, Db_instance, Oper_log, Task, Incep
 from myapp.include import inception as incept
 from celery import task
 from myapp.tasks import process_runtask
-
+from myapp.include.encrypt import prpcrypt
 
 # reload(sys)
 # sys.setdefaultencoding('utf8')
@@ -86,12 +86,13 @@ def log_incep_op(sqltext,dbtag,mycreatetime):
     return 1
 
 def incep_exec(sqltext,myuser,mypasswd,myhost,myport,mydbname,flag=0):
+    pc = prpcrypt()
     if (int(flag)==0):
         flagcheck='--enable-check'
     elif(int(flag)==1):
         flagcheck='--enable-execute'
     myuser=myuser.encode('utf8')
-    mypasswd = mypasswd.encode('utf8')
+    mypasswd = pc.decrypt(mypasswd.encode('utf8'))
     myhost=myhost.encode('utf8')
     myport=int(myport)
     mydbname=mydbname.encode('utf8')
@@ -194,7 +195,8 @@ def inception_check(hosttag,sql,flag=0):
 
 def mysql_query(sql,user=user,passwd=passwd,host=host,port=int(port),dbname=dbname):
     try:
-        conn=MySQLdb.connect(host=host,user=user,passwd=passwd,port=int(port),connect_timeout=5,charset='utf8')
+        pc = prpcrypt()
+        conn=MySQLdb.connect(host=host,user=user,passwd=pc.decrypt(passwd),port=int(port),connect_timeout=5,charset='utf8')
         conn.select_db(dbname)
         cursor = conn.cursor()
         count=cursor.execute(sql)

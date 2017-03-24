@@ -1,5 +1,6 @@
 import MySQLdb,sys,string,time,datetime
 from django.contrib.auth.models import User
+from myapp.include.encrypt import prpcrypt
 from myapp.include import function as func
 from myapp.models import Db_name,Db_account,Db_instance,Oper_log,Task,Incep_error_log
 from myapp.etc import config
@@ -71,6 +72,7 @@ public_user = config.public_user
 
 #0 for check and 1 for execute
 def incep_exec(sqltext,myuser,mypasswd,myhost,myport,mydbname,flag=0):
+    pc = prpcrypt()
     if (int(flag)==0):
         flagcheck='--enable-check'
     elif(int(flag)==1):
@@ -78,7 +80,7 @@ def incep_exec(sqltext,myuser,mypasswd,myhost,myport,mydbname,flag=0):
     elif(int(flag)==2):
         flagcheck = '--enable-split'
     myuser=myuser.encode('utf8')
-    mypasswd = mypasswd.encode('utf8')
+    mypasswd = pc.decrypt(mypasswd.encode('utf8'))
     myhost=myhost.encode('utf8')
     myport=int(myport)
     mydbname=mydbname.encode('utf8')

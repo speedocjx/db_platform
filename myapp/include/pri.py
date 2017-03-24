@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User,Permission,ContentType,Group
 from myapp.models import Db_name,Db_group,Db_account,Db_instance,Oper_log,Login_log
 from myapp.include import function as func
+from myapp.include.encrypt import prpcrypt
 import uuid
 #function for db_group.html
 def get_full():
@@ -284,7 +285,8 @@ def create_dbinstance(setip,setport,setrole,setdbtype):
 
 def create_acc(tags,user,passwd,dbtagli,acclist,role):
     if len(tags)>0 and len(user)>0 and len(passwd)>0:
-        account = Db_account(tags=tags,user=user,passwd=passwd,role=role)
+        py = prpcrypt()
+        account = Db_account(tags=tags,user=user,passwd=py.encrypt(passwd),role=role)
         account.save()
     dbli = Db_name.objects.filter(dbtag__in=dbtagli)
     userli = User.objects.filter(username__in=acclist)
@@ -300,6 +302,13 @@ def create_acc(tags,user,passwd,dbtagli,acclist,role):
             pass
     return account
 
+def encrypt_passwd():
+    a = Db_account.objects.all()
+    py = prpcrypt()
+    for i in a:
+        i.passwd= py.encrypt(i.passwd)
+        i.save()
+
 def set_acc(old_account,tags,user,passwd,dbtagli,acclist,role):
     old_account.role = role
     if len(tags)>0:
@@ -309,7 +318,8 @@ def set_acc(old_account,tags,user,passwd,dbtagli,acclist,role):
         old_account.user=user
         old_account.save()
     if len(passwd)>0:
-        old_account.passwd=passwd
+        py = prpcrypt()
+        old_account.passwd=py.encrypt(passwd)
         old_account.save()
     for i in old_account.dbname.all():
         old_account.dbname.remove(i)
@@ -362,6 +372,8 @@ def createdb_fast(ins_set, newinsip, newinsport, newdbtag, newdbname, newname_al
     tags = newdbtag + '+p'
     if len(newname_all) >0 and len(newpass_all)>0:
         try:
+            py = prpcrypt()
+            newpass_all = py.encrypt(newpass_all)
             all_account = Db_account(tags=tags, user=newname_all, passwd=newpass_all, role='all')
             all_account.save()
             all_account.account.add(user)

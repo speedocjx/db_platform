@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from myapp.include import function as func
 from multiprocessing import Process
 from myapp.models import Db_name,Db_account,Db_instance,Oper_log,Task,Incep_error_log
+from myapp.include.encrypt import prpcrypt
 
 public_user = func.public_user
 
@@ -77,11 +78,11 @@ def get_data(hosttag,sql):
     except Exception,e:
         tar_host = a.instance.filter(role__in=['write','all'])[0].ip
         tar_port = a.instance.filter(role__in=['write','all'])[0].port
-
+    pc = prpcrypt()
     for i in a.db_account_set.all():
         if i.role == 'admin':
             tar_username = i.user
-            tar_passwd = i.passwd
+            tar_passwd = pc.decrypt(i.passwd)
             break
     #print tar_port+tar_passwd+tar_username+tar_host
     try:
@@ -148,11 +149,12 @@ def process(insname,flag=1,sql=''):
 
 def run_process(insname,sql):
     flag = True
+    pc = prpcrypt()
     for a in insname.db_name_set.all():
         for i in a.db_account_set.all():
             if i.role == 'admin':
                 tar_username = i.user
-                tar_passwd = i.passwd
+                tar_passwd = pc.decrypt(i.passwd)
                 flag = False
                 break
         if flag == False:
@@ -185,11 +187,12 @@ def run_process(insname,sql):
 
 def get_process_data(insname,sql):
     flag = True
+    pc = prpcrypt()
     for a in insname.db_name_set.all():
         for i in a.db_account_set.all():
             if i.role == 'admin':
                 tar_username = i.user
-                tar_passwd = i.passwd
+                tar_passwd = pc.decrypt(i.passwd)
                 flag = False
                 break
         if flag == False:

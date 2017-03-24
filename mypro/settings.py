@@ -168,21 +168,21 @@ os.path.join(BASE_DIR, "static"),
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
-EMAIL_HOST='xx.xxx.com'
+EMAIL_HOST='xx.x.com'
 EMAIL_HOST_USER='xx'
 EMAIL_HOST_PASSWORD='xx'
 EMAIL_PORT = 25
 # EMAIL_USE_TLS = True
 
 # SaltStack API
-SALT_API_URL = 'http://xx.xx.xx.xx:xx'
-SALT_API_USER = 'xx'
-SALT_API_PASSWD = 'xxx'
+SALT_API_URL = 'http://10.x.xx.xx:xx'
+SALT_API_USER = 'saltapi'
+SALT_API_PASSWD = 'saltapi'
 
 SALT_DATABASE = {
     'NAME': 'salt',
-    'USER': 'xxxxx',
+    'USER': 'salt_user',
     'PASSWORD': 'xxx',
-    'HOST': '10.x.x.x',
+    'HOST': '10.xx.xx.xx',
     'PORT': 'xxx',
 }

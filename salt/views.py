@@ -4,7 +4,8 @@ from django.http import HttpResponse,HttpResponseRedirect,StreamingHttpResponse
 import saltapi
 import json
 from django.contrib.auth.decorators import login_required,permission_required
-
+from salt.models import Saltrecord
+from django.core.paginator import Paginator, InvalidPage, EmptyPage
 # Create your views here.
 
 @login_required(login_url='/accounts/login/')
@@ -123,7 +124,54 @@ def key_con(request):
     return  render(request,'key_manager.html',locals())
 
 
+@login_required(login_url='/accounts/login/')
+@permission_required('myapp.can_oper_saltapi', login_url='/')
 def hist_salt(request):
-
+    page_size = 10
+    all_record = Saltrecord.objects.order_by('-id')
+    paginator = Paginator(all_record,page_size)
+    try:
+        page = int(request.GET.get('page', 1))
+    except ValueError:
+        page = 1
+    try:
+        posts = paginator.page(page)
+    except (EmptyPage, InvalidPage):
+        posts = paginator.page(paginator.num_pages)
 
     return render(request, 'hist_task.html', locals())
+
+@login_required(login_url='/accounts/login/')
+@permission_required('myapp.can_oper_saltapi', login_url='/')
+def record_detail(request):
+    if 'jid' in request.GET:
+        job_id = request.GET.get('jid')
+        hosts_result, host_result = saltapi.salt_query("select id,success,replace(replace(`return`,'\\\\n','</br>'),'\\\\t','&nbsp') from salt.salt_returns where jid='%s';" % (job_id))
+        result=[]
+        for host_result in hosts_result:
+            # print "host_result"
+            # print host_result
+            if host_result[2]:
+                print type(host_result[2])
+                print unicode(host_result[2],'utf-8')
+                result.append('host:%s&nbsp;&nbsp;&nbsp;state:%s<br><pre>%s</pre><br>' % (
+                host_result[0], host_result[1], host_result[2].strip('"').encode('utf-8')))
+            else:
+                if host_result[1]:
+                    result.append(u'host:%s&nbsp;&nbsp;&nbsp;state:%s<br/><pre>执行成功，但该命令无返回结果</pre><br/>' % (
+                    host_result[0], host_result[1]))
+                else:
+                    result.append(u'host:%s&nbsp;&nbsp;&nbsp;state:%s<br/><pre>执行失败！</pre><br/>' % (
+                    host_result[0], host_result[1]))
+
+        print result
+        return render(request, 'record_detail.html', locals())
+
+
+
+# def record_detail(request):
+#     if 'jid' in request.GET:
+#         job_id = request.GET.get('jid')
+#         sapi = saltapi.SaltAPI()
+#         print sapi.getdetail(job_id)
+#         return render(request, 'record_detail.html', locals())

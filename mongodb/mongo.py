@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from myapp.models import Db_name,Db_account,Db_instance
 from myapp.etc import config
 from django.core.serializers.json import DjangoJSONEncoder
+from myapp.include.encrypt import prpcrypt
 
 public_user = config.public_user
 export_limit = int(config.export_limit)
@@ -82,7 +83,8 @@ def get_mongo_coninfo(hosttag,useraccount):
                     tar_username = i.user
                     tar_passwd = i.passwd
                     break
-    return tar_host,tar_port,tar_username,tar_passwd,tar_dbname
+    pc = prpcrypt()
+    return tar_host,tar_port,tar_username,pc.decrypt(tar_passwd),tar_dbname
 
 
 def get_db_info(hosttag,useraccount):
