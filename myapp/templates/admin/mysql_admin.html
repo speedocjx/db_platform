@@ -136,7 +136,7 @@
                             {% for colname in collist %}
                                 <th>{{ colname }}</th>
                             {% endfor %}
-                            <th></th>
+                            <th class="info"> <span onclick="choose_all()">点击全选</span> </th>
                         </tr>
                         </thead>
                         <tbody  >
@@ -198,6 +198,14 @@
 
     <script>
 
+    function choose_all(){
+        var obj = document.getElementsByName("choosedlist");
+        var n = obj.length;
+        var i;
+        for (i=0;i<n;i++){
+            obj[i].checked=true;
+        }
+    }
         $("#menu-toggle").click(function(e) {
             e.preventDefault();
             $("#wrapper").toggleClass("toggled");
