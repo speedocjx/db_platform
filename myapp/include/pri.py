@@ -370,9 +370,9 @@ def createdb_fast(ins_set, newinsip, newinsport, newdbtag, newdbname, newname_al
             insname.delete()
         return info
     tags = newdbtag + '+p'
+    py = prpcrypt()
     if len(newname_all) >0 and len(newpass_all)>0:
         try:
-            py = prpcrypt()
             newpass_all = py.encrypt(newpass_all)
             all_account = Db_account(tags=tags, user=newname_all, passwd=newpass_all, role='all')
             all_account.save()
@@ -390,6 +390,7 @@ def createdb_fast(ins_set, newinsip, newinsport, newdbtag, newdbname, newname_al
 
     if len(newname_admin)>0 and len(newpass_admin)>0:
         try:
+            newpass_admin = py.encrypt(newpass_admin)
             info = "CREATED OK!"
             admin_account = Db_account(tags=tags, user=newname_admin, passwd=newpass_admin, role='admin')
             admin_account.save()
