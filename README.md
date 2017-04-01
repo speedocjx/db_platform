@@ -15,6 +15,7 @@
 + 用户权限分离系统
 + saltstack api（key管理、远程shell、硬件信息）
 + 数据库相关操作日志记录以及查询
++ MySQL数据库监控
 
 ### 开发环境：
 + django:1.8.14
@@ -46,11 +47,11 @@
 
 对于数据库账户，一个DB可以配置多个，并分配给不同的用户，用以实现不同用户在同一db下区分权限的功能。（也可以保持默认设置，即分配给`public`用户，不进行区分）
 
-如果要使用任务管理功能，需要为DB添加一个`role`为`admin`的数据库账号
+如果要使用任务管理功能，需要为DB添加一个`role`为**admin**的数据库账号
 。。。待续
 
 ### 启动配置
-#### config.py配置文件如下：
+#### **config.py**配置文件如下：
 ```
 
 wrong_msg="select '请检查输入语句'"
@@ -77,11 +78,11 @@ sqladvisor = '/usr/sbin/sqladvisor'
 
 `select_limit` 和 `export_limit`为系统默认查询和导出条数限制
 
-incp_XX系列配置文件为`inception`的连接配置
+*incp_XX*系列配置文件为`inception`的连接配置
 
-sqladvisor_switch设置为0时不启用`sqladvisor`
+*sqladvisor_switch*设置为0时不启用`sqladvisor`
 
-设置sqladvisor地址和sqladvisor_switch为1启用sqladvisor
+设置`sqladvisor`地址和`sqladvisor_switch`为**1**启用`sqladvisor`
 #### setttings.py中的修改内容主要为mysql、redis地址，以及邮件服务器相关地址，如果使用saltapi功能的话还有一些salt相关的信息需要配置
 ### 启动：
 #### 初始化表结构： ```python manage.py migrate```
@@ -107,8 +108,8 @@ openssl x509 -req -days 365 -in foobar.csr -signkey foobar.key -out foobar.crt
 
 ### 定时任务配置
 #### 在django库中导入`mon_tb.sql`（文件在`configfile_example`中）
-#### 启用`celery`的定时任务功能: ```python manage.py celery beat ```
-#### 启动celery:  ```python manage.py celery worker -E -c 3 --loglevel=info ```
+#### 启用*celery*的定时任务功能: ```python manage.py celery beat ```
+#### 启动*celery*:  ```python manage.py celery worker -E -c 3 --loglevel=info ```
 #### 开启快照监控后，在admin中能看到任务，默认一秒一个快照: ```python manage.py celerycam ```
 #### 在/admin/中设置定时任务
 ##### 设置定时扫描task
@@ -132,13 +133,13 @@ openssl x509 -req -days 365 -in foobar.csr -signkey foobar.key -out foobar.crt
 
 ## 4.查询界面
 ### 4.1 MySQL语句查询:
-支持单条sql的查询和查询结果的导出，导出条数限制默认为`config.py`中配置的值，也可以通过后台`myapp_profile`表对特定用户进行调整
+支持**单条**sql的查询和查询结果的导出，导出条数限制默认为`config.py`中配置的值，也可以通过后台`myapp_profile`表对特定用户进行调整
 ![image](https://github.com/speedocjx/myfile/blob/master/sql-manage-platform/mysql_query.jpg)
 
 ### 4.2 Mongodb查询界面
 ![image](https://github.com/speedocjx/myfile/blob/master/sql-manage-platform/mongo_query.jpg)
 ## 5.执行界面
-支持单条sql语句的执行，用户能够执行的语句类型可以通过权限限制。
+支持**单条**sql语句的执行，用户能够执行的语句类型可以通过权限限制。
 ![image](https://github.com/speedocjx/myfile/blob/master/sql-manage-platform/mysql_exec.jpg)
 ## 6.任务提交界面
 
@@ -152,11 +153,11 @@ openssl x509 -req -days 365 -in foobar.csr -signkey foobar.key -out foobar.crt
 
 任务界面如下：
 
-点击执行后，任务会被发送给celery后台异步执行，通过点击状态按钮查看任务执行状态
+点击执行后，任务会被发送给`celery`后台异步执行，通过点击状态按钮查看任务执行状态
 
 可以配置邮件在任务生成和任务结束时候发送邮件告知相关人员
 
-可以导出csv格式任务，支持utf8和gb18030两种导出格式
+可以导出csv格式任务，支持*utf8*和*gb18030*两种导出格式
 
 ![image](https://github.com/speedocjx/myfile/blob/master/sql-manage-platform/task_manage1.jpg)
 ### 7.1任务执行结果示例
