@@ -11,9 +11,9 @@ from django.http import HttpResponse,HttpResponseRedirect,StreamingHttpResponse,
 from django.contrib.auth.decorators import login_required,permission_required
 from django.contrib.auth.models import User,Permission,ContentType,Group
 from myapp.include import function as func,inception as incept,chart,pri,meta,sqlfilter
-from myapp.models import Db_group,Db_name,Db_account,Db_instance,Oper_log,Upload,Task
+from myapp.models import Db_group,Db_name,Db_account,Db_instance,Oper_log,Upload,Task,MySQL_monitor
 from myapp.tasks import task_run,sendmail_task,parse_binlog,parse_binlogfirst
-
+from myapp.include import monitor
 
 from django.core.files import File
 #path='./myapp/include'
@@ -1370,6 +1370,12 @@ def pass_reset(request):
     else:
         return render(request, 'previliges/pass_reset.html', locals())
 
+
+
+
+def test(request):
+    monitor.mon_processlist()
+    return render(request,'test.html')
 
 # @ratelimit(key=func.my_key, rate='5/h')
 # def test(request):

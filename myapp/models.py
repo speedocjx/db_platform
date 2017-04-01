@@ -30,6 +30,7 @@ class Db_instance(models.Model):
         unique_together = ("ip","port")
 
 
+
 class Db_name (models.Model):
     dbtag = models.CharField(max_length=30,unique=True)
     dbname = models.CharField(max_length=30)
@@ -149,3 +150,21 @@ class Incep_error_log(models.Model):
     sqlsha = models.CharField(max_length=50)
     create_time = models.DateTimeField(db_index=True)
     finish_time = models.DateTimeField()
+
+
+
+class MySQL_monitor(models.Model):
+    tag = models.CharField(max_length=20)
+    monitor = models.SmallIntegerField(default=1)
+    instance = models.OneToOneField(Db_instance)
+    check_longsql = models.SmallIntegerField(default=0)
+    longsql_time = models.SmallIntegerField(default=1200)
+    longsql_autokill = models.SmallIntegerField(default=0)
+    check_active = models.SmallIntegerField(default=0)
+    active_threshold = models.SmallIntegerField(default=30)
+    account = models.OneToOneField(Db_account)
+    mail_to = models.CharField(max_length=255)
+    def __unicode__(self):
+        return self.tag
+    class Meta:
+        db_table = 'mysql_monitor'

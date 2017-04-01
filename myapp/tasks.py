@@ -58,11 +58,12 @@ def parse_binlog(insname,binname,begintime,tbname,dbselected,username,countnum,f
 
 def parse_binlogfirst(insname,binname,countnum):
     flag = True
+    pc = prpcrypt()
     for a in insname.db_name_set.all():
         for i in a.db_account_set.all():
             if i.role == 'admin':
                 tar_username = i.user
-                tar_passwd = i.passwd
+                tar_passwd = pc.decrypt(i.passwd)
                 flag = False
                 break
         if flag == False:
@@ -75,6 +76,9 @@ def parse_binlogfirst(insname,binname,countnum):
     binlogsql.process_binlog()
     sqllist = binlogsql.sqllist
     return sqllist
+
+
+
 
 @task
 def sendmail_sqlparse(user,db,tb,sqllist,flashback):
@@ -112,7 +116,7 @@ def sendmail_task(task):
 
 def sendmail (title,mailto,html_content):
     try:
-        msg = EmailMultiAlternatives(title, html_content, 'xxx@xx.com', mailto)
+        msg = EmailMultiAlternatives(title, html_content, 'wondersjky@163.com', mailto)
         msg.attach_alternative(html_content, "text/html")
         msg.send()
     except Exception,e:

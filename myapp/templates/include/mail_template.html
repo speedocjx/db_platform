@@ -63,5 +63,36 @@
         </tbody>
     </table>
 {% endif %}
+
+{% if mon_sqllist %}
+    <table id="mytable1" class="table table-condensed" border="1">
+        <thead>
+        <tr class="danger">
+            <th> ID </th>
+            <th> USER </th>
+            <th> HOST </th>
+            <th> DB </th>
+            <th> COMMAND </th>
+            <th> TIME </th>
+            <th> STATE </th>
+            <th> INFO </th>
+        </tr>
+        </thead>
+        <tbody  >
+        {% for item in mon_sqllist %}
+            <tr>
+                <td> <pre>{{ item.0 }}</pre></td>
+                <td> <pre>{{ item.1 }}</pre></td>
+                <td> <pre>{{ item.2 }}</pre></td>
+                <td> <pre>{{ item.3 }}</pre></td>
+                <td> <pre>{{ item.4 }}</pre></td>
+                <td> <pre>{{ item.5 }}</pre></td>
+                <td> <pre>{{ item.6 }}</pre></td>
+                <td> <pre>{{ item.7 }}</pre></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
 </body>
 </html>

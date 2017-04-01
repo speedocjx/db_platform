@@ -14,7 +14,7 @@ import djcelery
 djcelery.setup_loader()
 BROKER_URL = 'redis://127.0.0.1:6379/0'
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
-CELERY_IMPORTS = ("myapp.tasks","myapp.include.scheduled" )
+CELERY_IMPORTS = ("myapp.tasks","myapp.include.scheduled","myapp.include.monitor")
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'salt',
     'mongodb',
     'chartapi',
+    'monitor',
     'djcelery',
     'myapp',
 ]
@@ -168,9 +169,9 @@ os.path.join(BASE_DIR, "static"),
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
-EMAIL_HOST='xx.x.com'
-EMAIL_HOST_USER='xx'
-EMAIL_HOST_PASSWORD='xx'
+EMAIL_HOST='smtp.163.com'
+EMAIL_HOST_USER='wondersjky'
+EMAIL_HOST_PASSWORD='xxxxxxxx'
 EMAIL_PORT = 25
 # EMAIL_USE_TLS = True
 
@@ -183,6 +184,6 @@ SALT_DATABASE = {
     'NAME': 'salt',
     'USER': 'salt_user',
     'PASSWORD': 'xxx',
-    'HOST': '10.xx.xx.xx',
-    'PORT': 'xxx',
+    'HOST': 'xx.xx.xx.xx',
+    'PORT': 'xx',
 }

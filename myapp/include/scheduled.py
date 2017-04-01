@@ -195,8 +195,8 @@ def inception_check(hosttag,sql,flag=0):
 
 def mysql_query(sql,user=user,passwd=passwd,host=host,port=int(port),dbname=dbname):
     try:
-        pc = prpcrypt()
-        conn=MySQLdb.connect(host=host,user=user,passwd=pc.decrypt(passwd),port=int(port),connect_timeout=5,charset='utf8')
+
+        conn=MySQLdb.connect(host=host,user=user,passwd=passwd,port=int(port),connect_timeout=5,charset='utf8')
         conn.select_db(dbname)
         cursor = conn.cursor()
         count=cursor.execute(sql)
@@ -294,6 +294,7 @@ def table_check():
 def get_data(a,sql):
     #a = Db_name.objects.get(dbtag=hosttag)
     tar_dbname = a.dbname
+    pc = prpcrypt()
     try:
         if a.instance.all().filter(role='read')[0]:
             tar_host = a.instance.all().filter(role='read')[0].ip
@@ -304,7 +305,7 @@ def get_data(a,sql):
     for i in a.db_account_set.all():
         if i.role == 'admin':
             tar_username = i.user
-            tar_passwd = i.passwd
+            tar_passwd = pc.decrypt(i.passwd)
             break
     #print tar_port+tar_passwd+tar_username+tar_host
     try:

@@ -41,9 +41,11 @@ urlpatterns = (
     url(r'^fast_dbset/$', myapp_view.fast_dbset,name='fast_dbset'),
     url(r'^set_dbname/$', myapp_view.set_dbname,name='set_dbname'),
     url(r'^update_task/$', myapp_view.update_task,name='update_task'),
+    url(r'^test/$', myapp_view.test,name='test'),
     url(r'^salt/', include('salt.urls')),
     url(r'^mongodb/', include('mongodb.urls')),
     url(r'^chartapi/', include('chartapi.urls')),
+    url(r'^monitor/', include('monitor.urls')),
     url(r'^site_media/(?P<path>.*)$', 'django.views.static.serve',{'document_root': settings.MEDIA_ROOT}),
 )
 
