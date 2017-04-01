@@ -1,34 +1,34 @@
-# sql_manage_platform
-## 基于django和inception，带权限控制的DB语句运行平台
-### 另外还带有一些简单的saltstack api和监控功能
+# db_platform
+## 基于`django`和`inception`，带权限控制的DB语句运行平台
+### 另外还带有一些简单的`saltstack api`和监控功能
 ## 功能简述如下
-#### --MySQL 表结构查询功能
-#### --MySQL 语句查询页面
-#### --支持SQLADVISOR(https://github.com/Meituan-Dianping/SQLAdvisor)
-#### --MySQL DDL DML语句执行
-#### --MySQL DDL DML 任务提交(结合inception)
-#### --Inception 任务管理（包括任务修改，任务导出，定时执行，任务终止，任务结果状态查询，任务邮件提示等）
-#### --MySQL 实例 部分状态查询
-#### --MySQL 表相关元数据收集与展示
-#### --Binlog解析功能(https://github.com/danfengcao/binlog2sql)
-#### --Mongodb简单查询
-#### --用户权限分离系统
-#### --saltstack api（key管理、远程shell、硬件信息）
-#### --数据库相关操作日志记录以及查询
++ MySQL 表结构查询功能
++ MySQL 语句查询页面
++ 支持SQLADVISOR(https://github.com/Meituan-Dianping/SQLAdvisor)
++ MySQL DDL DML语句执行
++ MySQL DDL DML 任务提交(结合inception)
++ Inception 任务管理（包括任务修改，任务导出，定时执行，任务终止，任务结果状态查询，任务邮件提示等）
++ MySQL 实例 部分状态查询
++ MySQL 表相关元数据收集与展示
++ Binlog解析功能(https://github.com/danfengcao/binlog2sql)
++ Mongodb简单查询
++ 用户权限分离系统
++ saltstack api（key管理、远程shell、硬件信息）
++ 数据库相关操作日志记录以及查询
 
 ### 开发环境：
-#### django:1.8.14
-#### python:2.7.12
-#### MySQL和redis实例各一个
++ django:1.8.14
++ python:2.7.12
++ MySQL和redis实例各一个
 ### python依赖组件：
-#### django-celery 3.1.17
-#### celery 3.1.25
-#### kombu 3.0.37
-#### celery-with-redis 3.0
-#### django-simple-captcha
-#### MySQL-python
-#### pymongo
-#### uwgsi (正式部署时使用)
++ django-celery 3.1.17
++ celery 3.1.25
++ kombu 3.0.37
++ celery-with-redis 3.0
++ django-simple-captcha
++ MySQL-python
++ pymongo
++ uwgsi (正式部署时使用)
 
 
 ### 权限功能简述：
@@ -42,16 +42,16 @@
 
 对于DB维度的权限：
 
-一个DB可以配置role为read和write两个ip-port实例，用以区分查询和变更语句执行的实例，（也可以将role配置成all不进行区分）
+一个DB可以配置`role`为`read`和`write`两个ip-port实例，用以区分查询和变更语句执行的实例，（也可以将`role`配置成`all`不进行区分）
 
-对于数据库账户，一个DB可以配置多个，并分配给不同的用户，用以实现不同用户在同一db下区分权限的功能。（也可以保持默认设置，即分配给public用户，不进行区分）
+对于数据库账户，一个DB可以配置多个，并分配给不同的用户，用以实现不同用户在同一db下区分权限的功能。（也可以保持默认设置，即分配给`public`用户，不进行区分）
 
-如果要使用任务管理功能，需要为DB添加一个role为admin的数据库账号
+如果要使用任务管理功能，需要为DB添加一个`role`为`admin`的数据库账号
 。。。待续
 
 ### 启动配置
 #### config.py配置文件如下：
-'''
+```
 
 wrong_msg="select '请检查输入语句'"
 
@@ -72,43 +72,44 @@ public_user="public"
 sqladvisor_switch = 1
 
 sqladvisor = '/usr/sbin/sqladvisor'
-'''
+```
 ##### 说明:
 
-select_limit 和 export_limit为系统默认查询和导出条数限制
+`select_limit` 和 `export_limit`为系统默认查询和导出条数限制
 
-incp_XX系列配置文件为inception的连接配置
+incp_XX系列配置文件为`inception`的连接配置
 
-sqladvisor_switch设置为0时不启用sqladvisor
+sqladvisor_switch设置为0时不启用`sqladvisor`
 
 设置sqladvisor地址和sqladvisor_switch为1启用sqladvisor
 #### setttings.py中的修改内容主要为mysql、redis地址，以及邮件服务器相关地址，如果使用saltapi功能的话还有一些salt相关的信息需要配置
 ### 启动：
-#### 初始化表结构： python manage.py migrate
-#### 创建一个超级用户： '''python manage.py createsuperuser'''
+#### 初始化表结构： ```python manage.py migrate```
+#### 创建一个超级用户： ```python manage.py createsuperuser```
 #### 启动server： 
-'''
+```
 python manage.py runserver 0.0.0.0:8000（启动前建议把settings.py中的debug设置为false） 
-'''
+```
 (上面的启动方式可以自己测试时使用，实际使用不要使用django自带的server启动，因为好像是单线程在处理request的。。）
-##### 建议用apache或nginx+uwgsi方式启动，配置文件可以参考configfile_example中的
-##### uwgsi启动方式如：uwgsi --ini uwgsi.ini
+##### 建议用`apache`或nginx+uwgsi方式启动，配置文件可以参考`configfile_example`中的
+##### uwgsi启动方式如：```uwgsi --ini uwgsi.ini```
 ##### nginx配置https时生成key文件示例如下：
-
+```
 openssl genrsa -out foobar.key 2048
 
 openssl req -new -key foobar.key -out foobar.csr
 
 openssl x509 -req -days 365 -in foobar.csr -signkey foobar.key -out foobar.crt
+```
 
-##### #使用uwgsi部署时，先 python manage.py collectstatic 拷下admin之类的静态文件，不然访问/admin/页面会找不到样式
+##### #使用`uwgsi`部署时，先 ```python manage.py collectstatic``` 拷下admin之类的静态文件，不然访问`/admin/`页面会找不到样式
 ##### 然后以刚刚注册的超级用户登陆网站进行建立普通用户、建库等配置工作
 
 ### 定时任务配置
-#### 在django库中导入mon_tb.sql（文件在configfile_example中）
-#### 启用celery的定时任务功能: python manage.py celery beat 
-#### 启动celery:  python manage.py celery worker -E -c 3 --loglevel=info 
-#### 开启快照监控后，在admin中能看到任务，默认一秒一个快照: python manage.py celerycam 
+#### 在django库中导入`mon_tb.sql`（文件在`configfile_example`中）
+#### 启用`celery`的定时任务功能: ```python manage.py celery beat ```
+#### 启动celery:  ```python manage.py celery worker -E -c 3 --loglevel=info ```
+#### 开启快照监控后，在admin中能看到任务，默认一秒一个快照: ```python manage.py celerycam ```
 #### 在/admin/中设置定时任务
 ##### 设置定时扫描task
 ![image](https://github.com/speedocjx/myfile/blob/master/sql-manage-platform/crontab_sche.jpg)
@@ -131,7 +132,7 @@ openssl x509 -req -days 365 -in foobar.csr -signkey foobar.key -out foobar.crt
 
 ## 4.查询界面
 ### 4.1 MySQL语句查询:
-支持单条sql的查询和查询结果的导出，导出条数限制默认为config.py中配置的值，也可以通过后台myapp_profile表对特定用户进行调整
+支持单条sql的查询和查询结果的导出，导出条数限制默认为`config.py`中配置的值，也可以通过后台`myapp_profile`表对特定用户进行调整
 ![image](https://github.com/speedocjx/myfile/blob/master/sql-manage-platform/mysql_query.jpg)
 
 ### 4.2 Mongodb查询界面
