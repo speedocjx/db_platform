@@ -1,5 +1,5 @@
 # db_platform
-## 基于`django`和`inception`，带权限控制的DB语句运行平台
+## 基于`django`和`inception`，带权限控制的数据库平台
 ### 另外还带有一些简单的`saltstack api`和监控功能
 ## 功能简述如下
 + MySQL 表结构查询功能
