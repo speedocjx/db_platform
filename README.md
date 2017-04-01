@@ -51,6 +51,7 @@
 
 ### 启动配置
 #### config.py配置文件如下：
+'''
 
 wrong_msg="select '请检查输入语句'"
 
@@ -71,6 +72,7 @@ public_user="public"
 sqladvisor_switch = 1
 
 sqladvisor = '/usr/sbin/sqladvisor'
+'''
 ##### 说明:
 
 select_limit 和 export_limit为系统默认查询和导出条数限制
@@ -83,11 +85,11 @@ sqladvisor_switch设置为0时不启用sqladvisor
 #### setttings.py中的修改内容主要为mysql、redis地址，以及邮件服务器相关地址，如果使用saltapi功能的话还有一些salt相关的信息需要配置
 ### 启动：
 #### 初始化表结构： python manage.py migrate
-#### 创建一个超级用户： python manage.py createsuperuser
+#### 创建一个超级用户： '''python manage.py createsuperuser'''
 #### 启动server： 
-
+'''
 python manage.py runserver 0.0.0.0:8000（启动前建议把settings.py中的debug设置为false） 
-
+'''
 (上面的启动方式可以自己测试时使用，实际使用不要使用django自带的server启动，因为好像是单线程在处理request的。。）
 ##### 建议用apache或nginx+uwgsi方式启动，配置文件可以参考configfile_example中的
 ##### uwgsi启动方式如：uwgsi --ini uwgsi.ini
