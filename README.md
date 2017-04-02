@@ -33,26 +33,26 @@
 
 
 ### 权限功能简述：
-用户的系统使用权限大致可以分为可以看到的页面，以及能够看到的DB两个维度
+  用户的系统使用权限大致可以分为可以看到的页面，以及能够看到的DB两个维度
 
-这两个维度的权限都可以通过设置组来达到后期快速添加用户的需求
+  这两个维度的权限都可以通过设置组来达到后期快速添加用户的需求
 
-对于前者：
+  对于前者：
 
-所有页面都可以根据需要分配给不同权限的用户
+  所有页面都可以根据需要分配给不同权限的用户
 
-对于DB维度的权限：
+  对于DB维度的权限：
 
-一个DB可以配置`role`为`read`和`write`两个ip-port实例，用以区分查询和变更语句执行的实例，（也可以将`role`配置成`all`不进行区分）
+  一个DB可以配置`role`为`read`和`write`两个ip-port实例，用以区分查询和变更语句执行的实例，（也可以将`role`配置成`all`不进行区分）
 
-对于数据库账户，一个DB可以配置多个，并分配给不同的用户，用以实现不同用户在同一db下区分权限的功能。（也可以保持默认设置，即分配给`public`用户，不进行区分）
+  对于数据库账户，一个DB可以配置多个，并分配给不同的用户，用以实现不同用户在同一db下区分权限的功能。（也可以保持默认设置，即分配给`public`用户，不进行区分）
 
-如果要使用任务管理功能，需要为DB添加一个`role`为**admin**的数据库账号
-。。。待续
+  如果要使用任务管理功能，需要为DB添加一个`role`为**admin**的数据库账号
+  。。。待续
 
 ### 启动配置
-#### **config.py**配置文件如下：
-```
+* **config.py**配置文件如下：
+``` python
 
 wrong_msg="select '请检查输入语句'"
 
@@ -74,27 +74,28 @@ sqladvisor_switch = 1
 
 sqladvisor = '/usr/sbin/sqladvisor'
 ```
-##### 说明:
+**说明:**
 
-`select_limit` 和 `export_limit`为系统默认查询和导出条数限制
+  `select_limit` 和 `export_limit`为系统默认查询和导出条数限制
 
-*incp_XX*系列配置文件为`inception`的连接配置
+  *incp_XX*系列配置文件为`inception`的连接配置
 
-*sqladvisor_switch*设置为0时不启用`sqladvisor`
+  *sqladvisor_switch*设置为0时不启用`sqladvisor`
 
-设置`sqladvisor`地址和`sqladvisor_switch`为**1**启用`sqladvisor`
-#### setttings.py中的修改内容主要为mysql、redis地址，以及邮件服务器相关地址，如果使用saltapi功能的话还有一些salt相关的信息需要配置
+  设置`sqladvisor`地址和`sqladvisor_switch`为**1**启用`sqladvisor`
+
+  `setttings.py`中的修改内容主要为`mysql`、`redis`地址，以及邮件服务器相关地址，如果使用`saltapi`功能的话还有一些`salt`相关的信息需要配置
 ### 启动：
-#### 初始化表结构： ```python manage.py migrate```
-#### 创建一个超级用户： ```python manage.py createsuperuser```
-#### 启动server： 
+* 初始化表结构： ```python manage.py migrate```
+* 创建一个超级用户： ```python manage.py createsuperuser```
+* 启动server： 
 ```
 python manage.py runserver 0.0.0.0:8000（启动前建议把settings.py中的debug设置为false） 
 ```
-(上面的启动方式可以自己测试时使用，实际使用不要使用django自带的server启动，因为好像是单线程在处理request的。。）
-##### 建议用`apache`或nginx+uwgsi方式启动，配置文件可以参考`configfile_example`中的
-##### uwgsi启动方式如：```uwgsi --ini uwgsi.ini```
-##### nginx配置https时生成key文件示例如下：
+(上面的启动方式可以自己**测试**时使用，实际使用不要使用`django`自带的`server`启动，因为好像是**单线程**在处理`request`的。。）
+  - 建议用`apache`或nginx+uwgsi方式启动，配置文件可以参考`configfile_example`中的
+  uwgsi启动方式如：```uwgsi --ini uwgsi.ini```
+  nginx配置https时生成key文件示例如下：
 ```
 openssl genrsa -out foobar.key 2048
 
@@ -103,18 +104,18 @@ openssl req -new -key foobar.key -out foobar.csr
 openssl x509 -req -days 365 -in foobar.csr -signkey foobar.key -out foobar.crt
 ```
 
-##### #使用`uwgsi`部署时，先 ```python manage.py collectstatic``` 拷下admin之类的静态文件，不然访问`/admin/`页面会找不到样式
-##### 然后以刚刚注册的超级用户登陆网站进行建立普通用户、建库等配置工作
+  **使用`uwgsi`部署时，先 ```python manage.py collectstatic``` 拷下admin之类的静态文件，不然访问`/admin/`页面会找不到样式
+  然后以刚刚注册的超级用户登陆网站进行建立普通用户、建库等配置工作**
 
 ### 定时任务配置
-#### 在django库中导入`mon_tb.sql`（文件在`configfile_example`中）
-#### 启用*celery*的定时任务功能: ```python manage.py celery beat ```
-#### 启动*celery*:  ```python manage.py celery worker -E -c 3 --loglevel=info ```
-#### 开启快照监控后，在admin中能看到任务，默认一秒一个快照: ```python manage.py celerycam ```
-#### 在/admin/中设置定时任务
-##### 设置定时扫描task
+* 在django库中导入`mon_tb.sql`（文件在`configfile_example`中）
+* 启用*celery*的定时任务功能: ```python manage.py celery beat ```
+* 启动*celery*:  ```python manage.py celery worker -E -c 3 --loglevel=info ```
+* 开启快照监控后，在admin中能看到任务，默认一秒一个快照: ```python manage.py celerycam ```
+* 在/admin/中设置定时任务
+  * 设置定时扫描task
 ![image](https://github.com/speedocjx/myfile/blob/master/sql-manage-platform/crontab_sche.jpg)
-##### 设置元数据收集任务
+  * 设置元数据收集任务
 ![image](https://github.com/speedocjx/myfile/blob/master/sql-manage-platform/crontab_tbcheck.jpg)
 
 
