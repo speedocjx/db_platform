@@ -8,101 +8,107 @@
 {%block content%}
     </br>
     </br>
-    {#    {% if info %}#}
-    {##}
-    {#        <strong> <span style="color:red">{{ info }}</span></strong>#}
-    {#    {% endif %}#}
-    <form role="form" method='post'>
-        {% csrf_token %}
-        <div class="row">
-            {% if dblist %}
-                {% include "include/pagejump/pagebutton.html" %}
-                <table  id="mytable" class="table table-condensed" border="1">
-                    <thead>
-                    <th>ID</th>
-                    <th>NAME</th>
-                    <th>是否监控</th>
-                    <th>IP+PORT</th>
-                    <th>监控LONG SQL</th>
-                    <th>LONG SQL监控阈值(S)</th>
-                    <th>自动kill LONG SQL</th>
-                    <th>监控ACTIVE SQL</th>
-                    <th>ACTIVE SQL监控阈值</th>
-                    <th>监控账号</th>
-                    <th>发送邮箱</th>
-                    <th></th>
-                    </thead>
-                    <tbody>
-                    {% for item in dblist %}
-                        <tr>
-                            <td>
-                                {{ item.id }}
-                            </td>
-                            <td>
-                                {{ item.tag }}
-                            </td>
-                            <td>
-                                {% if item.monitor == 1 %}
-                                    <span class='badge badge-info'>ON</span>
-                                {% elif item.monitor == 0 %}
-                                    <span class='badge'>OFF</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {{ item.instance.ip }}+{{ item.instance.port }}
-                            </td>
-                            <td>
-                                {% if item.check_longsql == 1 %}
-                                    <span class='badge badge-info'>ON</span>
-                                {% elif item.check_longsql == 0 %}
-                                    <span class='badge'>OFF</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {{ item.longsql_time }}
-                            </td>
-                            <td>
-                                {% if item.longsql_autokill  == 1 %}
-                                    <span class='badge badge-info'>ON</span>
+    {#    <form role="form" method='post'>#}
+    {#        {% csrf_token %}#}
+    <div class="row">
+        <button onclick="openpage('{% url 'mon_edit' %}')" class="btn btn-primary" >新增监控</button>
+    </div>
+    <div class="row">
 
-                                {% elif item.longsql_autokill  == 0 %}
-                                    <span class='badge'>OFF</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if item.check_active  == 1 %}
-                                    <span class='badge'>ON</span>
-                                {% elif item.check_active  == 0 %}
-                                    <span class='badge'>OFF</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {{ item.active_threshold }}
-                            </td>
-                            <td>
-                                {{ item.account.tags }}
-                            </td>
-                            <td>
-                                {{ item.mail_to }}
-                            </td>
-                            <td>
-                                <a href="{% url 'mon_change' %}?dbid={{ item.id }}" title="修改" > <span class="glyphicon glyphicon-pencil" ></span> </a>
+        {% if dblist %}
+            {% include "include/pagejump/pagebutton.html" %}
+            <table  id="mytable" class="table table-condensed" border="1">
+                <thead>
+                <th>ID</th>
+                <th>标签</th>
+                <th>是否监控</th>
+                <th>IP+PORT</th>
+                <th>监控LONG SQL</th>
+                <th>LONG SQL监控阈值(S)</th>
+                <th>自动kill LONG SQL</th>
+                <th>监控ACTIVE SQL</th>
+                <th>ACTIVE SQL监控阈值</th>
+                <th>监控账号</th>
+                <th>发送邮箱</th>
+                <th></th>
+                </thead>
+                <tbody>
+                {% for item in dblist %}
+                    <tr>
+                        <td>
+                            {{ item.id }}
+                        </td>
+                        <td>
+                            {{ item.tag }}
+                        </td>
+                        <td>
+                            {% if item.monitor == 1 %}
+                                <span class='badge badge-info'>ON</span>
+                            {% elif item.monitor == 0 %}
+                                <span class='badge'>OFF</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ item.instance.ip }}+{{ item.instance.port }}
+                        </td>
+                        <td>
+                            {% if item.check_longsql == 1 %}
+                                <span class='badge badge-info'>ON</span>
+                            {% elif item.check_longsql == 0 %}
+                                <span class='badge'>OFF</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ item.longsql_time }}
+                        </td>
+                        <td>
+                            {% if item.longsql_autokill  == 1 %}
+                                <span class='badge badge-info'>ON</span>
 
-                                <a href="{% url 'mon_delete' %}?dbid={{ item.id }}" title="加入回收站" > <span class="glyphicon glyphicon-minus" ></span> </a>
-                            <td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            {% endif %}
-        </div>
-        <div class="row">
+                            {% elif item.longsql_autokill  == 0 %}
+                                <span class='badge'>OFF</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.check_active  == 1 %}
+                                <span class='badge'>ON</span>
+                            {% elif item.check_active  == 0 %}
+                                <span class='badge'>OFF</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ item.active_threshold }}
+                        </td>
+                        <td>
+                            {{ item.account.tags }} + {{ item.account.user }}
+                        </td>
+                        <td>
+                            {{ item.mail_to }}
+                        </td>
+                        <td>
+                            <a href="{% url 'mon_edit' %}?dbid={{ item.id }}" title="修改" > <span class="glyphicon glyphicon-pencil" ></span> </a>
 
-        </div>
-    </form >
+                            <a href="{% url 'mon_delete' %}?dbid={{ item.id }}" onclick="return confirm('PLEASE COMFIRM')" title="删除" > <span class="glyphicon glyphicon-minus" ></span> </a>
+                        <td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+    <div class="row">
+
+    </div>
+    {#    </form >#}
 
 
 {% endblock %}
 {% block script %}
     {% include "include/pagejump/pagejump.html" %}
+    <script>
+        function openpage(pagelocation){
+            window.location.replace(pagelocation);
+        }
+    </script>
+
 {% endblock %}

@@ -15,130 +15,238 @@
     <form role="form" method='post'>
         {% csrf_token %}
         <div class="row">
-            {% if edit_db %}
-                <table  id="mytable" class="table table-condensed" border="1">
-                    <tbody>
-                    <tr>
-                        <td>ID</td>
-                        <td>{{ edit_db.id }}</td>
-                    </tr>
-                    <tr>
-                        <td>NAME</td>
-                        <td>
-                            <input name="tagset" type=="text" class="form-control" maxlength="20"  value="{{ edit_db.tag }}" >
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>是否监控</td>
-                        <td>
-                            <select name = "monitor_set" class="form-control col-md-3" >
-                                {% if edit_db.monitor == 1 %}
-                                    <option selected="selected" value =1>ON</option>
-                                    <option value =0>OFF</option>
-                                {% elif edit_db.monitor == 0 %}
-                                    <option value =1>ON</option>
-                                    <option selected="selected"  value =0>OFF</option>
-                                {% endif %}
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>IP+PORT</td>
-
-                        <td>
-                            <select class="form-control col-md-1" name = "ins_set">
-                                {% for obj in ins_list %}
-                                    {% if obj == edit_db.instance %}
-                                        <option selected="selected" value ="{{ obj.id }}">{{ obj.ip }} + {{ obj.port }}  ({{ obj.role }})</option>
-                                    {% else %}
-                                        <option value ="{{ obj.id }}">{{ obj.ip }} + {{ obj.port }}  ({{ obj.role }})</option>
+            <div class="col-md-12 main ">
+                {% if edit_db %}
+                    <table  id="mytable" class="table table-condensed" border="1">
+                        <tbody>
+                        <tr>
+                            <td>ID</td>
+                            <td>{{ edit_db.id }}</td>
+                        </tr>
+                        <tr>
+                            <td>NAME</td>
+                            <td>
+                                <input name="tagset" type=="text" class="form-control" maxlength="20"  value="{{ edit_db.tag }}" >
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>是否监控</td>
+                            <td>
+                                <select name = "monitor_set" class="form-control col-md-3" >
+                                    {% if edit_db.monitor == 1 %}
+                                        <option selected="selected" value =1>ON</option>
+                                        <option value =0>OFF</option>
+                                    {% elif edit_db.monitor == 0 %}
+                                        <option value =1>ON</option>
+                                        <option selected="selected"  value =0>OFF</option>
                                     {% endif %}
-                                {% endfor %}
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>监控LONG SQL</td>
-                        <td>
-                            <select name = "longsql_set" class="form-control col-md-3" >
-                                {% if edit_db.check_longsql == 1 %}
-                                    <option selected="selected" value =1>ON</option>
-                                    <option value =0>OFF</option>
-                                {% elif edit_db.check_longsql == 0 %}
-                                    <option value =1>ON</option>
-                                    <option selected="selected"  value =0>OFF</option>
-                                {% endif %}
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>LONG SQL监控阈值(S)</td>
-                        <td>
-                            <input name="longthre_set" type=="text" class="form-control" maxlength="10"  value="{{ edit_db.longsql_time }}" >
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>自动kill LONG SQL</td>
-                        <td>
-                            <select name = "autokill_set" class="form-control col-md-3" >
-                                {% if edit_db.longsql_autokill == 1 %}
-                                    <option selected="selected" value =1>ON</option>
-                                    <option value =0>OFF</option>
-                                {% elif edit_db.longsql_autokill == 0 %}
-                                    <option value =1>ON</option>
-                                    <option selected="selected"  value =0>OFF</option>
-                                {% endif %}
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>监控ACTIVE SQL</td>
-                        <td>
-                            <select name = "activesql_set" class="form-control col-md-3" >
-                                {% if edit_db.check_active == 1 %}
-                                    <option selected="selected" value =1>ON</option>
-                                    <option value =0>OFF</option>
-                                {% elif edit_db.check_active == 0 %}
-                                    <option value =1>ON</option>
-                                    <option selected="selected"  value =0>OFF</option>
-                                {% endif %}
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>ACTIVE SQL监控阈值</td>
-                        <td>
-                            <input name="mailset" type=="text" class="form-control" maxlength="10" placeholder="input mail" value="{{ edit_db.active_threshold }}" >
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>监控账号</td>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>IP+PORT</td>
 
-                        <td>
-                            {% if acc_list %}
-                                <select class="form-control col-md-3" name = "acc_set">
-                                    {% for obj in acc_list %}
-                                        {% if obj == edit_db.account %}
-                                            <option selected="selected" value ="{{ obj.id }}">{{ obj.tags }} + {{ obj.role }}</option>
+                            <td>
+                                <select class="form-control col-md-1" name = "ins_set">
+                                    {% for obj in ins_list %}
+                                        {% if obj == edit_db.instance %}
+                                            <option selected="selected" value ="{{ obj.id }}">{{ obj.ip }} + {{ obj.port }}  ({{ obj.role }})</option>
                                         {% else %}
-                                            <option value ="{{ obj.id }}">{{ obj.tags }} + {{ obj.role }}</option>
+                                            <option value ="{{ obj.id }}">{{ obj.ip }} + {{ obj.port }}  ({{ obj.role }})</option>
                                         {% endif %}
                                     {% endfor %}
                                 </select>
-                            {% endif %}
-                        </td>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>监控LONG SQL</td>
+                            <td>
+                                <select name = "longsql_set" class="form-control col-md-3" >
+                                    {% if edit_db.check_longsql == 1 %}
+                                        <option selected="selected" value =1>ON</option>
+                                        <option value =0>OFF</option>
+                                    {% elif edit_db.check_longsql == 0 %}
+                                        <option value =1>ON</option>
+                                        <option selected="selected"  value =0>OFF</option>
+                                    {% endif %}
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>LONG SQL监控阈值(S)</td>
+                            <td>
+                                <input name="longthre_set" type=="text" class="form-control" maxlength="10"  value="{{ edit_db.longsql_time }}" >
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>自动kill LONG SQL</td>
+                            <td>
+                                <select name = "autokill_set" class="form-control col-md-3" >
+                                    {% if edit_db.longsql_autokill == 1 %}
+                                        <option selected="selected" value =1>ON</option>
+                                        <option value =0>OFF</option>
+                                    {% elif edit_db.longsql_autokill == 0 %}
+                                        <option value =1>ON</option>
+                                        <option selected="selected"  value =0>OFF</option>
+                                    {% endif %}
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>监控ACTIVE SQL</td>
+                            <td>
+                                <select name = "activesql_set" class="form-control col-md-3" >
+                                    {% if edit_db.check_active == 1 %}
+                                        <option selected="selected" value =1>ON</option>
+                                        <option value =0>OFF</option>
+                                    {% elif edit_db.check_active == 0 %}
+                                        <option value =1>ON</option>
+                                        <option selected="selected"  value =0>OFF</option>
+                                    {% endif %}
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>ACTIVE SQL监控阈值</td>
+                            <td>
+                                <input name="activetre_set" type=="text" class="form-control" maxlength="10"  value="{{ edit_db.active_threshold }}" >
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>监控账号</td>
+
+                            <td>
+                                {% if acc_list %}
+                                    <select class="form-control col-md-3" name = "acc_set">
+                                        {% for obj in acc_list %}
+                                            {% if obj == edit_db.account %}
+                                                <option selected="selected" value ="{{ obj.id }}">{{ obj.tags }} + {{ obj.role }} + {{ obj.user }}</option>
+                                            {% else %}
+                                                <option value ="{{ obj.id }}">{{ obj.tags }} + {{ obj.role }} + {{ obj.user }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                {% endif %}
+                            </td>
 
 
-                    </tr>
-                    <tr>
-                        <td>发送邮箱</td>
-                        <td>
-                            <input name="mailset" type=="text" class="form-control" maxlength="100" placeholder="input mail" value="{{ edit_db.mail_to }}" >
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            {% endif %}
+                        </tr>
+                        <tr>
+                            <td>发送邮箱(多个邮箱以;分割)</td>
+                            <td>
+                                <input name="mailset" type=="text" class="form-control" maxlength="100" placeholder="input mail" value="{{ edit_db.mail_to }}" >
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <button type="submit" name='set' onclick="return confirm('PLEASE COMFIRM')" value="{{ edit_db.id }}" class="btn btn-success" >设置</button>
+
+
+
+                {% else %}
+
+                    <table  id="mytable" class="table table-condensed" border="1">
+                        <tbody>
+                        <tr>
+                            <td>NAME</td>
+                            <td>
+                                <input name="tagset" type=="text" placeholder="input name" class="form-control" maxlength="20">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>是否监控</td>
+                            <td>
+                                <select name = "monitor_set" class="form-control col-md-3" >
+                                    <option selected="selected" value =1>ON</option>
+                                    <option value =0>OFF</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>IP+PORT</td>
+
+                            <td>
+                                <select class="form-control col-md-1" name = "ins_set">
+                                    <option value ="">----------------</option>
+                                    {% for obj in ins_list %}
+                                        <option value ="{{ obj.id }}">{{ obj.ip }} + {{ obj.port }}  ({{ obj.role }})</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>监控LONG SQL</td>
+                            <td>
+                                <select name = "longsql_set" class="form-control col-md-3" >
+                                    <option value =1>ON</option>
+                                    <option selected="selected" value =0>OFF</option>
+
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>LONG SQL监控阈值(S)</td>
+                            <td>
+                                <input name="longthre_set" type=="text" class="form-control" value="3600" maxlength="10" >
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>自动kill LONG SQL</td>
+                            <td>
+                                <select name = "autokill_set" class="form-control col-md-3" >
+
+                                    <option value =1>ON</option>
+                                    <option  selected="selected" value =0>OFF</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>监控ACTIVE SQL</td>
+                            <td>
+                                <select name = "activesql_set" class="form-control col-md-3" >
+
+                                    <option selected="selected" value =1>ON</option>
+                                    <option value =0>OFF</option>
+
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>ACTIVE SQL监控阈值</td>
+                            <td>
+                                <input name="activetre_set" type=="text" class="form-control" maxlength="10" value="30">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>监控账号</td>
+
+                            <td>
+                                {% if acc_list %}
+                                    <select class="form-control col-md-3" name = "acc_set">
+                                        <option value ="">----------------</option>
+                                        {% for obj in acc_list %}
+                                            <option value ="{{ obj.id }}">{{ obj.tags }} + {{ obj.role }} + {{ obj.user }}</option>
+                                        {% endfor %}
+                                    </select>
+                                {% endif %}
+                            </td>
+
+
+                        </tr>
+                        <tr>
+                            <td>发送邮箱(多个邮箱以;分割)</td>
+                            <td>
+                                <input name="mailset" type=="text" class="form-control" maxlength="100" placeholder="input mail" >
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <button type="submit" name='create' onclick="return confirm('PLEASE COMFIRM')"  class="btn btn-success" >创建</button>
+
+
+                {% endif %}
+            </div>
         </div>
 
     </form >
