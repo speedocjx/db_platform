@@ -11,10 +11,24 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 import os
 import djcelery
+from kombu import Queue,Exchange
 djcelery.setup_loader()
 BROKER_URL = 'redis://127.0.0.1:6379/0'
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
-CELERY_IMPORTS = ("myapp.tasks","myapp.include.scheduled","myapp.include.monitor")
+CELERY_IMPORTS = ("myapp.tasks","myapp.include.scheduled","myapp.include.mon")
+CELERY_QUEUES = (
+    Queue('default',Exchange('default'),routing_key='default'),
+    Queue('mysql_monitor',Exchange('monitor'),routing_key='monitor.mysql'),
+)
+CELERY_ROUTES = {
+    'myapp.include.mon.mon_processlist':{'queue':'mysql_monitor','routing_key':'monitor.mysql'},
+    'myapp.include.mon.check_mysql': {'queue': 'mysql_monitor', 'routing_key': 'monitor.mysql'},
+    'myapp.include.mon.sendmail_monitor': {'queue': 'mysql_monitor', 'routing_key': 'monitor.mysql'},
+}
+CELERY_DEFAULT_QUEUE = 'default'
+CELERY_DEFAULT_EXCHANGE_TYPE = 'direct'
+CELERY_DEFAULT_ROUTING_KEY = 'default'
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 

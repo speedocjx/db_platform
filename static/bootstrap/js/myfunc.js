@@ -46,6 +46,10 @@ function getDateDemo(){
 }
 
 
+function openpage(pagelocation){
+    window.location.replace(pagelocation);
+}
+
 
 
 

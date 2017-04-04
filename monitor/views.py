@@ -1,6 +1,5 @@
 from django.shortcuts import render
 from myapp.models import Db_group,Db_name,Db_account,Db_instance,Oper_log,Upload,Task,MySQL_monitor
-from myapp.include import monitor
 from django.http import HttpResponse,HttpResponseRedirect,StreamingHttpResponse,JsonResponse
 from django.contrib.auth.decorators import login_required,permission_required
 
