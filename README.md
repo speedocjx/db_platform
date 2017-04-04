@@ -110,7 +110,11 @@ openssl x509 -req -days 365 -in foobar.csr -signkey foobar.key -out foobar.crt
 ### 定时任务配置
 * 在django库中导入`mon_tb.sql`（文件在`configfile_example`中）
 * 启用*celery*的定时任务功能: ```python manage.py celery beat ```
-* 启动*celery*:  ```python manage.py celery worker -E -c 3 --loglevel=info ```
+* 启动*celery*: 
+  ```
+  python manage.py celery worker -E -c 5 --loglevel=info -Q default
+  python manage.py celery worker -E -c 8 --loglevel=info -Q mysql_monitor
+  ```
 * 开启快照监控后，在admin中能看到任务，默认一秒一个快照: ```python manage.py celerycam ```
 * 在/admin/中设置定时任务
   * 设置定时扫描task
