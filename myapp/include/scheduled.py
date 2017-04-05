@@ -329,13 +329,16 @@ def exec_many(insertsql,param):
     except Exception,e:
         print e
 
-def mysql_exec(sql):
+def mysql_exec(sql,param=''):
     try:
         conn = MySQLdb.connect(host=host, user=user, passwd=passwd, port=int(port), connect_timeout=5, charset='utf8')
         conn.select_db(dbname)
         cursor = conn.cursor()
         # cursor.execute("truncate table mon_autoinc_status")
-        cursor.execute(sql)
+        if param <> '':
+            cursor.execute(sql, param)
+        else:
+            cursor.execute(sql)
         conn.commit()
         cursor.close()
         conn.close()

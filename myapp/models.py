@@ -163,6 +163,7 @@ class MySQL_monitor(models.Model):
     check_active = models.SmallIntegerField(default=0)
     active_threshold = models.SmallIntegerField(default=30)
     account = models.OneToOneField(Db_account)
+    replchannel = models.CharField(max_length=30,default='0')
     mail_to = models.CharField(max_length=255)
     def __unicode__(self):
         return self.tag
