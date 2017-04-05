@@ -94,7 +94,6 @@ class MysqlStatus(models.Model):
     max_allowed_packet = models.IntegerField(default=-1)
     threads_connected = models.IntegerField(default=-1)
     threads_running = models.IntegerField(default=-1)
-    threads_waits = models.IntegerField(blank=True, null=True,default=-1)
     threads_created = models.IntegerField(default=-1)
     threads_cached = models.IntegerField(default=-1)
     connections = models.IntegerField(default=-1)
@@ -189,7 +188,7 @@ class MysqlStatusHis(models.Model):
     max_allowed_packet = models.IntegerField(default=-1)
     threads_connected = models.IntegerField(default=-1)
     threads_running = models.IntegerField(default=-1)
-    threads_waits = models.IntegerField(blank=True, null=True,default=-1)
+    # threads_waits = models.IntegerField(blank=True, null=True,default=-1)
     threads_created = models.IntegerField(default=-1)
     threads_cached = models.IntegerField(default=-1)
     connections = models.IntegerField(default=-1)
@@ -265,3 +264,15 @@ class MysqlStatusHis(models.Model):
     class Meta:
         db_table = 'mysql_status_his'
         index_together = [["db_ip", "db_port", "create_time"], ]
+
+
+# active sql,long sql,replication,connections
+class alarm(models.Model):
+    db_ip = models.CharField(max_length=30)
+    db_port = models.CharField(max_length=10)
+    alarm_type = models.CharField(max_length=30)
+    alarmed_times =models.IntegerField()
+    create_time = models.DateTimeField(db_index=True)
+    class Meta:
+        db_table = 'alarm'
+        index_together = [["db_ip", "db_port"], ]

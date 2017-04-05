@@ -21,8 +21,8 @@ CELERY_QUEUES = (
     Queue('mysql_monitor',Exchange('monitor'),routing_key='monitor.mysql'),
 )
 CELERY_ROUTES = {
-    'myapp.include.mon.mon_processlist':{'queue':'mysql_monitor','routing_key':'monitor.mysql'},
-    'myapp.include.mon.check_mysql': {'queue': 'mysql_monitor', 'routing_key': 'monitor.mysql'},
+    'myapp.include.mon.mon_mysql':{'queue':'mysql_monitor','routing_key':'monitor.mysql'},
+    'myapp.include.mon.check_mysql_host': {'queue': 'mysql_monitor', 'routing_key': 'monitor.mysql'},
     'myapp.include.mon.sendmail_monitor': {'queue': 'mysql_monitor', 'routing_key': 'monitor.mysql'},
 }
 CELERY_DEFAULT_QUEUE = 'default'

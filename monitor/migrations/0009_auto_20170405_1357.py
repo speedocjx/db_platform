@@ -38,8 +38,8 @@ class Migration(migrations.Migration):
                 'db_table': 'mysql_replication_his',
             },
         ),
-        migrations.AlterIndexTogether(
-            name='mysql_replication',
-            index_together=set([('db_ip', 'db_port')]),
-        ),
+        # migrations.AlterIndexTogether(
+        #     name='mysql_replication',
+        #     index_together=set([('db_ip', 'db_port')]),
+        # ),
     ]
