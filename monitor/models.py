@@ -266,13 +266,24 @@ class MysqlStatusHis(models.Model):
         index_together = [["db_ip", "db_port", "create_time"], ]
 
 
-# active sql,long sql,replication,connections
-class alarm(models.Model):
+# active sql,long sql,slave delay,slave stop,connections
+class Alarm(models.Model):
     db_ip = models.CharField(max_length=30)
     db_port = models.CharField(max_length=10)
     alarm_type = models.CharField(max_length=30)
-    alarmed_times =models.IntegerField()
-    create_time = models.DateTimeField(db_index=True)
+    send_mail =models.SmallIntegerField(default=0)
+    create_time = models.DateTimeField(db_index=True,default=timezone.now)
     class Meta:
         db_table = 'alarm'
         index_together = [["db_ip", "db_port"], ]
+
+
+class AlarmTemp(models.Model):
+    db_ip = models.CharField(max_length=30)
+    db_port = models.CharField(max_length=10)
+    alarm_type = models.CharField(max_length=30)
+    send_mail =models.SmallIntegerField(default=0)
+    create_time = models.DateTimeField(db_index=True,default=timezone.now)
+    class Meta:
+        db_table = 'alarm_temp'
+        index_together = [["db_ip", "db_port","alarm_type"], ]

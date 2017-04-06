@@ -24,12 +24,14 @@
                 <th>是否监控</th>
                 <th>IP+PORT</th>
                 <th>监控LONG SQL</th>
-                <th>LONG SQL监控阈值(S)</th>
                 <th>自动kill LONG SQL</th>
-                <th>监控ACTIVE SQL</th>
-                <th>ACTIVE SQL监控阈值</th>
-                <th>监控账号</th>
-                <th>发送邮箱</th>
+                <th>监控连接数</th>
+                <th>监控复制</th>
+                <th>监控复制延迟</th>
+                {#                <th>LONG SQL监控阈值(S)</th>#}
+                {#                <th>ACTIVE SQL监控阈值</th>#}
+                {#                <th>监控账号</th>#}
+                {#                <th>发送邮箱</th>#}
                 <th></th>
                 </thead>
                 <tbody>
@@ -59,9 +61,6 @@
                             {% endif %}
                         </td>
                         <td>
-                            {{ item.longsql_time }}
-                        </td>
-                        <td>
                             {% if item.longsql_autokill  == 1 %}
                                 <span class='badge badge-info'>ON</span>
 
@@ -70,21 +69,47 @@
                             {% endif %}
                         </td>
                         <td>
+                            {% if item.check_connections  == 1 %}
+                                <span class='badge'>ON</span>
+                            {% elif item.check_connections  == 0 %}
+                                <span class='badge'>OFF</span>
+                            {% endif %}
+                        </td>
+
+                    <td>
+                            {% if item.check_slave  == 1 %}
+                                <span class='badge'>ON</span>
+                            {% elif item.check_slave  == 0 %}
+                                <span class='badge'>OFF</span>
+                            {% endif %}
+                        </td>
+                    <td>
                             {% if item.check_active  == 1 %}
                                 <span class='badge'>ON</span>
                             {% elif item.check_active  == 0 %}
                                 <span class='badge'>OFF</span>
                             {% endif %}
                         </td>
-                        <td>
-                            {{ item.active_threshold }}
+                    <td>
+                            {% if item.check_delay  == 1 %}
+                                <span class='badge'>ON</span>
+                            {% elif item.check_delay  == 0 %}
+                                <span class='badge'>OFF</span>
+                            {% endif %}
                         </td>
-                        <td>
-                            {{ item.account.tags }} + {{ item.account.user }}
-                        </td>
-                        <td>
-                            {{ item.mail_to }}
-                        </td>
+
+                        {#                      <td>#}
+                        {#                            {{ item.longsql_time }}#}
+                        {#                        </td>#}
+                        {#                        <td>#}
+                        {#                            {{ item.active_threshold }}#}
+                        {#                        </td>#}
+                        {#                        <td>#}
+                        {#                            {{ item.account.tags }} + {{ item.account.user }}#}
+                        {#                        </td>#}
+                        {#                        <td>#}
+                        {#                            {{ item.mail_to }}#}
+                        {#                        </td>#}
                         <td>
                             <a href="{% url 'mon_edit' %}?dbid={{ item.id }}" title="修改" > <span class="glyphicon glyphicon-pencil" ></span> </a>
 

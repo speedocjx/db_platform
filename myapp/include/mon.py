@@ -5,7 +5,7 @@ from myapp.models import MySQL_monitor
 import MySQLdb,datetime
 from myapp.include.encrypt import prpcrypt
 from myapp.tasks import sendmail
-from monitor.models import Mysql_processlist,Mysql_replication,MysqlStatus
+from monitor.models import Mysql_processlist,Mysql_replication,MysqlStatus,Alarm,AlarmTemp
 from myapp.include.scheduled import mysql_exec
 
 class Connect(object):
@@ -49,9 +49,13 @@ class Connect(object):
              results = 'error'
         return results
 
+# active sql,long sql,replication,connections
 @task
-def sendmail_monitor(title,mailto,data):
-    mon_sqllist = data
+def sendmail_monitor(title,mailto,data,alarm_type):
+    if alarm_type in ['active sql','long sql']:
+        mon_sqllist = data
+    else:
+        alarm_information = data
     html_content = loader.render_to_string('include/mail_template.html', locals())
     sendmail(title, mailto, html_content)
 
@@ -63,6 +67,7 @@ def mon_mysql():
 
     if len(no_monlist)>0:
         for i in no_monlist:
+
             Mysql_replication.objects.filter(db_ip=i.instance.ip).filter(db_port=i.instance.port).delete()
             MysqlStatus.objects.filter(db_ip=i.instance.ip).filter(db_port=i.instance.port).delete()
     # plist=[]
@@ -86,16 +91,25 @@ def check_mysql_host(db):
     if db.check_longsql == 1:
         longsql_send = filter(lambda x:x[5]>db.longsql_time,result)
         # print longsql_send
+        alarm_type = 'long sql'
         if len(longsql_send)>0:
+            flag = record_alarm(db, alarm_type)
             if db.longsql_autokill  == 1:
                 idlist = map(lambda x:'kill '+str(x[0])+';',longsql_send)
                 conn_info.kill_id(idlist)
-                sendmail_monitor.delay(db.tag + '-LongSql_AutoKilled', db.mail_to.split(';'), longsql_send)
+                if flag:
+                    sendmail_monitor.delay(db.tag + '-LongSql_AutoKilled', db.mail_to.split(';'), longsql_send,alarm_type)
             else:
-                sendmail_monitor.delay(db.tag+'-LongSql_List',db.mail_to.split(';'),longsql_send)
+                sendmail_monitor.delay(db.tag+'-LongSql_List',db.mail_to.split(';'),longsql_send,alarm_type)
+        else:
+            check_ifok(db, alarm_type)
     if db.check_active == 1:
+        alarm_type = 'active sql'
         if len(result)>db.active_threshold :
-            sendmail_monitor.delay(db.tag + '-ActiveSql_List', db.mail_to.split(';'), result)
+            if record_alarm(db, alarm_type):
+                sendmail_monitor.delay(db.tag + '-ActiveSql_List', db.mail_to.split(';'), result,alarm_type)
+        else:
+            check_ifok(db, alarm_type)
     insertlist=[]
     # for i in result:
     #     insertlist.append(Mysql_processlist(conn_id=i[0],user=i[1],host=i[2],db=i[3],\
@@ -106,6 +120,24 @@ def check_mysql_host(db):
                                                     command=x[4],time=x[5],state=x[6],info=x[7]),result)
         # print insertlist
         Mysql_processlist.objects.bulk_create(insertlist)
+
+def record_alarm(db,alarm_type):
+    time = datetime.datetime.now()-datetime.timedelta(minutes=db.alarm_interval)
+    if len(AlarmTemp.objects.filter(db_ip=db.instance.ip, db_port=db.instance.port,alarm_type=alarm_type,create_time__gte=time))<db.alarm_times:
+        new_alarm = Alarm(send_mail=1,db_ip=db.instance.ip, db_port=db.instance.port, alarm_type=alarm_type)
+        new_alarm.save()
+        new_alarm1 = AlarmTemp(db_ip=db.instance.ip, db_port=db.instance.port, alarm_type=alarm_type)
+        new_alarm1.save()
+        return True
+    else:
+        new_alarm = Alarm(send_mail=0, db_ip=db.instance.ip, db_port=db.instance.port, alarm_type=alarm_type)
+        new_alarm.save()
+        return False
+
+def check_ifok(db,alarm_type):
+    if AlarmTemp.objects.filter(db_ip=db.instance.ip, db_port=db.instance.port,alarm_type=alarm_type):
+        AlarmTemp.objects.filter(db_ip=db.instance.ip, db_port=db.instance.port, alarm_type=alarm_type).delete()
+        sendmail_monitor.delay(db.tag, db.mail_to.split(';'), alarm_type+' ok', alarm_type)
 
 
 
@@ -343,6 +375,16 @@ def mon_basic(db):
         mysql_exec(sql, param)
         mysql_exec(sql2, param)
 
+        if db.check_connections:
+            alarm_type = 'connections'
+            if db.connection_threshold >= threads_connected:
+                if record_alarm(db,alarm_type):
+                    sendmail_monitor.delay(db.tag + '-too many connections', db.mail_to.split(';'), 'values:'+str(threads_connected),alarm_type)
+            else:
+                check_ifok(db, alarm_type)
+
+
+
         # check mysql connected
         connected = cur.execute("select SUBSTRING_INDEX(host,':',1) as connect_server, user connect_user,db connect_db, count(SUBSTRING_INDEX(host,':',1)) as connect_count  from information_schema.processlist where db is not null and db!='information_schema' and db !='performance_schema' group by connect_server,connect_user,connect_db;");
         if connected:
@@ -354,8 +396,6 @@ def mon_basic(db):
         #check replication
         master_thread=cur.execute("select * from information_schema.processlist where COMMAND = 'Binlog Dump' or COMMAND = 'Binlog Dump GTID';")
         slave_status=cur.execute('show slave status;')
-        # print "slave_status"
-        # print slave_status
         datalist=[]
         if master_thread >= 1:
             datalist.append(int(1))
@@ -391,8 +431,6 @@ def mon_basic(db):
             result=cur.fetchone()
             # print "result"
             # print slave_info
-            # print result
-            # print datalist
             master_server=result[1]
             master_port=result[3]
             slave_io_run=result[10]
@@ -403,9 +441,9 @@ def mon_basic(db):
             master_binlog_file=result[5]
             master_binlog_pos=result[6]
             try:
-                slave_sQL_sunning_state=result[44]
+                slave_sQL_rnning_state=result[44]
             except Exception,e:
-                slave_sQL_sunning_state="NULL"
+                slave_sQL_running_state="NULL"
             datalist.append(master_server)
             datalist.append(master_port)
             datalist.append(slave_io_run)
@@ -416,7 +454,28 @@ def mon_basic(db):
             datalist.append(master_binlog_file)
             datalist.append(master_binlog_pos)
             datalist.append(0)
-            datalist.append(slave_sQL_sunning_state)
+            datalist.append(slave_sQL_rnning_state)
+
+            if db.check_slave:
+                if (slave_io_run == "Yes") and (slave_sql_run == "Yes"):
+                    alarm_type = 'slave stop'
+                    check_ifok(db, alarm_type)
+                    if db.check_delay :
+                        alarm_type = 'slave delay'
+                        if db.delay_threshold >=delay :
+                            if record_alarm(db,alarm_type):
+                                sendmail_monitor.delay(db.tag + '-slave delay', db.mail_to.split(';'), 'values:'+ str(delay),alarm_type)
+
+                        else:
+                            check_ifok(db, alarm_type)
+                else:
+                    alarm_type='slave stop'
+                    if record_alarm(db,alarm_type):
+                        sendmail_monitor.delay(db.tag + '-slave stop', db.mail_to.split(';'),alarm_type, alarm_type)
+
+
+
+
         elif master_thread >= 1:
             gtid_mode=cur.execute("select * from information_schema.global_variables where variable_name='gtid_mode';")
             result=cur.fetchone()
@@ -448,7 +507,6 @@ def mon_basic(db):
             datalist.append('---')
         else:
             datalist=[]
-
         result=datalist
         if result:
             datalist.append(now_time)
@@ -460,8 +518,9 @@ def mon_basic(db):
             mysql_exec(sql2, param)
         cur.close()
         conn.close()
-
+    # except Exception, e:
     except MySQLdb.Error, e:
+        print e
         time.sleep(3)
     try:
         conn = MySQLdb.connect(host=db.instance.ip, user=db.account.user, passwd=py.decrypt(db.account.passwd), port=int(db.instance.port), connect_timeout=3, charset='utf8')

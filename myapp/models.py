@@ -156,14 +156,22 @@ class Incep_error_log(models.Model):
 class MySQL_monitor(models.Model):
     tag = models.CharField(max_length=20)
     monitor = models.SmallIntegerField(default=1)
-    instance = models.OneToOneField(Db_instance)
+    # instance = models.OneToOneField(Db_instance)
+    instance = models.ForeignKey(Db_instance)
     check_longsql = models.SmallIntegerField(default=0)
     longsql_time = models.SmallIntegerField(default=1200)
     longsql_autokill = models.SmallIntegerField(default=0)
     check_active = models.SmallIntegerField(default=0)
     active_threshold = models.SmallIntegerField(default=30)
     account = models.OneToOneField(Db_account)
+    check_connections = models.SmallIntegerField(default=0)
+    connection_threshold = models.IntegerField(default=1000)
+    check_delay = models.SmallIntegerField(default=0)
+    delay_threshold = models.IntegerField(default=3600)
+    check_slave = models.SmallIntegerField(default=0)
     replchannel = models.CharField(max_length=30,default='0')
+    alarm_times = models.SmallIntegerField(default=3)
+    alarm_interval = models.SmallIntegerField(default=60)
     mail_to = models.CharField(max_length=255)
     def __unicode__(self):
         return self.tag

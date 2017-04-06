@@ -8,10 +8,10 @@
 {%block content%}
     </br>
     </br>
-    {#    {% if info %}#}
-    {##}
-    {#        <strong> <span style="color:red">{{ info }}</span></strong>#}
-    {#    {% endif %}#}
+    {% if info %}
+
+        <strong> <span style="color:red">{{ info }}</span></strong>
+    {% endif %}
     <form role="form" method='post'>
         {% csrf_token %}
         <div class="row">
@@ -112,6 +112,78 @@
                                 <input name="activetre_set" type=="text" class="form-control" maxlength="10"  value="{{ edit_db.active_threshold }}" >
                             </td>
                         </tr>
+
+                        <tr>
+                            <td>监控连接数</td>
+                            <td>
+                                <select name = "connection_set" class="form-control col-md-3" >
+                                    {% if edit_db.check_connections == 1 %}
+                                        <option selected="selected" value =1>ON</option>
+                                        <option value =0>OFF</option>
+                                    {% elif edit_db.check_connections == 0 %}
+                                        <option value =1>ON</option>
+                                        <option selected="selected"  value =0>OFF</option>
+                                    {% endif %}
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>连接数监控阈值</td>
+                            <td>
+                                <input name="connectiontre_set" type=="text" class="form-control" maxlength="10"  value="{{ edit_db.connection_threshold }}" >
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>监控复制</td>
+                            <td>
+                                <select name = "slave_set" class="form-control col-md-3" >
+                                    {% if edit_db.check_slave == 1 %}
+                                        <option selected="selected" value =1>ON</option>
+                                        <option value =0>OFF</option>
+                                    {% elif edit_db.check_slave == 0 %}
+                                        <option value =1>ON</option>
+                                        <option selected="selected"  value =0>OFF</option>
+                                    {% endif %}
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>监控复制延迟</td>
+                            <td>
+                                <select name = "slavedelay_set" class="form-control col-md-3" >
+                                    {% if edit_db.check_delay == 1 %}
+                                        <option selected="selected" value =1>ON</option>
+                                        <option value =0>OFF</option>
+                                    {% elif edit_db.check_delay == 0 %}
+                                        <option value =1>ON</option>
+                                        <option selected="selected"  value =0>OFF</option>
+                                    {% endif %}
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>复制延迟阈值</td>
+                            <td>
+                                <input name="slavedelaytre_set" type=="text" class="form-control" maxlength="10"  value="{{ edit_db.delay_threshold }}" >
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>告警次数</td>
+                            <td>
+                                <input name="alarmtime_set" type=="text" class="form-control" maxlength="10"  value="{{ edit_db.alarm_times }}" >
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>发送告警邮件休眠时间(min)</td>
+                            <td>
+                                <input name="alarminterval_set" type=="text" class="form-control" maxlength="10"  value="{{ edit_db.alarm_interval }}" >
+                            </td>
+                        </tr>
+
+
+
+
                         <tr>
                             <td>监控账号</td>
 
@@ -217,6 +289,68 @@
                                 <input name="activetre_set" type=="text" class="form-control" maxlength="10" value="30">
                             </td>
                         </tr>
+
+
+                        <tr>
+                            <td>监控连接数</td>
+                            <td>
+                                <select name = "connection_set" class="form-control col-md-3" >
+
+                                    <option value =1>ON</option>
+                                    <option selected="selected"  value =0>OFF</option>
+
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>连接数监控阈值</td>
+                            <td>
+                                <input name="connectiontre_set" type=="text" class="form-control" maxlength="10"  value=1000 >
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>监控复制</td>
+                            <td>
+                                <select name = "slave_set" class="form-control col-md-3" >
+
+                                    <option value =1>ON</option>
+                                    <option selected="selected"  value =0>OFF</option>
+
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>监控复制延迟</td>
+                            <td>
+                                <select name = "slavedelay_set" class="form-control col-md-3" >
+                                    <option value =1>ON</option>
+                                    <option selected="selected" value =0>OFF</option>
+
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>复制延迟阈值</td>
+                            <td>
+                                <input name="slavedelaytre_set" type=="text" class="form-control" maxlength="10"  value=3600 >
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>告警次数</td>
+                            <td>
+                                <input name="alarmtime_set" type=="text" class="form-control" maxlength="10"  value=3 >
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>发送告警邮件休眠时间(min)</td>
+                            <td>
+                                <input name="alarminterval_set" type=="text" class="form-control" maxlength="10"  value=60 >
+                            </td>
+                        </tr>
+
+
+
                         <tr>
                             <td>监控账号</td>
 

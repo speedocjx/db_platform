@@ -187,6 +187,7 @@ EMAIL_HOST='smtp.163.com'
 EMAIL_HOST_USER='wondersjky'
 EMAIL_HOST_PASSWORD='xxxxxxxx'
 EMAIL_PORT = 25
+
 # EMAIL_USE_TLS = True
 
 # SaltStack API
