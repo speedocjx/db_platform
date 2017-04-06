@@ -282,7 +282,6 @@ class AlarmTemp(models.Model):
     db_ip = models.CharField(max_length=30)
     db_port = models.CharField(max_length=10)
     alarm_type = models.CharField(max_length=30)
-    send_mail =models.SmallIntegerField(default=0)
     create_time = models.DateTimeField(db_index=True,default=timezone.now)
     class Meta:
         db_table = 'alarm_temp'

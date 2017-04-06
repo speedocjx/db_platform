@@ -377,7 +377,7 @@ def mon_basic(db):
 
         if db.check_connections:
             alarm_type = 'connections'
-            if db.connection_threshold >= threads_connected:
+            if db.connection_threshold <= threads_connected:
                 if record_alarm(db,alarm_type):
                     sendmail_monitor.delay(db.tag + '-too many connections', db.mail_to.split(';'), 'values:'+str(threads_connected),alarm_type)
             else:
@@ -462,7 +462,7 @@ def mon_basic(db):
                     check_ifok(db, alarm_type)
                     if db.check_delay :
                         alarm_type = 'slave delay'
-                        if db.delay_threshold >=delay :
+                        if db.delay_threshold <=delay :
                             if record_alarm(db,alarm_type):
                                 sendmail_monitor.delay(db.tag + '-slave delay', db.mail_to.split(';'), 'values:'+ str(delay),alarm_type)
 
