@@ -15,7 +15,7 @@
 + 用户权限分离系统
 + saltstack api（key管理、远程shell、硬件信息）
 + 数据库相关操作日志记录以及查询
-+ MySQL数据库监控
++ MySQL数据库健康监控和告警
 
 ### 开发环境：
 + django:1.8.14
@@ -221,6 +221,13 @@ python manage.py celery worker -E -c 8 --loglevel=info -Q mysql_monitor
 ![image](https://github.com/speedocjx/myfile/blob/master/sql-manage-platform/group_set.jpg)
 ## 15.DB组设置界面
 ![image](https://github.com/speedocjx/myfile/blob/master/sql-manage-platform/dbgroup_set.jpg)
+
+## MySQL监控部分
+  源自lepus MySQL部分，做了一定修改
+![image](https://github.com/speedocjx/myfile/blob/master/sql-manage-platform/mon_set.jpg)
+![image](https://github.com/speedocjx/myfile/blob/master/sql-manage-platform/mysql_health.jpg)
+![image](https://github.com/speedocjx/myfile/blob/master/sql-manage-platform/mon_edit.jpg)
+
 ## 16.用户密码自助重置页面
 ![image](https://github.com/speedocjx/myfile/blob/master/sql-manage-platform/pass_reset.jpg)
 ## 17.SALTAPI-WEB页面
