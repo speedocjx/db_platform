@@ -1,0 +1,138 @@
+{% extends "include/base.html" %}
+{% load cus_filter %}
+{% block title %}
+    <title>MySQL健康监控</title>
+{% endblock %}
+{% block name %}
+    MySQL健康监控
+{% endblock %}
+{%block content%}
+    </br>
+    </br>
+    {#    <form role="form" method='post'>#}
+    {#        {% csrf_token %}#}
+    <div class="col-md-12 main ">
+        <div class="row">
+
+            <button onclick="openpage('{% url 'mysql_status' %}')"  class="btn btn-info">刷新</button>
+        </div>
+        <div class="row">
+
+            {% if posts %}
+                <table  id="mytable" class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th colspan="2"><center>服务器</center></th>
+                        <th colspan="4"><center>基本信息</center></th>
+                        <th colspan="2"><center>线程</center></th>
+                        <th colspan="2"><center>网络</center></th>
+                        <th colspan="2"><center>查询</center></th>
+
+                    </tr>
+                    <tr>
+                        <th>ID</th>
+                        <th>主机</th>
+                        <th>连接</th>
+                        <th>角色</th>
+                        <th>运行时间</th>
+                        <th>版本</th>
+                        <th>连接线程数</th>
+                        <th>活动线程数</th>
+                        <th>接收</th>
+                        <th>发送</th>
+                        <th>每秒查询</th>
+                        <th>每秒事务</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    {% for item in posts.object_list %}
+                        <tr>
+                            <td> {{ posts.start_index|add:forloop.counter0 }} </td>
+
+                            <td>
+                                {{ item.db_ip }} : {{ item.db_port }}
+                            </td>
+                            <td>
+                                {% if item.connect == 1 %}
+                                    <span class="label label-success">成功</span>
+                                {% else %}
+                                    <span class="label label-danger">失败</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.role == "master" %}
+                                    <span class="label label-info">M</span>
+                                {% elif item.role == "slave" %}
+                                    <span class="label label-warning">S</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{ item.uptime| s_to_d }}
+                            </td>
+                            <td>
+                                {{ item.version }}
+                            </td>
+                            <td>
+                                {{ item.threads_connected }}
+                            </td>
+
+                            <td>
+                                {{ item.threads_running }}
+                            </td>
+
+                            <td>
+                                {{ item.bytes_received_persecond }}KB
+                            </td>
+
+                            <td>
+                                {{ item.bytes_sent_persecond }}KB
+                            </td>
+
+
+                            <td>
+                                {{ item.queries_persecond }}
+                            </td>
+                            <td>
+                                {{ item.transaction_persecond }}
+                            </td>
+
+
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+
+
+
+                <nav>
+                    <ul class="pager">
+                        {% if posts.has_previous %}
+                            <li class="previous"><a href="?page={{ posts.previous_page_number }}"><span aria-hidden="true">&larr;</span>前一页</a></li>
+                        {% else %}
+                            <li class="previous disabled"><a><span aria-hidden="true">&larr;</span>前一页</a></li>
+                        {% endif %}
+                        <li><a>第{{ posts.number }}页/共{{ posts.paginator.num_pages }}页</a></li>
+                        {% if posts.has_next %}
+                            <li class="next"><a href="?page={{ posts.next_page_number }}">下一页<span aria-hidden="true">&rarr;</span></a></li>
+                        {% else %}
+                            <li class="next disabled"><a>下一页<span aria-hidden="true">&rarr;</span></a></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+
+            {% endif %}
+
+        </div>
+    </div>
+    <div class="row">
+
+    </div>
+    {#    </form >#}
+
+
+{% endblock %}
+{% block script %}
+
+
+{% endblock %}

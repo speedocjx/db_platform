@@ -63,8 +63,6 @@ def sendmail_monitor(title,mailto,data,alarm_type):
 def mon_mysql():
     monlist = MySQL_monitor.objects.filter(monitor=1)
     no_monlist = MySQL_monitor.objects.filter(monitor=0)
-
-
     if len(no_monlist)>0:
         for i in no_monlist:
 
@@ -89,7 +87,10 @@ def check_mysql_host(db):
     # result,col = conn_info.query_mysql("select ID,USER,HOST,DB,COMMAND,TIME,STATE,INFO from processlist")
 
     if db.check_longsql == 1:
-        longsql_send = filter(lambda x:x[5]>db.longsql_time,result)
+        try:
+            longsql_send = filter(lambda x:x[5]>db.longsql_time,result)
+        except Exception,e:
+            longsql_send=''
         # print longsql_send
         alarm_type = 'long sql'
         if len(longsql_send)>0:
@@ -103,7 +104,7 @@ def check_mysql_host(db):
                 sendmail_monitor.delay(db.tag+'-LongSql_List',db.mail_to.split(';'),longsql_send,alarm_type)
         else:
             check_ifok(db, alarm_type)
-    if db.check_active == 1:
+    if db.check_active == 1 :
         alarm_type = 'active sql'
         if len(result)>db.active_threshold :
             if record_alarm(db, alarm_type):
@@ -115,11 +116,16 @@ def check_mysql_host(db):
     #     insertlist.append(Mysql_processlist(conn_id=i[0],user=i[1],host=i[2],db=i[3],\
     #                                     command=i[4],time=i[5],state=i[6],info=i[7]))
     if len(result)>0:
-        insertlist = map(lambda x:Mysql_processlist(db_ip=db.instance.ip,db_port=db.instance.port,\
-                                                    conn_id=x[0],user=x[1],host=x[2],db=x[3],\
-                                                    command=x[4],time=x[5],state=x[6],info=x[7]),result)
-        # print insertlist
-        Mysql_processlist.objects.bulk_create(insertlist)
+        try:
+            insertlist = map(lambda x:Mysql_processlist(db_ip=db.instance.ip,db_port=db.instance.port,\
+                                                        conn_id=x[0],user=x[1],host=x[2],db=x[3],\
+                                                        command=x[4],time=x[5],state=x[6],info=x[7]),result)
+            # print insertlist
+            Mysql_processlist.objects.bulk_create(insertlist)
+        except Exception,e:
+            print e
+
+
 
 def record_alarm(db,alarm_type):
     time = datetime.datetime.now()-datetime.timedelta(minutes=db.alarm_interval)
@@ -377,7 +383,7 @@ def mon_basic(db):
 
         if db.check_connections:
             alarm_type = 'connections'
-            if db.connection_threshold <= threads_connected:
+            if db.connection_threshold <= int(threads_connected):
                 if record_alarm(db,alarm_type):
                     sendmail_monitor.delay(db.tag + '-too many connections', db.mail_to.split(';'), 'values:'+str(threads_connected),alarm_type)
             else:
@@ -462,7 +468,7 @@ def mon_basic(db):
                     check_ifok(db, alarm_type)
                     if db.check_delay :
                         alarm_type = 'slave delay'
-                        if db.delay_threshold <=delay :
+                        if db.delay_threshold <=int(delay) :
                             if record_alarm(db,alarm_type):
                                 sendmail_monitor.delay(db.tag + '-slave delay', db.mail_to.split(';'), 'values:'+ str(delay),alarm_type)
 

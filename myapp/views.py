@@ -1120,8 +1120,12 @@ def set_dbname(request):
             try:
                 # dbtagname = request.POST['dbtag_set']
                 account_set = Db_account.objects.get(id=int(request.POST['acc_set']))
-                info = "DELETE db_account OK!"
-                account_set.delete()
+
+                if account_set.mysql_monitor:
+                    info = "DELETE db_account FAILED!ACCOUNT USED FOR MONITOR"
+                else:
+                    info = "DELETE db_account OK!"
+                    account_set.delete()
                 return render(request, 'previliges/set_dbname.html', locals())
             except Exception,e:
                 info = "DELETE db_account FAILED!"

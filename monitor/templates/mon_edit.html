@@ -8,14 +8,18 @@
 {%block content%}
     </br>
     </br>
-    {% if info %}
+    <div class="col-md-12 main ">
 
-        <strong> <span style="color:red">{{ info }}</span></strong>
-    {% endif %}
-    <form role="form" method='post'>
-        {% csrf_token %}
+        {% if info %}
+            <strong> <span style="color:red">{{ info }}</span></strong>
+        {% endif %}
         <div class="row">
-            <div class="col-md-12 main ">
+            <button onclick="openpage('{% url 'mon_set' %}')"  class="btn btn-info">LIST</button>
+        </div>
+        <div class="row">
+            <form role="form" method='post'>
+                {% csrf_token %}
+
                 {% if edit_db %}
                     <table  id="mytable" class="table table-bordered">
                         <tbody>
@@ -168,6 +172,13 @@
                                 <input name="slavedelaytre_set" type=="text" class="form-control" maxlength="10"  value="{{ edit_db.delay_threshold }}" >
                             </td>
                         </tr>
+                        <tr>
+                            <td>5.7复制channel</td>
+                            <td>
+                                <input name="slavechannel_set" type=="text" class="form-control" maxlength="15"  value="{{ edit_db.replchannel }}" >
+                            </td>
+                        </tr>
+
                         <tr>
                             <td>告警次数</td>
                             <td>
@@ -337,6 +348,12 @@
                             </td>
                         </tr>
                         <tr>
+                            <td>5.7复制channel</td>
+                            <td>
+                                <input name="slavechannel_set" type=="text" class="form-control" maxlength="15"  value="0" >
+                            </td>
+                        </tr>
+                        <tr>
                             <td>告警次数</td>
                             <td>
                                 <input name="alarmtime_set" type=="text" class="form-control" maxlength="10"  value=3 >
@@ -380,12 +397,12 @@
 
 
                 {% endif %}
-            </div>
+
+
+            </form >
+
         </div>
-
-    </form >
-
-
+    </div>
 {% endblock %}
 {% block script %}
 {% endblock %}

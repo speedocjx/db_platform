@@ -1,15 +1,33 @@
 from django.shortcuts import render
-from myapp.models import Db_group,Db_name,Db_account,Db_instance,Oper_log,Upload,Task,MySQL_monitor
+from monitor.models import MysqlStatus,Mysql_replication
+from myapp.models import Db_account,Db_instance,MySQL_monitor
 from django.http import HttpResponse,HttpResponseRedirect,StreamingHttpResponse,JsonResponse
 from django.contrib.auth.decorators import login_required,permission_required
+from django.core.paginator import Paginator, InvalidPage, EmptyPage
 
 
 # Create your views here.
 @login_required(login_url='/accounts/login/')
 @permission_required('myapp.can_see_mysqladmin', login_url='/')
 def mon_set(request):
-    dblist = MySQL_monitor.objects.all().order_by('id')
+    page_size = 10
+    all_record = MySQL_monitor.objects.all().order_by('id')
+    paginator = Paginator(all_record, page_size)
+    try:
+        page = int(request.GET.get('page', 1))
+    except ValueError:
+        page = 1
+    try:
+        posts = paginator.page(page)
+    except (EmptyPage, InvalidPage):
+        posts = paginator.page(paginator.num_pages)
+
     return render(request,'mon_set.html',locals())
+
+
+
+
+
 
 @login_required(login_url='/accounts/login/')
 @permission_required('myapp.can_see_mysqladmin', login_url='/')
@@ -37,7 +55,7 @@ def mon_edit(request):
                 edit_db.longsql_time = int(request.POST['longthre_set'])
                 edit_db.check_active = int(request.POST['activesql_set'])
                 edit_db.active_threshold = int(request.POST['activetre_set'])
-
+                edit_db.replchannel = request.POST['slavechannel_set']
                 edit_db.check_connections = int(request.POST['connection_set'])
                 edit_db.connection_threshold = int(request.POST['connectiontre_set'])
                 edit_db.check_slave =  int(request.POST['slave_set'])
@@ -50,7 +68,7 @@ def mon_edit(request):
                 edit_db.save()
             elif request.POST.has_key('delete'):
                 myid = int(request.POST['set'])
-                MySQL_monitor.objects.get(id=myid).delete()
+                delete_mon(myid)
                 return HttpResponseRedirect("/monitor/mon_set/")
             elif request.POST.has_key('create'):
                 if request.POST['ins_set'] !='' and request.POST['acc_set']!='':
@@ -59,11 +77,11 @@ def mon_edit(request):
                                             tag=request.POST['tagset'],monitor=int(request.POST['monitor_set']),\
                                             check_longsql=int(request.POST['longsql_set']),longsql_autokill=int(request.POST['autokill_set']),\
                                             longsql_time=int(request.POST['longthre_set']),check_active=int(request.POST['activesql_set']),\
-                                            active_threshold=int(request.POST['activetre_set']),check_connections=int(request.POST['connectiontre_set']), \
+                                            active_threshold=int(request.POST['activetre_set']),check_connections=int(request.POST['connection_set']), \
                                             connection_threshold=int(request.POST['connectiontre_set']),check_slave=int(request.POST['slave_set']), \
                                             check_delay=int(request.POST['slavedelay_set']),delay_threshold=int(request.POST['slavedelaytre_set']), \
-                                            alarm_times=int(request.POST['alarmtime_set']),alarm_interval=int(request.POST['alarminterval_set']),\
-                                            mail_to=request.POST['mailset'])
+                                            alarm_times=int(request.POST['alarmtime_set']),alarm_interval=int(request.POST['alarminterval_set']), \
+                                            replchannel=request.POST['slavechannel_set'],mail_to=request.POST['mailset'])
                     edit_db.save()
         except Exception,e:
             print e
@@ -74,5 +92,35 @@ def mon_edit(request):
 @permission_required('myapp.can_see_mysqladmin', login_url='/')
 def mon_delete(request):
     myid = int(request.GET['dbid'])
-    MySQL_monitor.objects.get(id=myid).delete()
+    delete_mon(myid)
     return HttpResponseRedirect("/monitor/mon_set/")
+
+def delete_mon(id):
+    db = MySQL_monitor.objects.get(id=id)
+    MysqlStatus.objects.filter(db_ip=db.instance.ip,db_port=db.instance.port).delete()
+    Mysql_replication.objects.filter(db_ip=db.instance.ip,db_port=db.instance.port).delete()
+    db.delete()
+    db.save()
+
+@login_required(login_url='/accounts/login/')
+@permission_required('myapp.can_see_mysqladmin', login_url='/')
+def mysql_status(request):
+    page_size = 15
+    all_record = MysqlStatus.objects.order_by('db_ip')
+    paginator = Paginator(all_record, page_size)
+    try:
+        page = int(request.GET.get('page', 1))
+    except ValueError:
+        page = 1
+    try:
+        posts = paginator.page(page)
+    except (EmptyPage, InvalidPage):
+        posts = paginator.page(paginator.num_pages)
+    return render(request, 'mysql_status.html', locals())
+
+
+@login_required(login_url='/accounts/login/')
+@permission_required('myapp.can_see_mysqladmin', login_url='/')
+def batch_add(request):
+
+    return render(request, 'batch_add.html', locals())
