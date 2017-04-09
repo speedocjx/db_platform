@@ -27,7 +27,7 @@
                         <th colspan="2"><center>线程</center></th>
                         <th colspan="2"><center>网络</center></th>
                         <th colspan="2"><center>查询</center></th>
-
+                        <th ></th>
                     </tr>
                     <tr>
                         <th>ID</th>
@@ -42,6 +42,7 @@
                         <th>发送</th>
                         <th>每秒查询</th>
                         <th>每秒事务</th>
+                        <th >更新时间</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -96,7 +97,9 @@
                             <td>
                                 {{ item.transaction_persecond }}
                             </td>
-
+                            <td>
+                                {{ item.create_time|adjtime|date:"y-m-d H:i"  }}
+                            </td>
 
                         </tr>
                     {% endfor %}

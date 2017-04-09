@@ -183,9 +183,9 @@ os.path.join(BASE_DIR, "static"),
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
-EMAIL_HOST='smtp.163.com'
+EMAIL_HOST='smtp.sohu.com'
 EMAIL_HOST_USER='wondersjky'
-EMAIL_HOST_PASSWORD='xxxxxxx'
+EMAIL_HOST_PASSWORD='xxxxxx'
 EMAIL_PORT = 25
 
 # EMAIL_USE_TLS = True

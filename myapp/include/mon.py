@@ -49,13 +49,46 @@ class Connect(object):
              results = 'error'
         return results
 
-# active sql,long sql,replication,connections
+# active sql,long sql,slave stop,slave delay,connections
+alarm_list = {
+    1:'active sql',
+    2:'long sql',
+    3:'long sql killed',
+    4:'slave stop',
+    5:'slave delay',
+    6:'connections'
+}
+
+# @task
+# def sendmail_monitor(title,mailto,data,alarm_type):
+#     if alarm_type in ['active sql','long sql'] and data!='ok':
+#         mon_sqllist = data
+#     elif data == 'ok':
+#         alarm_information = alarm_type+'  ok'
+#     else:
+#         alarm_information = data
+#         # print alarm_information
+#     html_content = loader.render_to_string('include/mail_template.html', locals())
+#     sendmail(title, mailto, html_content)
+
 @task
-def sendmail_monitor(title,mailto,data,alarm_type):
-    if alarm_type in ['active sql','long sql']:
+def sendmail_monitor(db,mailto,data,alarm_type):
+    dbinfo  = 'IP: '+db.instance.ip + '\n' + 'PORT: ' + db.instance.port + '\n'
+    if data=='ok':
+        alarm_information = alarm_list[alarm_type] + '  ok'
+        title = db.tag+':'+alarm_information
+    elif alarm_type in [1,2,3]:
+        title = db.tag + ':' + alarm_list[alarm_type]
         mon_sqllist = data
-    else:
-        alarm_information = data
+    elif alarm_type == 6:
+        title = db.tag + ':' + 'too many connections'
+        alarm_information = 'values: '+ str(data)
+    elif alarm_type == 5:
+        title = db.tag + ':' + alarm_list[alarm_type]
+        alarm_information = 'values: '+ str(data)
+    elif alarm_type == 4:
+        alarm_information = 'SLAVE_IO_THREAD:'+ data['iothread'] + '\nSLAVE_SQL_THREAD:' + data['sqlthread'] + '\n'
+        title = db.tag + ':' + alarm_list[alarm_type]
     html_content = loader.render_to_string('include/mail_template.html', locals())
     sendmail(title, mailto, html_content)
 
@@ -88,27 +121,26 @@ def check_mysql_host(db):
 
     if db.check_longsql == 1:
         try:
-            longsql_send = filter(lambda x:x[5]>db.longsql_time,result)
+            longsql_send = filter(lambda x:int(x[5])>int(db.longsql_time),result)
         except Exception,e:
             longsql_send=''
         # print longsql_send
-        alarm_type = 'long sql'
+        alarm_type = 2
         if len(longsql_send)>0:
             flag = record_alarm(db, alarm_type)
             if db.longsql_autokill  == 1:
                 idlist = map(lambda x:'kill '+str(x[0])+';',longsql_send)
                 conn_info.kill_id(idlist)
-                if flag:
-                    sendmail_monitor.delay(db.tag + '-LongSql_AutoKilled', db.mail_to.split(';'), longsql_send,alarm_type)
-            else:
-                sendmail_monitor.delay(db.tag+'-LongSql_List',db.mail_to.split(';'),longsql_send,alarm_type)
+                sendmail_monitor.delay(db,db.mail_to.split(';'), longsql_send,3)
+            elif flag:
+                sendmail_monitor.delay(db,db.mail_to.split(';'),longsql_send,alarm_type)
         else:
             check_ifok(db, alarm_type)
     if db.check_active == 1 :
-        alarm_type = 'active sql'
-        if len(result)>db.active_threshold :
+        alarm_type = 1
+        if len(result)>=int(db.active_threshold) :
             if record_alarm(db, alarm_type):
-                sendmail_monitor.delay(db.tag + '-ActiveSql_List', db.mail_to.split(';'), result,alarm_type)
+                sendmail_monitor.delay(db, db.mail_to.split(';'), result,alarm_type)
         else:
             check_ifok(db, alarm_type)
     insertlist=[]
@@ -127,9 +159,10 @@ def check_mysql_host(db):
 
 
 
-def record_alarm(db,alarm_type):
+def record_alarm(db,num):
+    alarm_type = alarm_list[num]
     time = datetime.datetime.now()-datetime.timedelta(minutes=db.alarm_interval)
-    if len(AlarmTemp.objects.filter(db_ip=db.instance.ip, db_port=db.instance.port,alarm_type=alarm_type,create_time__gte=time))<db.alarm_times:
+    if len(AlarmTemp.objects.filter(db_ip=db.instance.ip, db_port=db.instance.port,alarm_type=alarm_type,create_time__gte=time))<int(db.alarm_times):
         new_alarm = Alarm(send_mail=1,db_ip=db.instance.ip, db_port=db.instance.port, alarm_type=alarm_type)
         new_alarm.save()
         new_alarm1 = AlarmTemp(db_ip=db.instance.ip, db_port=db.instance.port, alarm_type=alarm_type)
@@ -140,10 +173,11 @@ def record_alarm(db,alarm_type):
         new_alarm.save()
         return False
 
-def check_ifok(db,alarm_type):
+def check_ifok(db,num):
+    alarm_type = alarm_list[num]
     if AlarmTemp.objects.filter(db_ip=db.instance.ip, db_port=db.instance.port,alarm_type=alarm_type):
         AlarmTemp.objects.filter(db_ip=db.instance.ip, db_port=db.instance.port, alarm_type=alarm_type).delete()
-        sendmail_monitor.delay(db.tag, db.mail_to.split(';'), alarm_type+' ok', alarm_type)
+        sendmail_monitor.delay(db, db.mail_to.split(';'),'ok', num)
 
 
 
@@ -382,10 +416,10 @@ def mon_basic(db):
         mysql_exec(sql2, param)
 
         if db.check_connections:
-            alarm_type = 'connections'
+            alarm_type = 6
             if db.connection_threshold <= int(threads_connected):
                 if record_alarm(db,alarm_type):
-                    sendmail_monitor.delay(db.tag + '-too many connections', db.mail_to.split(';'), 'values:'+str(threads_connected),alarm_type)
+                    sendmail_monitor.delay(db, db.mail_to.split(';'),  threads_connected,alarm_type)
             else:
                 check_ifok(db, alarm_type)
 
@@ -464,20 +498,20 @@ def mon_basic(db):
 
             if db.check_slave:
                 if (slave_io_run == "Yes") and (slave_sql_run == "Yes"):
-                    alarm_type = 'slave stop'
+                    alarm_type = 4
                     check_ifok(db, alarm_type)
                     if db.check_delay :
-                        alarm_type = 'slave delay'
+                        alarm_type = 5
                         if db.delay_threshold <=int(delay) :
                             if record_alarm(db,alarm_type):
-                                sendmail_monitor.delay(db.tag + '-slave delay', db.mail_to.split(';'), 'values:'+ str(delay),alarm_type)
+                                sendmail_monitor.delay(db, db.mail_to.split(';'),delay,alarm_type)
 
                         else:
                             check_ifok(db, alarm_type)
                 else:
-                    alarm_type='slave stop'
+                    alarm_type = 4
                     if record_alarm(db,alarm_type):
-                        sendmail_monitor.delay(db.tag + '-slave stop', db.mail_to.split(';'),alarm_type, alarm_type)
+                        sendmail_monitor.delay(db, db.mail_to.split(';'),{'iothread':slave_io_run,'sqlthread':slave_sql_run}, alarm_type)
 
 
 

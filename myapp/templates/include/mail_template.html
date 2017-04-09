@@ -63,7 +63,9 @@
         </tbody>
     </table>
 {% endif %}
-
+{% if dbinfo %}
+    <pre> {{ dbinfo }}</pre>
+{% endif %}
 {% if mon_sqllist %}
     <table id="mytable1" class="table table-condensed" border="1">
         <thead>
@@ -96,7 +98,7 @@
 {% endif %}
 
 {% if alarm_information %}
-    {{ alarm_information }}
+    <pre>{{ alarm_information }}</pre>
 {% endif %}
 </body>
 </html>
