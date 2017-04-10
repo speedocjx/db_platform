@@ -115,10 +115,10 @@ def check_mysql_host(db):
     mon_basic(db)
     # longlist = []
     py = prpcrypt()
+    #
     conn_info  = Connect(db.instance.ip,db.instance.port,db.account.user,py.decrypt(db.account.passwd))
-    result,col = conn_info.query_mysql("select ID,USER,HOST,DB,COMMAND,TIME,STATE,INFO from processlist where command !='Sleep' and DB not in ('information_schema','sys') and user not in ('system user','event_scheduler') and command!='Binlog Dump'")
+    result,col = conn_info.query_mysql("select ID,USER,HOST,DB,COMMAND,TIME,STATE,INFO from information_schema.processlist where COMMAND !='Sleep' and DB not in ('information_schema','sys') and user not in ('system user','event_scheduler') and command!='Binlog Dump'")
     # result,col = conn_info.query_mysql("select ID,USER,HOST,DB,COMMAND,TIME,STATE,INFO from processlist")
-
     if db.check_longsql == 1:
         try:
             longsql_send = filter(lambda x:int(x[5])>int(db.longsql_time),result)
