@@ -67,6 +67,8 @@ incp_port = int(config.incp_port)
 incp_user = config.incp_user
 incp_passwd = config.incp_passwd
 public_user = config.public_user
+pttool_switch = config.pt_tool
+pttool_path = config.pt_tool_path
 
 
 

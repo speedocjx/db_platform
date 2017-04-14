@@ -284,41 +284,47 @@ def get_op_type(methods='get'):
     if (methods=='get'):
         return op_list
 
-def get_advice(hosttag, sql, request):
-    if advisor_switch!=0:
-        # 确认dbname
-        a = Db_name.objects.filter(dbtag=hosttag)[0]
-        # a = Db_name.objects.get(dbtag=hosttag)
-        tar_dbname = a.dbname
-        # 如果instance中有备库role='read'，则选择从备库读取
-        try:
-            if a.instance.all().filter(role='read')[0]:
-                tar_host = a.instance.all().filter(role='read')[0].ip
-                tar_port = a.instance.all().filter(role='read')[0].port
-        # 如果没有设置或没有role=read，则选择第一个读到的all实例读取
-        except Exception, e:
-            tar_host = a.instance.filter(role='all')[0].ip
-            tar_port = a.instance.filter(role='all')[0].port
-            # tar_host = a.instance.all()[0].ip
-            # tar_port = a.instance.all()[0].port
-        pc = prpcrypt()
+
+def get_connection_info(hosttag,request):
+    # 确认dbname
+    a = Db_name.objects.filter(dbtag=hosttag)[0]
+    # a = Db_name.objects.get(dbtag=hosttag)
+    tar_dbname = a.dbname
+    # 如果instance中有备库role='read'，则选择从备库读取
+    try:
+        if a.instance.all().filter(role='read')[0]:
+            tar_host = a.instance.all().filter(role='read')[0].ip
+            tar_port = a.instance.all().filter(role='read')[0].port
+    # 如果没有设置或没有role=read，则选择第一个读到的all实例读取
+    except Exception, e:
+        tar_host = a.instance.filter(role='all')[0].ip
+        tar_port = a.instance.filter(role='all')[0].port
+        # tar_host = a.instance.all()[0].ip
+        # tar_port = a.instance.all()[0].port
+    pc = prpcrypt()
+    for i in a.db_account_set.all():
+        if i.role != 'write' and i.role != 'admin':
+            # find the specified account for the user
+            if i.account.all().filter(username=request.user.username):
+                tar_username = i.user
+                tar_passwd = pc.decrypt(i.passwd)
+                break
+    # not find specified account for the user ,specified the public account to the user
+
+    if not vars().has_key('tar_username'):
         for i in a.db_account_set.all():
             if i.role != 'write' and i.role != 'admin':
                 # find the specified account for the user
-                if i.account.all().filter(username=request.user.username):
+                if i.account.all().filter(username=public_user):
                     tar_username = i.user
                     tar_passwd = pc.decrypt(i.passwd)
                     break
-        # not find specified account for the user ,specified the public account to the user
+    return tar_port,tar_passwd,tar_username,tar_host,tar_dbname
 
-        if not vars().has_key('tar_username'):
-            for i in a.db_account_set.all():
-                if i.role != 'write' and i.role != 'admin':
-                    # find the specified account for the user
-                    if i.account.all().filter(username=public_user):
-                        tar_username = i.user
-                        tar_passwd = pc.decrypt(i.passwd)
-                        break
+
+def get_advice(hosttag, sql, request):
+    if advisor_switch!=0:
+        tar_port, tar_passwd, tar_username, tar_host,tar_dbname = get_connection_info(hosttag,request)
         # print tar_port+tar_passwd+tar_username+tar_host
         sql=sql.replace('"','\\"').replace('`', '\`')[:-1]
         cmd = sqladvisor+ ' -u %s -p %s -P %d -h %s -d %s -v 1 -q "%s"' %(tar_username,tar_passwd,int(tar_port),tar_host,tar_dbname,sql)

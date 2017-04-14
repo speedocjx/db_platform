@@ -4,7 +4,8 @@ from myapp.models import Db_account,Db_instance,MySQL_monitor
 from django.http import HttpResponse,HttpResponseRedirect,StreamingHttpResponse,JsonResponse
 from django.contrib.auth.decorators import login_required,permission_required
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
-from myapp.include.scheduled import table_use_dailyreport
+from myapp.include.scheduled import get_dupreport
+from django.contrib.auth.models import User
 
 # Create your views here.
 @login_required(login_url='/accounts/login/')
@@ -99,8 +100,7 @@ def delete_mon(id):
     db = MySQL_monitor.objects.get(id=id)
     MysqlStatus.objects.filter(db_ip=db.instance.ip,db_port=db.instance.port).delete()
     Mysql_replication.objects.filter(db_ip=db.instance.ip,db_port=db.instance.port).delete()
-    db.delete()
-    db.save()
+    MySQL_monitor.objects.get(id=id).delete()
 
 @login_required(login_url='/accounts/login/')
 @permission_required('myapp.can_see_mysqladmin', login_url='/')
@@ -125,7 +125,10 @@ def batch_add(request):
 
     return render(request, 'batch_add.html', locals())
 
-#
-# def test_tb(request):
-#     table_use_dailyreport()
-#     return render(request, 'batch_add.html', locals())
+
+def test_tb(request):
+    print request.user.email
+    get_dupreport.delay('mysql-lepus',request.user.email)
+    return render(request, 'batch_add.html', locals())
+
+

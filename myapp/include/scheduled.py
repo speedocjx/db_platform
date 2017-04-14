@@ -1,4 +1,4 @@
-import MySQLdb, sys, string, time, datetime
+import MySQLdb, sys, string, time, datetime,commands
 from myapp.models import Db_name, Db_account, Db_instance, Oper_log, Task, Incep_error_log
 from myapp.include import inception as incept
 from celery import task
@@ -7,6 +7,7 @@ from myapp.include.encrypt import prpcrypt
 from myapp.tasks import sendmail
 from django.template import loader
 from myapp.models import User_profile
+
 
 # reload(sys)
 # sys.setdefaultencoding('utf8')
@@ -295,22 +296,27 @@ def table_check():
     #record dbsize
     mysql_exec("insert into mon_dbsize_his (DBTAG,`DATA(M)`,`INDEX(M)`,`TOTAL(M)`) select DBTAG,sum(`DATA(M)`),sum(`INDEX(M)`),sum(`TOTAL(M)`) from mon_tbsize group by DBTAG")
 
-def get_data(a,sql):
-    #a = Db_name.objects.get(dbtag=hosttag)
+
+def get_dbcon(a):
+    # a = Db_name.objects.get(dbtag=hosttag)
     tar_dbname = a.dbname
     pc = prpcrypt()
     try:
         if a.instance.all().filter(role='read')[0]:
             tar_host = a.instance.all().filter(role='read')[0].ip
             tar_port = a.instance.all().filter(role='read')[0].port
-    except Exception,e:
-        tar_host = a.instance.filter(role__in=['write','all'])[0].ip
-        tar_port = a.instance.filter(role__in=['write','all'])[0].port
+    except Exception, e:
+        tar_host = a.instance.filter(role__in=['write', 'all'])[0].ip
+        tar_port = a.instance.filter(role__in=['write', 'all'])[0].port
     for i in a.db_account_set.all():
         if i.role == 'admin':
             tar_username = i.user
             tar_passwd = pc.decrypt(i.passwd)
             break
+    return tar_port , tar_passwd ,tar_username,tar_host,tar_dbname
+
+def get_data(a,sql):
+    tar_port , tar_passwd ,tar_username,tar_host,tar_dbname = get_dbcon(a)
     #print tar_port+tar_passwd+tar_username+tar_host
     try:
         results,col = mysql_query(sql,tar_username,tar_passwd,tar_host,tar_port,tar_dbname)
@@ -319,6 +325,23 @@ def get_data(a,sql):
         results,col = ([str(e)],''),['error']
         #results,col = mysql_query(wrong_msg,user,passwd,host,int(port),dbname)
     return results,col
+
+
+@task
+def get_dupreport(hosttag,email):
+    if incept.pttool_switch!=0:
+        mailto = []
+        mailto.append(email)
+        try:
+            db = Db_name.objects.get(dbtag=hosttag)
+            tar_port, tar_passwd, tar_username, tar_host, tar_dbname = get_dbcon(db)
+            cmd = incept.pttool_path+'/pt-duplicate-key-checker' + ' -u %s -p %s -P %d -h %s -d %s ' % (tar_username, tar_passwd, int(tar_port), tar_host, tar_dbname)
+            dup_result = commands.getoutput(cmd)
+            dup_result = db.dbtag + '\n' + dup_result
+            html_content = loader.render_to_string('include/mail_template.html', locals())
+            sendmail('DUPKEY CHECK ON '+db.dbtag, mailto, html_content)
+        except Exception,e:
+            print e
 
 def exec_many(insertsql,param):
     try:
