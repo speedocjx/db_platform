@@ -1,11 +1,10 @@
 #!/bin/env python
 #-*-coding:utf-8-*-
 import MySQLdb,sys,string,time,datetime
-from django.contrib.auth.models import User
 from myapp.include import function as func
-from multiprocessing import Process
 from myapp.models import Db_name,Db_account,Db_instance,Oper_log,Task,Incep_error_log
 from myapp.include.encrypt import prpcrypt
+from celery import task
 
 public_user = func.public_user
 

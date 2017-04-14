@@ -11,5 +11,6 @@ urlpatterns = patterns(
     url(r'^mon_edit/$', 'mon_edit', name='mon_edit'),
     url(r'^mon_delete/$', 'mon_delete', name='mon_delete'),
     url(r'^batch_add/$', 'batch_add', name='batch_add'),
+    # url(r'^test_tb/$', 'test_tb', name='test_tb'),
 )
 

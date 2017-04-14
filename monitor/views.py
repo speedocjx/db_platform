@@ -4,7 +4,7 @@ from myapp.models import Db_account,Db_instance,MySQL_monitor
 from django.http import HttpResponse,HttpResponseRedirect,StreamingHttpResponse,JsonResponse
 from django.contrib.auth.decorators import login_required,permission_required
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
-
+from myapp.include.scheduled import table_use_dailyreport
 
 # Create your views here.
 @login_required(login_url='/accounts/login/')
@@ -124,3 +124,8 @@ def mysql_status(request):
 def batch_add(request):
 
     return render(request, 'batch_add.html', locals())
+
+#
+# def test_tb(request):
+#     table_use_dailyreport()
+#     return render(request, 'batch_add.html', locals())

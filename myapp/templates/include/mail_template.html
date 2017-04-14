@@ -100,5 +100,73 @@
 {% if alarm_information %}
     <pre>{{ alarm_information }}</pre>
 {% endif %}
+
+
+{% if max_tbdata  %}
+    BIG TABLE REPORT :
+    <table id="mytable1" class="table table-condensed" border="1">
+        <thead>
+        <tr class="danger">
+            <th> DBTAG </th>
+            <th> TABLE_SCHEMA </th>
+            <th> TABLE_NAME </th>
+            <th> TOTAL(M) </th>
+            <th> DATA(M) </th>
+            <th> INDEX(M) </th>
+        </tr>
+        </thead>
+        <tbody  >
+        {% for item in max_tbdata %}
+            <tr>
+                <td> <pre>{{ item.0 }}</pre></td>
+                <td> <pre>{{ item.1 }}</pre></td>
+                <td> <pre>{{ item.2 }}</pre></td>
+                <td> <pre>{{ item.3 }}</pre></td>
+                <td> <pre>{{ item.4 }}</pre></td>
+                <td> <pre>{{ item.5 }}</pre></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+
+{% if max_incre  %}
+    AUTO_INCREMENT USE REPORT :
+    <table id="mytable1" class="table table-condensed" border="1">
+        <thead>
+        <tr class="danger">
+            {% for colname in max_increcols %}
+                <th>{{ colname }}</th>
+            {% endfor %}
+        </tr>
+        </thead>
+        <tbody  >
+        {% for item in max_incre %}
+            <tr>
+                <td> <pre>{{ item.0 }}</pre></td>
+                <td> <pre>{{ item.1 }}</pre></td>
+                <td> <pre>{{ item.2 }}</pre></td>
+                <td> <pre>{{ item.3 }}</pre></td>
+                <td> <pre>{{ item.4 }}</pre></td>
+                <td> <pre>{{ item.5 }}</pre></td>
+                <td> <pre>{{ item.6 }}</pre></td>
+                <td> <pre>{{ item.7 }}</pre></td>
+                <td> <pre>{{ item.8 }}</pre></td>
+                <td> <pre>{{ item.9 }}</pre></td>
+                <td> <pre>{{ item.10 }}</pre></td>
+                <td> <pre>{{ item.11 }}</pre></td>
+                <td> <pre>{{ item.12 }}</pre></td>
+                <td> <pre>{{ item.13 }}</pre></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+
+
+
+
 </body>
 </html>

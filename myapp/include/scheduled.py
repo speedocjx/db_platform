@@ -4,6 +4,9 @@ from myapp.include import inception as incept
 from celery import task
 from myapp.tasks import process_runtask
 from myapp.include.encrypt import prpcrypt
+from myapp.tasks import sendmail
+from django.template import loader
+from myapp.models import User_profile
 
 # reload(sys)
 # sys.setdefaultencoding('utf8')
@@ -230,7 +233,7 @@ def table_check():
     mysql_exec("truncate table mon_autoinc_status_tmp")
     mysql_exec("truncate table mon_tbsize_tmp")
     print datetime.datetime.now()
-    for i in Db_name.objects.filter(instance__db_type='mysql').all():
+    for i in Db_name.objects.filter(instance__db_type='mysql').distinct():
         try:
             print i.dbtag
             print "start collect auto_increment status"
@@ -291,6 +294,7 @@ def table_check():
     mysql_exec("rename table mon_tbsize to mon_tbsize_last,mon_tbsize_tmp to mon_tbsize,mon_tbsize_last1 to mon_tbsize_tmp")
     #record dbsize
     mysql_exec("insert into mon_dbsize_his (DBTAG,`DATA(M)`,`INDEX(M)`,`TOTAL(M)`) select DBTAG,sum(`DATA(M)`),sum(`INDEX(M)`),sum(`TOTAL(M)`) from mon_tbsize group by DBTAG")
+
 def get_data(a,sql):
     #a = Db_name.objects.get(dbtag=hosttag)
     tar_dbname = a.dbname
@@ -345,4 +349,26 @@ def mysql_exec(sql,param=''):
     except Exception,e:
         print e
 
+@task
+def table_use_dailyreport():
+    mailto = []
+    for i in User_profile.objects.filter(task_email__gt=0):
+        if len(i.user.email) > 0:
+            mailto.append(i.user.email)
+    sql = "SELECT a1.DBTAG, a1.TABLE_SCHEMA, a1.TABLE_NAME, a1.`TOTAL(M)`, a1.`DATA(M)`, a1.`INDEX(M)`FROM\
+    mon_tbsize a1 INNER JOIN(SELECT a.DBTAG, a.`TOTAL(M)` FROM mon_tbsize a LEFT JOIN mon_tbsize b ON a.DBTAG = b.DBTAG AND\
+    a.`TOTAL(M)` <= b.`TOTAL(M)` GROUP BY\
+    a.DBTAG, a.`TOTAL(M)` HAVING\
+    COUNT(b.`TOTAL(M)`) <= 5 ) b1 ON a1.DBTAG = b1.DBTAG\
+    AND a1.`TOTAL(M)` = b1.`TOTAL(M)` ORDER  BY\
+    b1.`TOTAL(M)` DESC,a1.DBTAG DESC"
+    max_tbdata,max_tbcols = mysql_query(sql, user, passwd, host, int(port), dbname)
 
+    sql = "select DBTAG,TABLE_SCHEMA,TABLE_NAME,round(AUTO_INCREMENT/MAX_VALUE*100,2) as used_percent,\
+    COLUMN_NAME,DATA_TYPE,COLUMN_TYPE,IS_UNSIGNED,IS_INT,MAX_VALUE,AUTO_INCREMENT,INDEX_NAME,\
+    SEQ_IN_INDEX,update_time from mon_autoinc_status order by AUTO_INCREMENT/MAX_VALUE desc limit 20"
+
+    max_incre,max_increcols = mysql_query(sql, user, passwd, host, int(port), dbname)
+
+    html_content = loader.render_to_string('include/mail_template.html', locals())
+    sendmail('Big Table And Auto_Increment_Use Report', mailto, html_content)

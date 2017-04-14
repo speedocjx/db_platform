@@ -185,7 +185,7 @@ MEDIA_URL = '/media/'
 
 EMAIL_HOST='smtp.sohu.com'
 EMAIL_HOST_USER='wondersjky'
-EMAIL_HOST_PASSWORD='1qaz2wsx'
+EMAIL_HOST_PASSWORD='xxxxxxx'
 EMAIL_PORT = 25
 
 # EMAIL_USE_TLS = True
