@@ -338,10 +338,11 @@ def get_dupreport(hosttag,email):
             cmd = incept.pttool_path+'/pt-duplicate-key-checker' + ' -u %s -p %s -P %d -h %s -d %s ' % (tar_username, tar_passwd, int(tar_port), tar_host, tar_dbname)
             dup_result = commands.getoutput(cmd)
             dup_result = db.dbtag + '\n' + dup_result
-            html_content = loader.render_to_string('include/mail_template.html', locals())
-            sendmail('DUPKEY CHECK ON '+db.dbtag, mailto, html_content)
+            return dup_result
+            # html_content = loader.render_to_string('include/mail_template.html', locals())
+            # sendmail('DUPKEY CHECK ON '+db.dbtag, mailto, html_content)
         except Exception,e:
-            print e
+            return e
 
 def exec_many(insertsql,param):
     try:

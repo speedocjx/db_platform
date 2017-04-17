@@ -100,6 +100,8 @@
         </div>
         <div class="col-md-3 main ">
             <button id="last"  class="btn btn-info" value="7">HIST DB SIZE</button >
+            <button id="dupcheck"  class="btn btn-info" >dupcheck</button >
+
         </div>
     </div>
     <div class="row">
@@ -113,6 +115,9 @@
     <script>
         $(document).ready(function(){
             $('#main').hide();
+
+
+
             $('#last').click(function(){
                 $('#main').show();
                 var dbtag = $('#dbtag').val()
@@ -183,6 +188,22 @@
         });
 
 
+    </script>
+    <script>
+        $(document).ready(function(){
+
+            $('#dupcheck').click(function(){
+                var dbtag = $('#dbtag').val()
+                var email = "{{ request.user.email | safe }}" ;
+                $.get("{% url 'test_tb' %}",{'dbtag':dbtag,'email':email}).done(function (data) {
+                    alert(data['dupresult']);
+                });
+
+
+            });
+
+
+        });
     </script>
 {% endblock %}
 

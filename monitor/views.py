@@ -126,9 +126,12 @@ def batch_add(request):
     return render(request, 'batch_add.html', locals())
 
 
+@login_required(login_url='/accounts/login/')
+@permission_required('myapp.can_see_mysqladmin', login_url='/')
 def test_tb(request):
-    print request.user.email
-    get_dupreport.delay('mysql-lepus',request.user.email)
-    return render(request, 'batch_add.html', locals())
-
+    dbtag = request.GET['dbtag']
+    if dbtag!='all':
+        mydata = {'dupresult':get_dupreport(dbtag,request.GET['email'])}
+    # return render(request, 'batch_add.html', locals())
+    return JsonResponse(mydata)
 
