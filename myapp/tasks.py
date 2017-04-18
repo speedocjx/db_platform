@@ -116,7 +116,7 @@ def sendmail_task(task):
 
 def sendmail (title,mailto,html_content):
     try:
-        msg = EmailMultiAlternatives(title, html_content, 'changjingxiu@wondersgroup.com', mailto)
+        msg = EmailMultiAlternatives(title, html_content, 'wondersjky@sohu.com', mailto)
         msg.attach_alternative(html_content, "text/html")
         msg.send()
     except Exception,e:

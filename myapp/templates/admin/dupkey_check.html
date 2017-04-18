@@ -1,0 +1,64 @@
+{% extends "include/base.html" %}
+{% block title %}
+    <title>DUPKEY CHECK</title>
+{% endblock %}
+{% block name %}
+    重复索引检查
+{% endblock %}
+{%block content%}
+    <div class="row">
+        <div class="col-md-12 main ">
+
+            <form role="form" method='post'>
+                {% csrf_token %}
+                <table>
+                    <tr>
+                        <td>
+                            <select id="dbtag" class="form-control col-md-1" name = "choosed">
+                                {% for obj in objlist %}
+                                    {% if obj == choosed_host %}
+                                        <option selected="selected" value ="{{ obj }}">{{ obj }}</option>
+                                    {% else %}
+                                        <option value ="{{ obj }}">{{ obj }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+                <table>
+                    <tr>
+                        <td>
+                            <button type="submit" name='dupkey' class="btn btn-primary" value="1">检查DB中重复索引</button >
+                        </td>
+<td>
+                            <button type="submit" name='dupkey_mail' class="btn btn-success" value="1">查询结果发送邮件</button >
+                        </td>
+                    </tr>
+                </table>
+
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-10 main">
+            {% if dupkey_result %}
+                <pre> {{ dupkey_result }}</pre>
+            {% endif %}
+            {% if info  %}
+                {{ info }}
+            {% endif %}
+        </div>
+
+    </div>
+    <hr />
+
+    <div class="row">
+
+    </div>
+{% endblock %}
+{% block script %}
+
+{% endblock %}
+

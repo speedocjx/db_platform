@@ -14,6 +14,9 @@ from myapp.include import function as func,inception as incept,chart,pri,meta,sq
 from myapp.models import Db_group,Db_name,Db_account,Db_instance,Oper_log,Upload,Task,MySQL_monitor
 from myapp.tasks import task_run,sendmail_task,parse_binlog,parse_binlogfirst
 from myapp.include import mon
+from myapp.include.scheduled import get_dupreport,get_dupreport_all
+
+
 
 from django.core.files import File
 #path='./myapp/include'
@@ -1306,6 +1309,22 @@ def tb_check(request):
     else:
         return render(request, 'admin/tb_check.html', locals())
 
+@login_required(login_url='/accounts/login/')
+@permission_required('myapp.can_see_mysqladmin', login_url='/')
+def dupkey_check(request):
+    # ins_li=get_dupreport_all()
+    # print ins_li
+    objlist = func.get_mysql_hostlist(request.user.username, 'meta')
+    if request.method == 'POST':
+        choosed_host = request.POST['choosed']
+        if request.POST.has_key('dupkey'):
+            dupkey_result = get_dupreport(choosed_host)
+        elif request.POST.has_key('dupkey_mail'):
+            get_dupreport.delay(choosed_host,request.user.email)
+            info = "mail send,check your email later"
+    return render(request, 'admin/dupkey_check.html', locals())
+
+
 
 @login_required(login_url='/accounts/login/')
 @permission_required('myapp.can_see_mysqladmin', login_url='/')
@@ -1375,11 +1394,11 @@ def pass_reset(request):
         return render(request, 'previliges/pass_reset.html', locals())
 
 
-
-
-def test(request):
-    mon.mon_processlist()
-    return render(request,'test.html')
+#
+#
+# def test(request):
+#     mon.mon_processlist()
+#     return render(request,'test.html')
 
 # @ratelimit(key=func.my_key, rate='5/h')
 # def test(request):

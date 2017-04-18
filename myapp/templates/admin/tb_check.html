@@ -6,7 +6,7 @@
     META DATA
 {% endblock %}
 {%block content%}
-    <strong> <span style="color:red">本页展示数据非实时，由定时任务收集所得</span></strong>
+    <strong> <span style="color:red">部分数据由定时任务收集所得</span></strong>
     <div class="row">
         <div class="col-md-12 main ">
 
@@ -100,7 +100,7 @@
         </div>
         <div class="col-md-3 main ">
             <button id="last"  class="btn btn-info" value="7">HIST DB SIZE</button >
-            <button id="dupcheck"  class="btn btn-info" >dupcheck</button >
+{#            <button id="dupcheck"  class="btn btn-info" >dupcheck</button >#}
 
         </div>
     </div>
@@ -189,21 +189,17 @@
 
 
     </script>
-    <script>
-        $(document).ready(function(){
-
-            $('#dupcheck').click(function(){
-                var dbtag = $('#dbtag').val()
-                var email = "{{ request.user.email | safe }}" ;
-                $.get("{% url 'test_tb' %}",{'dbtag':dbtag,'email':email}).done(function (data) {
-                    alert(data['dupresult']);
-                });
-
-
-            });
-
-
-        });
-    </script>
+{#    <script>#}
+{#        $(document).ready(function(){#}
+{##}
+{#            $('#dupcheck').click(function(){#}
+{#                var dbtag = $('#dbtag').val()#}
+{#                var email = "{{ request.user.email | safe }}" ;#}
+{#                $.get("{% url 'test_tb' %}",{'dbtag':dbtag,'email':email}).done(function (data) {#}
+{#                    alert(data['dupresult']);#}
+{#                });#}
+{#            });#}
+{#        });#}
+{#    </script>#}
 {% endblock %}
 

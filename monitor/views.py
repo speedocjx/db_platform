@@ -4,7 +4,6 @@ from myapp.models import Db_account,Db_instance,MySQL_monitor
 from django.http import HttpResponse,HttpResponseRedirect,StreamingHttpResponse,JsonResponse
 from django.contrib.auth.decorators import login_required,permission_required
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
-from myapp.include.scheduled import get_dupreport
 from django.contrib.auth.models import User
 
 # Create your views here.

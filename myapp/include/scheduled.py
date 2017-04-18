@@ -326,23 +326,77 @@ def get_data(a,sql):
         #results,col = mysql_query(wrong_msg,user,passwd,host,int(port),dbname)
     return results,col
 
+@task
+def get_dupreport_all():
+    import os
+    mailto=[]
+    if incept.pttool_switch != 0 and os.path.isfile(incept.pttool_path+'/pt-duplicate-key-checker') :
+        for i in User_profile.objects.filter(task_email__gt=0):
+            if len(i.user.email) > 0:
+                mailto.append(i.user.email)
+        ins_li = list(Db_instance.objects.filter(db_type='mysql'))
+        for insname in ins_li:
+            for i in insname.db_name_set.all():
+                for x in i.instance.exclude(id=insname.id):
+                    print x
+                    ins_li.remove(x)
+        dup_result = ''
+        for i in ins_li:
+            try:
+                result_tmp = get_dupreport_byins(i)
+                if result_tmp:
+                    dup_result = dup_result + 'ip:'+i.ip + '\nport:'+ str(i.port) + '\n' + result_tmp + '\n\n\n\n\n\n'
+            except:
+                pass
+        html_content = loader.render_to_string('include/mail_template.html', locals())
+        sendmail('DUPKEY CHECK ON FOR ALL',mailto, html_content)
+
+
+def get_dupreport_byins(insname):
+    flag = True
+    pc = prpcrypt()
+    for a in insname.db_name_set.all():
+        for i in a.db_account_set.all():
+            if i.role == 'admin':
+                tar_username = i.user
+                tar_passwd = pc.decrypt(i.passwd)
+                flag = False
+                break
+        if flag == False:
+            break
+    if  vars().has_key('tar_username'):
+        cmd = incept.pttool_path + '/pt-duplicate-key-checker' + ' -u %s -p %s -P %d -h %s ' % (tar_username, tar_passwd, int(insname.port), insname.ip)
+        dup_result = commands.getoutput(cmd)
+        return dup_result
+
+
 
 @task
-def get_dupreport(hosttag,email):
+def get_dupreport(hosttag,email=''):
+    import os
     if incept.pttool_switch!=0:
         mailto = []
+
         mailto.append(email)
         try:
             db = Db_name.objects.get(dbtag=hosttag)
             tar_port, tar_passwd, tar_username, tar_host, tar_dbname = get_dbcon(db)
+        except Exception,e:
+            print e
+            return "please check your db set"
+        if os.path.isfile(incept.pttool_path+'/pt-duplicate-key-checker') :
             cmd = incept.pttool_path+'/pt-duplicate-key-checker' + ' -u %s -p %s -P %d -h %s -d %s ' % (tar_username, tar_passwd, int(tar_port), tar_host, tar_dbname)
             dup_result = commands.getoutput(cmd)
             dup_result = db.dbtag + '\n' + dup_result
+            if email == '':
+                html_content = loader.render_to_string('include/mail_template.html', locals())
+                sendmail('DUPKEY CHECK ON '+db.dbtag, mailto, html_content)
             return dup_result
-            # html_content = loader.render_to_string('include/mail_template.html', locals())
-            # sendmail('DUPKEY CHECK ON '+db.dbtag, mailto, html_content)
-        except Exception,e:
-            return e
+        else :
+            return 'pt-tool path set wrong'
+
+    else :
+        return "pt-tool not set"
 
 def exec_many(insertsql,param):
     try:
