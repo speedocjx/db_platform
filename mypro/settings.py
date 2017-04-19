@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'mongodb',
     'chartapi',
     'monitor',
+    'passforget',
     'djcelery',
     'myapp',
 ]
@@ -183,8 +184,8 @@ os.path.join(BASE_DIR, "static"),
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
-EMAIL_HOST='smtp.sohu.com'
-EMAIL_HOST_USER='wondersjky'
+EMAIL_HOST='mail.xxxxx.com'
+EMAIL_HOST_USER='changjingxiu'
 EMAIL_HOST_PASSWORD='xxxxxxxx'
 EMAIL_PORT = 25
 

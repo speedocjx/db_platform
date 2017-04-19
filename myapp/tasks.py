@@ -114,9 +114,18 @@ def sendmail_task(task):
     except Exception ,e:
         print e
 
+@task
+def sendmail_forget(sendto,title,message):
+    mailto=[]
+    message=message
+    mailto.append(sendto)
+    html_content = loader.render_to_string('include/mail_template.html', locals())
+    sendmail(title, mailto, html_content)
+
+
 def sendmail (title,mailto,html_content):
     try:
-        msg = EmailMultiAlternatives(title, html_content, 'wondersjky@sohu.com', mailto)
+        msg = EmailMultiAlternatives(title, html_content, 'changjingxiu@wondersgroup.com', mailto)
         msg.attach_alternative(html_content, "text/html")
         msg.send()
     except Exception,e:

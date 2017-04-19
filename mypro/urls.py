@@ -47,6 +47,7 @@ urlpatterns = (
     url(r'^mongodb/', include('mongodb.urls')),
     url(r'^chartapi/', include('chartapi.urls')),
     url(r'^monitor/', include('monitor.urls')),
+    url(r'^passforget/', include('passforget.urls')),
     url(r'^site_media/(?P<path>.*)$', 'django.views.static.serve',{'document_root': settings.MEDIA_ROOT}),
 )
 

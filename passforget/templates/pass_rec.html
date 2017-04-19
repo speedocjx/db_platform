@@ -1,0 +1,69 @@
+{% extends "include/base.html" %}
+{% block title %}
+    <title >PASSWORD FORGET</title>
+{% endblock %}
+{%block content%}
+
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form role="form" action="" method="post">
+                {% csrf_token %}
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">忘记密码</h4>
+                    </div>
+                    <div class="modal-body">
+
+                        <div class="form-group">
+                            {% if info %}
+                                <strong> <span style="color:red">{{ info }}</span></strong>
+                            {% endif %}
+                            <table>
+                                <tr>
+                                    <td>
+                                        <input type=="text" class="form-control" maxlength="30" placeholder="input username" name="username">
+                                    </td>
+
+                                    <td>
+                                        <input type=="text" class="form-control" maxlength="50" placeholder="input email" name="email">
+                                    </td>
+
+                                </tr>
+                            </table>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <div class="row">
+                            <div class="col-md-2">
+                                <input name='confirm_set' type="submit" value="确认提交" class="btn btn-primary">
+                            </div>
+                            <div class="col-md-2">
+                                <a href="/accounts/login/"><input type="button" value="返回登录页" class="btn btn-danger"></a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </form>
+
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+    </div>
+
+    <script>
+        $(function () { $('#myModal').modal({
+            keyboard: false,
+            show: true,
+            backdrop:false
+        }).css({
+            "margin-top": 150
+        })
+        });
+
+
+    </script>
+
+
+
+{% endblock %}

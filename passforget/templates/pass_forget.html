@@ -1,0 +1,79 @@
+{% extends "include/base.html" %}
+{% block title %}
+    <title >PASSWORD FORGET</title>
+{% endblock %}
+{%block content%}
+
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form role="form" method='post'>
+                {% csrf_token %}
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">设置新密码</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <span id="errorpwd" style="color: #eea236" >{{ info }}</span>
+
+                            <div class="col-md-6 main ">
+                                <input id="id_passwd" type="password" class="form-control" maxlength="25" placeholder="type password" name="passwd" onkeydown="clearstage()">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 main ">
+                                <input id="id_repasswd" type="password" class="form-control" maxlength="25" placeholder="retype password" name="repasswd" onkeydown="clearstage()" >
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <div class="row">
+                            <div class="col-md-2">
+                                <button id="id_button" type="submit" name='set' onclick="return checkPass();"  class="btn btn-danger" >重置</button>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </form>
+
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+    </div>
+
+    <script>
+        $(function () { $('#myModal').modal({
+            keyboard: false,
+            show: true,
+            backdrop:false
+        }).css({
+            "margin-top": 150
+        })
+        });
+
+
+    </script>
+
+    <script>
+        function clearstage () {
+            document.getElementById("errorpwd").innerText = "";
+        }
+        function checkPass() {
+            var pwd1 = document.getElementById("id_passwd").value;
+            var pwd2 = document.getElementById("id_repasswd").value;
+            if (pwd1.length < 8){
+                document.getElementById("errorpwd").innerText = "密码长度至少8位";
+                return false;
+            }
+            if (pwd1 != pwd2) {
+                document.getElementById("errorpwd").innerText = "两次密码输入不一致";
+                return false;
+            }
+            return true;
+        }
+    </script>
+
+
+{% endblock %}

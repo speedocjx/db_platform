@@ -1394,6 +1394,9 @@ def pass_reset(request):
         return render(request, 'previliges/pass_reset.html', locals())
 
 
+
+
+
 #
 #
 # def test(request):

@@ -167,7 +167,13 @@
 
 
 {% if dup_result %}
-    <pre>{{ dup_result }}</pre><
+    <pre>{{ dup_result }}</pre>
+{% endif %}
+
+{% if message %}
+    请通过下方链接重新设置密码(链接有效时间30分钟):
+    </br>
+    <a href="{{ message }}">点击此处链接</a>
 {% endif %}
 
 </body>
