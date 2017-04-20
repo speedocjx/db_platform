@@ -6,7 +6,7 @@ from myapp.include import inception as incept,binlog2sql
 from django.core.mail import EmailMessage,send_mail,EmailMultiAlternatives
 from django.template import loader
 from myapp.include.encrypt import prpcrypt
-
+from mypro.settings import EMAIL_SENDER
 @task
 def process_runtask(hosttag,sqltext,mytask):
     results,col,tar_dbname = incept.inception_check(hosttag,sqltext,1)
@@ -125,7 +125,7 @@ def sendmail_forget(sendto,title,message):
 
 def sendmail (title,mailto,html_content):
     try:
-        msg = EmailMultiAlternatives(title, html_content, 'changjingxiu@wondersgroup.com', mailto)
+        msg = EmailMultiAlternatives(title, html_content, EMAIL_SENDER, mailto)
         msg.attach_alternative(html_content, "text/html")
         msg.send()
     except Exception,e:

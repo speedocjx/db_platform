@@ -6,21 +6,24 @@
 
     <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
         <div class="modal-dialog">
-            <form role="form" action="" method="post">
-                {% csrf_token %}
-                <div class="modal-content">
-                    <div class="modal-body">
-                        <div class="form-group">
 
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <div class="row">
                             {% if set_result %}
                                 <strong> <span style="color:red">{{ set_result }}</span></strong>
                             {% endif %}
-
+                        </div>
+                        <br/>
+                        <div class="row">
+                            <strong> <span id="show"></span></strong>
                         </div>
 
                     </div>
+
                 </div>
-            </form>
+            </div>
 
         </div><!-- /.modal-content -->
     </div><!-- /.modal -->
@@ -38,7 +41,17 @@
 
 
     </script>
-
+    <script>
+        var t=3;//设定跳转的时间
+        setInterval("refer()",1000); //启动1秒定时
+        function refer(){
+            if(t==0){
+                location="{% url 'index' %}"; //#设定跳转的链接地址
+            }
+            document.getElementById('show').innerHTML=""+t+"秒后跳转到首页"; // 显示倒计时
+            t--; // 计数器递减
+        }
+    </script>
 
 
 {% endblock %}

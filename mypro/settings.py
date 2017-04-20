@@ -184,12 +184,13 @@ os.path.join(BASE_DIR, "static"),
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
-EMAIL_HOST='mail.xxxxx.com'
+EMAIL_HOST='mail.wondersgroup.com'
 EMAIL_HOST_USER='changjingxiu'
-EMAIL_HOST_PASSWORD='xxxxxxxx'
+EMAIL_HOST_PASSWORD='Meiyoumima2'
 EMAIL_PORT = 25
-
+EMAIL_SENDER = 'changjingxiu@wondersgroup.com'
 # EMAIL_USE_TLS = True
+URL_FOR_PASSWD = 'http://192.168.70.128:8000'
 
 # SaltStack API
 SALT_API_URL = 'http://10.x.xx.xx:xx'

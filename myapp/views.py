@@ -14,7 +14,7 @@ from myapp.include import function as func,inception as incept,chart,pri,meta,sq
 from myapp.models import Db_group,Db_name,Db_account,Db_instance,Oper_log,Upload,Task,MySQL_monitor
 from myapp.tasks import task_run,sendmail_task,parse_binlog,parse_binlogfirst
 from myapp.include import mon
-from myapp.include.scheduled import get_dupreport,get_dupreport_all
+from myapp.include.scheduled import get_dupreport
 
 
 

@@ -21,13 +21,24 @@
                             <table>
                                 <tr>
                                     <td>
+                                        <strong>输入用户名:</strong>
+                                    </td>
+                                    <td>
                                         <input type=="text" class="form-control" maxlength="30" placeholder="input username" name="username">
                                     </td>
-
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>输入邮箱:</strong>
+                                    </td>
                                     <td>
                                         <input type=="text" class="form-control" maxlength="50" placeholder="input email" name="email">
                                     </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>{{ myform.mycaptcha.label }}</strong> </td>
 
+                                    <td>{{ myform.mycaptcha }}  </td>
                                 </tr>
                             </table>
                         </div>
@@ -63,7 +74,16 @@
 
 
     </script>
-
+    <script type="text/javascript">
+        $('.captcha').click(function(){ //点击图片刷新
+            var tmp = Math.random().toString();
+            $.get("?newsn=1&tmp="+tmp, function(result){
+                $('.captcha').attr("src", result);
+                $('#id_captcha_0').attr("value", result.split('/')[3]);
+            });
+            return false;
+        });
+    </script>
 
 
 {% endblock %}
