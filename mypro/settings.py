@@ -184,11 +184,11 @@ os.path.join(BASE_DIR, "static"),
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
-EMAIL_HOST='mail.wondersgroup.com'
+EMAIL_HOST='mail.xxxx.com'
 EMAIL_HOST_USER='changjingxiu'
-EMAIL_HOST_PASSWORD='Meiyoumima2'
+EMAIL_HOST_PASSWORD='xxxxxxxxx'
 EMAIL_PORT = 25
-EMAIL_SENDER = 'changjingxiu@wondersgroup.com'
+EMAIL_SENDER = 'changjingxiu@xxxxxx.com'
 # EMAIL_USE_TLS = True
 URL_FOR_PASSWD = 'http://192.168.70.128:8000'
 
