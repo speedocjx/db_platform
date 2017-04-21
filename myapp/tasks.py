@@ -9,10 +9,13 @@ from myapp.include.encrypt import prpcrypt
 from mypro.settings import EMAIL_SENDER
 @task
 def process_runtask(hosttag,sqltext,mytask):
-    results,col,tar_dbname = incept.inception_check(hosttag,sqltext,1)
+    flag = (1 if mytask.backup_status == 1 else 3)
+    results,col,tar_dbname = incept.inception_check(hosttag,sqltext,flag)
     status='executed'
     c_time = mytask.create_time
     mytask.update_time = datetime.datetime.now()
+    if flag == 1:
+        mytask.backup_status=2
     mytask.save()
     for row in results:
         try:

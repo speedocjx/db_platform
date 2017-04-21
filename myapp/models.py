@@ -133,8 +133,13 @@ class Task(models.Model):
     sche_time = models.DateTimeField(db_index=True,default='2199-01-01 00:00:00')
     specification = models.CharField(max_length=100,default='')
     operator = models.CharField(max_length=35, default='')
+    backup_status = models.SmallIntegerField(default=1)
     def __unicode__(self):
         return self.dbtag
+#backup_status
+# o donot  backup
+# 1 need  backup
+# 2
 
 class Incep_error_log(models.Model):
     myid = models.IntegerField()

@@ -78,9 +78,11 @@ def incep_exec(sqltext,myuser,mypasswd,myhost,myport,mydbname,flag=0):
     if (int(flag)==0):
         flagcheck='--enable-check'
     elif(int(flag)==1):
-        flagcheck='--enable-execute'
+        flagcheck='--enable-execute; --enable-remote-backup'
     elif(int(flag)==2):
         flagcheck = '--enable-split'
+    elif(int(flag)==3):
+        flagcheck = '--enable-execute; --disable-remote-backup'
     myuser=myuser.encode('utf8')
     mypasswd = pc.decrypt(mypasswd.encode('utf8'))
     myhost=myhost.encode('utf8')
@@ -268,18 +270,21 @@ def get_task_forupdate(id):
     task_data = Task.objects.get(id=id)
     return task_data
 
-def update_task(id,sqltext,specify,status):
+def update_task(id,sqltext,specify,status,needbackup):
     task_data = Task.objects.get(id=id)
     old_sqltext = task_data.sqltext
     old_status = task_data.status
     task_data.sqltext = sqltext
     task_data.specification = specify
+    task_data.backup_status = needbackup
     list = ['executed','executed failed','check not passed','check passed','running','appointed','NULL']
     if status in list:
         task_data.status=status
     task_data.update_time = datetime.datetime.now()
     #if old_sqltext != sqltext ,then update the status to NULL
     if cmp(old_sqltext,sqltext) and (not cmp(status,old_status)):
+        if needbackup==2:
+            task_data.backup_status=1
         task_data.status='NULL'
     task_data.save()
 
@@ -304,14 +309,14 @@ def delete_task(idnum):
         task.delete()
 
 #add task to tasktable
-def record_task(request,sqltext,dbtag,specify):
+def record_task(request,sqltext,dbtag,specify,ifbackup):
     username = request.user.username
     #lastlogin = user.last_login+datetime.timedelta(hours=8)
     #create_time = datetime.datetime.now()+datetime.timedelta(hours=8)
     create_time = datetime.datetime.now()
     update_time = datetime.datetime.now()
     status='NULL'
-    mytask = Task (user=username,sqltext=sqltext,create_time=create_time,update_time=update_time,dbtag=dbtag,status=status,specification=specify)
+    mytask = Task (user=username,sqltext=sqltext,create_time=create_time,update_time=update_time,dbtag=dbtag,status=status,specification=specify,backup_status=ifbackup)
     mytask.save()
     return 1
 

@@ -169,15 +169,16 @@
             <thead>
             <tr class="danger">
                 <th>ID</th>
-                <th>提交人</th>
-                <th>执行人</th>
+                <th noWrap>提交人</th>
+                <th noWrap>执行人</th>
                 <th>DBTAG</th>
                 <th>SQL语句</th>
                 <th>创建时间</th>
                 <th>修改时间</th>
                 <th>任务状态</th>
                 <th>预约时间</th>
-                <th>执行说明</th>
+                <th noWrap>执行说明</th>
+                <th>备份状态</th>
                 <th>操作</th>
                 <th></th>
                 <th></th>
@@ -193,7 +194,7 @@
                 <tr>
                     {#                    <td>{{ item.id }}  </td>#}
 
-                    <td>{{ item.id }} <input type="checkbox" size="100" name="choosedlist" value={{ item.id }}>  </td>
+                    <td noWrap>{{ item.id }} <input type="checkbox" size="100" name="choosedlist" value={{ item.id }}>  </td>
                     <td> {{ item.user }}</td>
                     <td>{{ item.operator }}</td>
                     <td> {{ item.dbtag }}</td>
@@ -203,7 +204,19 @@
                     <td> {{ item.update_time|date:"Y-m-d H:i:s" }}</td>
                     <td > {{ item.status }}</td>
                     <td > {{ item.sche_time|date:"Y-m-d H:i" }}</td>
-                    <td > {{ item.specification|truncatechars:30|linebreaks}}</td>
+                    <td >
+                        {{ item.specification|truncatechars:30|linebreaks}}
+                    </td>
+                    <td noWrap>
+                        {% if item.backup_status == 1 %}
+                            需要备份
+                        {% elif item.backup_status == 0 %}
+                            无需备份
+                        {% elif item.backup_status == 2 %}
+                            已备份执行
+                        {% endif %}
+
+                    </td>
                     {% if perms.myapp.can_admin_task or perms.myapp.can_delete_task %}
                         <td><button type="submit" name='delete' class="btn btn-primary" value={{ item.id }}>删除</button></td>
                     {% endif %}

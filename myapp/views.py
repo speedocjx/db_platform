@@ -420,6 +420,8 @@ def inception(request):
                 return render(request, 'inception.html', {'form': form,'upform':upform,'objlist':objlist})
         elif request.POST.has_key('addtask'):
             form = AddForm(request.POST)
+            needbackup = (int(request.POST['ifbackup']) if int(request.POST['ifbackup']) in (0,1) else 1)
+
             # choosed_host = request.POST['cx']
             upform = Uploadform()
             if form.is_valid():
@@ -446,7 +448,7 @@ def inception(request):
                         if int(i[2]) !=0:
                             status = 'UPLOAD TASK FAIL,CHECK NOT PASSED'
                             return render(request, 'inception.html',locals())
-                incept.record_task(request,sqltext,choosed_host,specification)
+                incept.record_task(request,sqltext,choosed_host,specification,needbackup)
                 status='UPLOAD TASK OK'
                 sendmail_task.delay(choosed_host+'\n'+sqltext)
                 return render(request, 'inception.html', {'form': form,'upform':upform,'objlist':objlist,'status':status,'choosed_host':choosed_host})
@@ -645,6 +647,8 @@ def update_task(request):
     objlist = func.get_mysql_hostlist(request.user.username, 'incept')
     if request.method == 'POST':
         if request.POST.has_key('update'):
+            needbackup = (int(request.POST['ifbackup']) if int(request.POST['ifbackup']) in (0,1,2) else 1)
+
             #update task function can't change db
             flag,str = incept.check_task_status(id)
             if flag:
@@ -668,15 +672,16 @@ def update_task(request):
                 #         if int(i[2]) != 0:
                 #             str = 'UPDATE TASK FAIL,CHECK NOT PASSED'
                 #             return render(request, 'update_task.html', {'str': str})
-                incept.update_task(id, sqltext, specify,mystatus)
+                incept.update_task(id, sqltext, specify,mystatus,needbackup)
                 return HttpResponseRedirect("/task/")
             else:
                 # return render(request, 'update_task.html', {'str': str})
                 return render(request, 'update_task.html', {'str': str})
         elif request.POST.has_key('new_task'):
             #new_task can only change the dbtag
-            choosed_host = request.POST['hosttag']
+            needbackup = (int(request.POST['ifbackup']) if int(request.POST['ifbackup']) in (0,1) else 1)
 
+            choosed_host = request.POST['hosttag']
             if data.dbtag == choosed_host:
                 str = 'DB HASN\'T CHANGED! CAN\'T CREATE NEW!'
                 return render(request, 'update_task.html', {'str': str})
@@ -693,7 +698,7 @@ def update_task(request):
                     if int(i[2]) != 0:
                         str = 'CREATE NEW TASK FAIL,CHECK NOT PASSED'
                         return render(request, 'update_task.html', {'str': str})
-            incept.record_task(request, data.sqltext, choosed_host, data.specification)
+            incept.record_task(request, data.sqltext, choosed_host, data.specification,needbackup)
             sendmail_task.delay(choosed_host + '\n' + data.sqltext)
             return HttpResponseRedirect("/task/")
 

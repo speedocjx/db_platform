@@ -89,6 +89,27 @@
                             <textarea cols="40" rows="10" maxlength="30" placeholder="最多输入30个字，超过部分将会被截断" name="specify">{{ data.specification }}</textarea>
                         </td>
                     </tr>
+                    <tr>
+                        <td>是否需要备份执行</td>
+                        <td>
+                            <select class="form-control"  name="ifbackup">
+                                {% if data.backup_status == 1 %}
+                                    <option value=1 selected="selected">需要备份</option>
+                                    <option value=0 >不需要备份</option>
+                                    <option value=2 >已备份执行</option>
+                                {% elif  data.backup_status == 0 %}
+                                    <option value=1 >需要备份</option>
+                                    <option value=0 selected="selected">不需要备份</option>
+                                    <option value=2 >已备份执行</option>
+                                {% elif  data.backup_status == 2 %}
+                                    <option value=1 >需要备份</option>
+                                    <option value=0 >不需要备份</option>
+                                    <option value=2 selected="selected">已备份执行</option>
+                                {% endif %}
+                            </select>
+                        </td>
+                    </tr>
+
                 {% else %}
                     <tr>
                         <td>SQL语句</td>
@@ -97,6 +118,18 @@
                     <tr>
                         <td>执行说明</td>
                         <td>{{ data.specification }}</td>
+                    </tr>
+                    <tr>
+                        <td>是否需要备份执行</td>
+                        <td>
+                            {% if data.backup_status  == 1 %}
+                                需要备份
+                            {% elif data.backup_status  == 0 %}
+                                无需备份
+                            {% elif data.backup_status  == 2 %}
+                                已备份执行
+                            {% endif %}
+                        </td>
                     </tr>
                 {% endif %}
 
