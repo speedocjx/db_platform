@@ -168,7 +168,6 @@ def mysql_query(sql,user=user,passwd=passwd,host=host,port=int(port),dbname=dbna
         return (result,col)
     except Exception,e:
         return([str(e)],''),['error']
-
 #获取下拉菜单列表
 def get_mysql_hostlist(username,tag='tag',search=''):
     dbtype='mysql'

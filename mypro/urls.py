@@ -42,6 +42,7 @@ urlpatterns = (
     url(r'^fast_dbset/$', myapp_view.fast_dbset,name='fast_dbset'),
     url(r'^set_dbname/$', myapp_view.set_dbname,name='set_dbname'),
     url(r'^update_task/$', myapp_view.update_task,name='update_task'),
+    url(r'^get_rollback/$', myapp_view.get_rollback,name='get_rollback'),
     # url(r'^test/$', myapp_view.test,name='test'),
     url(r'^salt/', include('salt.urls')),
     url(r'^mongodb/', include('mongodb.urls')),

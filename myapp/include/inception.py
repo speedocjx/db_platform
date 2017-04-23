@@ -384,6 +384,36 @@ def get_db_info(hosttag):
             break
     return tar_username, tar_passwd, tar_host,  tar_port,tar_dbname
 
+incept_backup_host = '10.1.70.222'
+incept_backup_port = '3306'
+incept_backup_user = 'chang'
+inceptione_backup_passwd = '710467549'
+
+def rollback_sqllist(idnum):
+    task = Task.objects.get(id=idnum)
+    sqllist = []
+    if task.backup_status == 2:
+        data = Incep_error_log.objects.filter(create_time=task.create_time).filter(finish_time=task.update_time).order_by("-myid")
+        for i in data:
+            backupDb = i.backup_db
+            if backupDb == 'None':
+                continue
+            opid_time = i.sequence.replace("'","")
+            sqllist = sqllist + get_single_rollback(backupDb,opid_time)
+    return sqllist
+
+def get_single_rollback(backupDb,opid_time):
+    sqllist = []
+    tbNamesql = "select tablename from %s.$_$Inception_backup_information$_$ where opid_time='%s';" % (backupDb, opid_time)
+    results,col = func.mysql_query(tbNamesql,incept_backup_user,inceptione_backup_passwd,incept_backup_host,int(incept_backup_port),backupDb)
+    tbName = results[0][0]
+    backsql = "select rollback_statement from %s.%s where opid_time='%s' order by id desc" % (backupDb, tbName, opid_time)
+    results,col = func.mysql_query(backsql,incept_backup_user,inceptione_backup_passwd,incept_backup_host,int(incept_backup_port),backupDb)
+    for row in results :
+        sqllist.append(row[0])
+    return sqllist
+
+
 def task_running_status(idnum):
     task = Task.objects.get(id=idnum)
     if task.status=='executed failed'or task.status=='executed':

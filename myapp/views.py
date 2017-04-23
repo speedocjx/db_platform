@@ -17,7 +17,6 @@ from myapp.include import mon
 from myapp.include.scheduled import get_dupreport
 
 
-
 from django.core.files import File
 #path='./myapp/include'
 #sys.path.insert(0,path)
@@ -95,6 +94,10 @@ def mysql_query(request):
         form = AddForm(request.POST)
         # request.session['myfavword'] = request.POST['favword']
         choosed_host = request.POST['cx']
+
+        if not User.objects.get(username=request.user.username).db_name_set.filter(dbtag=choosed_host)[:1]:
+            return HttpResponseRedirect("/")
+
         if request.POST.has_key('searchdb'):
             db_se = request.POST['searchdbname']
             objlist_tmp = func.get_mysql_hostlist(request.user.username, 'tag', db_se)
@@ -287,6 +290,8 @@ def mysql_exec(request):
     if request.method == 'POST':
         form = AddForm(request.POST)
         choosed_host = request.POST['cx']
+        if not User.objects.get(username=request.user.username).db_name_set.filter(dbtag=choosed_host)[:1]:
+            return HttpResponseRedirect("/")
         if request.POST.has_key('searchdb'):
             db_se = request.POST['searchdbname']
             objlist_tmp = func.get_mysql_hostlist(request.user.username, 'exec', db_se)
@@ -363,6 +368,8 @@ def inception(request):
                 objlist = objlist_tmp
         choosed_host = request.POST['cx']
         specification = request.POST['specification'][0:30]
+        if not User.objects.get(username=request.user.username).db_name_set.filter(dbtag=choosed_host)[:1]:
+            return HttpResponseRedirect("/")
         if request.POST.has_key('check'):
             form = AddForm(request.POST)
             upform = Uploadform()
@@ -547,6 +554,15 @@ def login(request):
 #     else:
 #         form = Uploadform()
 #         return  render(request, 'upload.html', {'form': form})
+
+@login_required(login_url='/accounts/login/')
+@permission_required('myapp.can_see_taskview', login_url='/')
+def get_rollback(request):
+    idnum = request.GET['taskid']
+    if request.user.username == Task.objects.get(id=idnum).user:
+        sqllist = incept.rollback_sqllist(idnum)
+    # print sqllist
+    return HttpResponse(json.dumps(sqllist), content_type='application/json')
 
 @login_required(login_url='/accounts/login/')
 @permission_required('myapp.can_see_taskview', login_url='/')

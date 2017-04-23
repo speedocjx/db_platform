@@ -388,10 +388,11 @@ def get_dupreport(hosttag,email=''):
             cmd = incept.pttool_path+'/pt-duplicate-key-checker' + ' -u %s -p %s -P %d -h %s -d %s ' % (tar_username, tar_passwd, int(tar_port), tar_host, tar_dbname)
             dup_result = commands.getoutput(cmd)
             dup_result = db.dbtag + '\n' + dup_result
-            if email == '':
+            if email != '':
                 html_content = loader.render_to_string('include/mail_template.html', locals())
                 sendmail('DUPKEY CHECK ON '+db.dbtag, mailto, html_content)
-            return dup_result
+            else:
+                return dup_result
         else :
             return 'pt-tool path set wrong'
 

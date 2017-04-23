@@ -58,6 +58,8 @@
             </br>
             <strong> {{ nllflag }}</strong>
         {% endif %}
+
+
         {% if result %}
             {#            {% include "include/pagejump/pagejump2.html" %}#}
             <table id="mytable1" class="table table-condensed" border="1">
@@ -207,13 +209,13 @@
                     <td >
                         {{ item.specification|truncatechars:30|linebreaks}}
                     </td>
-                    <td noWrap>
+                    <td  noWrap>
                         {% if item.backup_status == 1 %}
                             需要备份
                         {% elif item.backup_status == 0 %}
                             无需备份
                         {% elif item.backup_status == 2 %}
-                            已备份执行
+                            <button type="button" class="backup_info" type="button" value="{{ item.id }}"   >已备份执行</button>
                         {% endif %}
 
                     </td>
@@ -301,9 +303,54 @@
                 <button type="submit" name='export_task' class="btn btn-warning"  onclick="return checkbox()"  >导出选中的任务</button>
             </div>
 
+            <div class="modal fade" id="myModal"  style="width:50%;" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <form role="form" action="" method="post">
+                        {% csrf_token %}
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <h4 class="modal-title">回滚语句</h4>
+                            </div>
+                            <div class="modal-body">
+
+                                <div class="form-group">
+                                    <div class="row">
+                                        <div  class="col-md-12">
+                                            <table id="myTb"  class="table table-bordered" width="100%" style="table-layout:fixed">
+                                                {#                                                 <table id="myTb"   border="0" cellspacing="1" style="background-color:#a0c6e5">#}
+                                                {#                                                    <td style="overflow-x: auto;" noWrap>#}
+                                                {#                                                        <p id="list_result"></p>#}
+                                                {#                                                    </td>#}
+                                                {#                                                </tr>#}
+
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+
+                            </div>
+                        </div>
+                    </form>
+
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal -->
+
+
         </div>
         </body>
     </form>
+
+
+
+
+
+
     <script type="text/javascript">
 
 
@@ -352,5 +399,40 @@
         });
     </script>
 
+    <script>
 
+        $(document).ready(function(){
+            $('#myModal').modal({
+                keyboard: false,
+                show: false,
+                backdrop:false
+            })
+
+
+            $('.backup_info').click(function(){
+                var taskid = $(this).attr("value");
+                $.get("{% url 'get_rollback' %}",{'taskid':taskid}).done(function (data) {
+                    $('#myModal').modal({
+                        show: true
+                    });
+                    $("#myTb").empty("");
+                    var tbHead = " <thead><tr><th width=\"30px\">ID</th><th>SQL</th></tr></thead><tbody>";
+                    $("#myTb").append(tbHead);
+                    for (var i =0 ; i <= data.length - 1; i++) {
+                        var tbBody = ""
+                        tbBody += "<tr><td width=\"30px\">"+(i+1)+"</td><td style=\"word-wrap:break-word;\">" + data[i] +  "</td></tr>";
+                        $("#myTb").append(tbBody);
+
+                        {#                        $('#list_result').append(' ' + data[i]);#}
+                    };
+                    $("#myTb").append("</tbody>");
+                    $('#myTb').DataTable({
+                        "lengthMenu": [[5,10], [5,10]],
+                        "order": []
+                    });
+                });
+                return false;
+            });
+        });
+    </script>
 {% endblock %}
