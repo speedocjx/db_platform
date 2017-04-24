@@ -69,6 +69,10 @@ incp_passwd = config.incp_passwd
 public_user = config.public_user
 pttool_switch = config.pt_tool
 pttool_path = config.pt_tool_path
+incept_backup_host = config.incept_backup_host
+incept_backup_port = config.incept_backup_port
+incept_backup_user = config.incept_backup_user
+inceptione_backup_passwd = config.inceptione_backup_passwd
 
 
 
@@ -384,10 +388,6 @@ def get_db_info(hosttag):
             break
     return tar_username, tar_passwd, tar_host,  tar_port,tar_dbname
 
-incept_backup_host = '10.1.70.222'
-incept_backup_port = '3306'
-incept_backup_user = 'chang'
-inceptione_backup_passwd = '710467549'
 
 def rollback_sqllist(idnum):
     task = Task.objects.get(id=idnum)
