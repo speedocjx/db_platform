@@ -112,7 +112,13 @@
                             {#  <td> <a target="_blank" >{{ item.sqltext|linebreaks }}</a></td>#}
                             <td> {{ item.affectrow }}</td>
                             {#  <td> {{ item.sequence|truncatechars:10  }}</td>#}
-                            <td> {{ item.sequence  }}</td>
+                            <td>
+                                {% if item.stagestatus|length == 40 %}
+                                    <button type="button" class="backup_sql" type="button" value="{{ item.sequence }}" title="点击查看备份语句"> {{ item.sequence  }}</button>
+                                {% else %}
+                                    {{ item.sequence }}
+                                {% endif %}
+                            </td>
 
                             <td> {{ item.backup_db}}</td>
                             <td> {{ item.execute_time }}</td>
@@ -215,7 +221,7 @@
                         {% elif item.backup_status == 0 %}
                             无需备份
                         {% elif item.backup_status == 2 %}
-                            <button type="button" class="backup_info" type="button" value="{{ item.id }}"   >已备份执行</button>
+                            <button type="button" class="backup_info" type="button" value="{{ item.id }}" title="点击查看备份语句">已备份执行</button>
                         {% endif %}
 
                     </td>
@@ -304,7 +310,7 @@
             </div>
 
             <div class="modal fade" id="myModal"  style="width:50%;" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
+                <div class="modal-dialog modal-lg">
                     <form role="form" action="" method="post">
                         {% csrf_token %}
                         <div class="modal-content">
@@ -317,7 +323,7 @@
                                 <div class="form-group">
                                     <div class="row">
                                         <div  class="col-md-12">
-                                            <table id="myTb"  class="table table-bordered" width="100%" style="table-layout:fixed">
+                                            <table id="myTb"  class="table table-bordered" width="100%" style="table-layout:fixed;">
                                                 {#                                                 <table id="myTb"   border="0" cellspacing="1" style="background-color:#a0c6e5">#}
                                                 {#                                                    <td style="overflow-x: auto;" noWrap>#}
                                                 {#                                                        <p id="list_result"></p>#}
@@ -407,7 +413,33 @@
                 show: false,
                 backdrop:false
             })
+            $(document).on("click",'.backup_sql', function() {
+                {#            $('.backup_sql').on('click',function() {#}
+                var sequenceid = $(this).attr("value");
+{#                alert(sequenceid);#}
+                $.get("{% url 'get_single_rollback' %}",{'sequenceid':sequenceid}).done(function (data) {
+                    $('#myModal').modal({
+                        show: true
+                    });
+                    $("#myTb").empty("");
+                    var tbHead = " <thead><tr><th width=\"30\">ID</th><th>SQL</th></tr></thead><tbody>";
+                    $("#myTb").append(tbHead);
+                    for (var i =0 ; i <= data.length - 1; i++) {
+                        var tbBody = ""
+                        tbBody += "<tr><td width=\"30\">"+(i+1)+"</td><td style=\"word-wrap:break-word;\">" + data[i] +  "</td></tr>";
+                        $("#myTb").append(tbBody);
 
+                        {#                        $('#list_result').append(' ' + data[i]);#}
+                    };
+                    $("#myTb").append("</tbody>");
+                    $('#myTb').dataTable().fnDestroy();
+                    $('#myTb').DataTable({
+                        "lengthMenu": [[5,10], [5,10]],
+                        "order": []
+                    });
+
+                });
+            });
 
             $('.backup_info').click(function(){
                 var taskid = $(this).attr("value");
@@ -416,16 +448,17 @@
                         show: true
                     });
                     $("#myTb").empty("");
-                    var tbHead = " <thead><tr><th width=\"30px\">ID</th><th>SQL</th></tr></thead><tbody>";
+                    var tbHead = " <thead><tr><th width=\"30\">ID</th><th>SQL</th></tr></thead><tbody>";
                     $("#myTb").append(tbHead);
                     for (var i =0 ; i <= data.length - 1; i++) {
                         var tbBody = ""
-                        tbBody += "<tr><td width=\"30px\">"+(i+1)+"</td><td style=\"word-wrap:break-word;\">" + data[i] +  "</td></tr>";
+                        tbBody += "<tr><td width=\"30\">"+(i+1)+"</td><td style=\"word-wrap:break-word;\">" + data[i] +  "</td></tr>";
                         $("#myTb").append(tbBody);
 
                         {#                        $('#list_result').append(' ' + data[i]);#}
                     };
                     $("#myTb").append("</tbody>");
+                    $('#myTb').dataTable().fnDestroy();
                     $('#myTb').DataTable({
                         "lengthMenu": [[5,10], [5,10]],
                         "order": []

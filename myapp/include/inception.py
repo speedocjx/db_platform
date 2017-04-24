@@ -402,6 +402,15 @@ def rollback_sqllist(idnum):
             sqllist = sqllist + get_single_rollback(backupDb,opid_time)
     return sqllist
 
+def rollback_sql(seq):
+    a = Incep_error_log.objects.filter(sequence=seq)[:1]
+    backupDb = a[0].backup_db
+    opid_time = seq.replace("'","")
+    sqllist = []
+    if backupDb != 'None' and len(a[0].stagestatus)==40:
+        sqllist = get_single_rollback(backupDb,opid_time)
+    return sqllist
+
 def get_single_rollback(backupDb,opid_time):
     sqllist = []
     tbNamesql = "select tablename from %s.$_$Inception_backup_information$_$ where opid_time='%s';" % (backupDb, opid_time)

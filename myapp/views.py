@@ -566,6 +566,13 @@ def get_rollback(request):
 
 @login_required(login_url='/accounts/login/')
 @permission_required('myapp.can_see_taskview', login_url='/')
+def get_single_rollback(request):
+    sequence = request.GET['sequenceid']
+    sqllist = incept.rollback_sql(sequence)
+    return HttpResponse(json.dumps(sqllist), content_type='application/json')
+
+@login_required(login_url='/accounts/login/')
+@permission_required('myapp.can_see_taskview', login_url='/')
 def task_manager(request):
     #obj_list = func.get_mysql_hostlist(request.user.username,'log')
     obj_list = ['all'] + func.get_mysql_hostlist(request.user.username,'incept')
@@ -586,7 +593,7 @@ def task_manager(request):
         if request.POST.has_key('commit'):
             # data = incept.get_task_list(hosttag,request,endtime)
             return render(request,'task_manager.html',{'form':form,'form2':form2,'objlist':obj_list,'datalist':data,'choosed_host':hosttag})
-        elif request.POST.has_key('delete'):
+        elif request.POST.has_key('delete') and (request.user.has_perm('myapp.can_admin_task') or request.user.has_perm('myapp.can_delete_task')):
             id = int(request.POST['delete'])
             incept.delete_task(id)
             return render(request,'task_manager.html',{'form':form,'form2':form2,'objlist':obj_list,'datalist':data,'choosed_host':hosttag})
@@ -599,18 +606,18 @@ def task_manager(request):
             request.session['recent_taskid'] = id
             results,cols = incept.task_running_status(id)
             return render(request,'task_manager.html',{'form':form,'form2':form2,'objlist':obj_list,'datalist':data,'choosed_host':hosttag,'result_status':results,'cols':cols})
-        elif request.POST.has_key('exec'):
+        elif request.POST.has_key('exec') and request.user.has_perm('myapp.can_admin_task'):
             id = int(request.POST['exec'])
             nllflag = task_run(id,request)
             #nllflag = task_run.delay(id)
             # print nllflag
             return render(request,'task_manager.html',{'form':form,'form2':form2,'objlist':obj_list,'datalist':data,'choosed_host':hosttag,'nllflag':nllflag})
-        elif request.POST.has_key('stop'):
+        elif request.POST.has_key('stop') and request.user.has_perm('myapp.can_admin_task'):
             sqlsha = request.POST['stop']
             # incept.incep_stop(sqlsha,request)
             results,cols  = incept.incep_stop(sqlsha,request)
             return render(request,'task_manager.html',{'form':form,'form2':form2,'objlist':obj_list,'datalist':data,'choosed_host':hosttag,'result_status':results,'cols':cols})
-        elif request.POST.has_key('appoint'):
+        elif request.POST.has_key('appoint') and request.user.has_perm('myapp.can_admin_task'):
             id = int(request.POST['appoint'])
             incept.set_schetime(id,sche_time)
             return render(request, 'task_manager.html',{'form': form,'form2':form2, 'objlist': obj_list, 'datalist': data, 'choosed_host': hosttag})
@@ -641,6 +648,8 @@ def task_manager(request):
             response = StreamingHttpResponse((writer.writerow(row) for row in results_list), content_type="text/csv")
             response['Content-Disposition'] = 'attachment; filename="task_export.csv"'
             return response
+        else:
+            return HttpResponseRedirect("/")
     else:
         data = incept.get_task_list('all',request,datetime.datetime.now())
         form = Taskquery()
