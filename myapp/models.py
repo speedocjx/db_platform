@@ -149,7 +149,7 @@ class Incep_error_log(models.Model):
     errormessage = models.TextField()
     sqltext = models.TextField()
     affectrow = models.IntegerField()
-    sequence = models.CharField(max_length=30)
+    sequence = models.CharField(max_length=30,db_index=True)
     backup_db = models.CharField(max_length=100)
     execute_time = models.CharField(max_length=20)
     sqlsha = models.CharField(max_length=50)
