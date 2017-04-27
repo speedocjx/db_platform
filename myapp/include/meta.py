@@ -63,6 +63,10 @@ def get_metadata(hosttag,flag,tbname=''):
         sql = "show create table " + tbname
         results, col, tar_dbname = get_data(hosttag, sql)
         return results, col, tar_dbname
+    elif flag == 6:
+        sql = "show tables ";
+        results , col, tar_dbname = get_data(hosttag, sql)
+        return results
 
 def get_data(hosttag,sql):
     a = Db_name.objects.filter(dbtag=hosttag)[0]

@@ -1424,14 +1424,27 @@ def pass_reset(request):
         return render(request, 'previliges/pass_reset.html', locals())
 
 
+@login_required(login_url='/accounts/login/')
+def get_tblist(request):
+    choosed_host = request.GET['dbtag']
+    if len(choosed_host)>0:
+        tblist = map(lambda x:x[0],meta.get_metadata(choosed_host, 6))
+    else :
+        tblist = ['wrong dbname',]
+    return HttpResponse(json.dumps(tblist), content_type='application/json')
 
-
-
-#
-#
-# def test(request):
-#     mon.mon_processlist()
-#     return render(request,'test.html')
+@login_required(login_url='/accounts/login/')
+def test(request):
+    objlist = func.get_mysql_hostlist(request.user.username, 'meta')
+    # result = func.get_diff('mysql-lepus-test','mysql_replication','mysql-lepus','mysql_replication')
+    # print result
+    if request.method == 'POST':
+        choosed_host1 = request.POST['choosedb1']
+        choosed_host2 = request.POST['choosedb2']
+        choosed_tb1 = request.POST['choosetb1']
+        choosed_tb2 = request.POST['choosetb2']
+        result = func.get_diff(choosed_host1, choosed_tb1, choosed_host2, choosed_tb2)
+    return render(request,'test.html', locals())
 
 # @ratelimit(key=func.my_key, rate='5/h')
 # def test(request):

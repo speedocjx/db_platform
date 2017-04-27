@@ -1,98 +1,121 @@
-{% load staticfiles %}
+{% extends "include/base.html" %}
+{% block title %}
+    <title>表结构比对</title>
+{% endblock %}
+{% block name %}
+    欢迎使用MySQL数据库<span style="color:red">表结构比对</span>功能
+{% endblock %}
+{%block content%}
+    <div id="wrapper">
+        <form role="form" method='post'>
+            {% csrf_token %}
+            {% include "include/sidebar.html" %}
+            <div id="page-content-wrapper">
+                <div class="row">
+                    <div class="col-md-3">
 
-<html>
+                        <select onchange="Change1()" id="dbid1" class="form-control col-md-1" name = "choosedb1">
+                            <option value ="">----------</option>
+                            {% for obj in objlist %}
+                                {% if obj == choosed_host1 %}
+                                    <option selected="selected" value ="{{ obj }}">{{ obj }}</option>
+                                {% else %}
+                                    <option value ="{{ obj }}">{{ obj }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select id="tbid1" class="form-control col-md-1" name = "choosetb1">
+                            <option selected="selected" value ="">----------</option>
+                        </select>
 
+                    </div>
+                    <div class="col-md-3">
+                        <select onchange="Change2()" id="dbid2" class="form-control col-md-1" name = "choosedb2">
+                            <option value ="">----------</option>
+                            {% for obj in objlist %}
+                                {% if obj == choosed_host2 %}
+                                    <option selected="selected" value ="{{ obj }}">{{ obj }}</option>
+                                {% else %}
+                                    <option value ="{{ obj }}">{{ obj }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select id="tbid2" class="form-control col-md-1" name = "choosetb2">
+                            <option selected="selected" value ="">----------</option>
+                        </select>
+                    </div>
 
-<head>
+                </div>
+                <div class="row">
+                    <div class="col-md-3">
 
+                    </div>
+                </div>
 
-
-    <link href="{% static 'bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
-    <script src="{% static 'bootstrap/js/jquery-3.1.1.min.js' %}"></script>
-    <link href="{% static 'bootstrap/css/bootstrap-theme.min.css' %}" rel="stylesheet">
-    <link href="{% static 'bootstrap/js/jquery-3.1.1.min.js' %}" rel="stylesheet">
-    <script src="{% static 'bootstrap/js/bootstrap.min.js' %}" rel="stylesheet"></script>
-    <script type="text/javascript" src="{% static 'jeDate/jedate.js' %}"></script>
-    <link href="{% static 'bootstrap/css/simple-sidebar.css' %}" rel="stylesheet">
-
-    <!-- Bootstrap Core CSS -->
-    {#    <link href="css/bootstrap.min.css" rel="stylesheet">#}
-
-    <!-- Custom CSS -->
-
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-    <![endif]-->
-
-</head>
-
-<body>
-{% include "include/nav.html" %}
-<div id="wrapper">
-
-    <!-- Sidebar -->
-    {#    <div id="sidebar-wrapper">#}
-    {#        <ul class="sidebar-nav">#}
-    {#            <li class="sidebar-brand">#}
-    {#                <a href="#">#}
-    {#                    Start Bootstrap#}
-    {#                </a>#}
-    {#            </li>#}
-    {#            <li>#}
-    {#                <a href="#">Dashboard</a>#}
-    {#            </li>#}
-    {#            <li>#}
-    {#                <a href="#">Shortcuts</a>#}
-    {#            </li>#}
-    {#            <li>#}
-    {#                <a href="#">Overview</a>#}
-    {#            </li>#}
-    {#            <li>#}
-    {#                <a href="#">Events</a>#}
-    {#            </li>#}
-    {#            <li>#}
-    {#                <a href="#">About</a>#}
-    {#            </li>#}
-    {#            <li>#}
-    {#                <a href="#">Services</a>#}
-    {#            </li>#}
-    {#            <li>#}
-    {#                <a href="#">Contact</a>#}
-    {#            </li>#}
-    {#        </ul>#}
-    {#        test#}
-    {#    </div>#}
-    <!-- /#sidebar-wrapper -->
-
-    <!-- Page Content -->
-    <div id="sidebar-wrapper">
-        <textarea cols="20"  rows="10" maxlength="30"  name="specify"></textarea>
+            </div>
+        </form >
+        {% if result %}
+            <pre>{{ result }}</pre>
+        {% endif %}
     </div>
-    <div class="container-fluid">
 
 
 
-        <div id="page-content-wrapper">
+{% endblock %}
+{% block script %}
+    {% include "include/pagejump/pagejump.html" %}
+    {#    {% include "include/pagejump/tabledata.html" %}#}
+    <script>
+        function Change1() {
+            var dbtag=$("#dbid1 option:selected").val();
+            $("#tbid1").empty("");
+            $.get("{% url 'get_tblist' %}",{'dbtag':dbtag}).done(function (data) {
+                for (var i =0 ; i <= data.length - 1; i++) {
+                    $("#tbid1").append("<option value='" + data[i]  + "'>" + data[i] + "</option>");
 
-            <a href="#menu-toggle" class="btn btn-default" id="menu-toggle">Toggle Menu</a>
+                };
+            });
+        }
+        function Change2() {
+            var dbtag=$("#dbid2 option:selected").val();
+            $("#tbid2").empty("");
+            $.get("{% url 'get_tblist' %}",{'dbtag':dbtag}).done(function (data) {
+                for (var i =0 ; i <= data.length - 1; i++) {
+                    $("#tbid2").append("<option value='" + data[i]  + "'>" + data[i] + "</option>");
 
-        </div>
-    </div>
-    <!-- /#page-content-wrapper -->
+                };
+            });
+        }
 
-</div>
-<!-- /#wrapper -->
 
-<!-- jQuery -->
-<!-- Menu Toggle Script -->
-<script>
-    $("#menu-toggle").click(function(e) {
-        e.preventDefault();
-        $("#wrapper").toggleClass("toggled");
-    });
-</script>
+    </script>
 
-</body>
+    {#    <script>#}
+    {##}
+    {#        $("#menu-toggle").click(function(e) {#}
+    {#            e.preventDefault();#}
+    {#            $("#wrapper").toggleClass("toggled");#}
+    {#        });#}
+    {#        function record_cookie() {#}
+    {#            var fav = document.getElementById("id_favword");#}
+    {#            myfav =escape(fav.value);#}
+    {#            myfav = fav.value.replace(/\n/g,"^");#}
+    {#            var expires = new Date();#}
+    {#            expires.setTime(expires.getTime() + 3500000);#}
+    {#            pathstr = ';path=/';#}
+    {#            alert(myfav);#}
+    {#            document.cookie = "myfavword"+"="+myfav+pathstr+';expires='+expires.toGMTString();#}
+    {#        }#}
+    {##}
+    {#        function showfav() {#}
+    {#            var fav = document.getElementById("id_favword");#}
+    {#            myfav =unescape(fav.value);#}
+    {#            fav.value = myfav;#}
+    {#        }#}
+    {#    </script>#}
 
-</html>
+{% endblock %}
