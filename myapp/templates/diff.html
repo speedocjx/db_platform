@@ -12,9 +12,17 @@
             {% include "include/sidebar.html" %}
             <div id="page-content-wrapper">
                 <div class="row">
+                    <div class="col-md-1">
+                        选择比对库和表
+                    </div>
+                    <div class="col-md-1 col-md-offset-5">
+                        选择参照库和表
+                    </div>
+                </div>
+                <div class="row">
                     <div class="col-md-3">
 
-                        <select onchange="Change1()" id="dbid1" class="form-control col-md-1" name = "choosedb1">
+                        <select onchange="Change1()" id="dbid1" class="form-control col-md-1" title="选择比对库" name = "choosedb1">
                             <option value ="">----------</option>
                             {% for obj in objlist %}
                                 {% if obj == choosed_host1 %}
@@ -26,13 +34,18 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <select id="tbid1" class="form-control col-md-1" name = "choosetb1">
-                            <option selected="selected" value ="">----------</option>
+                        <select id="tbid1" class="form-control col-md-1" title="选择比对表"  name = "choosetb1">
+                            {% if choosed_tb1 %}
+                                <option selected="selected" value ="{{ choosed_tb1 }}">{{ choosed_tb1 }}</option>
+
+                            {% else %}
+                                <option selected="selected" value ="">----------</option>
+                            {% endif %}
                         </select>
 
                     </div>
                     <div class="col-md-3">
-                        <select onchange="Change2()" id="dbid2" class="form-control col-md-1" name = "choosedb2">
+                        <select onchange="Change2()" id="dbid2" class="form-control col-md-1" title="选择参照库" name = "choosedb2">
                             <option value ="">----------</option>
                             {% for obj in objlist %}
                                 {% if obj == choosed_host2 %}
@@ -44,15 +57,25 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <select id="tbid2" class="form-control col-md-1" name = "choosetb2">
-                            <option selected="selected" value ="">----------</option>
+                        <select id="tbid2" class="form-control col-md-1"  title="选择参照表" name = "choosetb2">
+                            {% if choosed_tb2 %}
+                                <option selected="selected" value ="{{ choosed_tb2 }}">{{ choosed_tb2 }}</option>
+
+                            {% else %}
+                                <option selected="selected" value ="">----------</option>
+                            {% endif %}
                         </select>
                     </div>
 
                 </div>
+                <hr />
                 <div class="row">
-                    <div class="col-md-3">
+                    <div class="col-md-1">
+                        <button type="submit" name='check' class="btn btn-warning" >比对表结构</button>
 
+                    </div>
+                    <div class="col-md-1">
+                        <button onclick="openpage('{% url 'diff' %}')"  class="btn btn-info">刷新</button>
                     </div>
                 </div>
 

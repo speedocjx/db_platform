@@ -45,7 +45,7 @@ urlpatterns = (
     url(r'^get_rollback/$', myapp_view.get_rollback,name='get_rollback'),
     url(r'^get_single_rollback/$', myapp_view.get_single_rollback,name='get_single_rollback'),
     url(r'^get_tblist/$', myapp_view.get_tblist, name='get_tblist'),
-    url(r'^test/$', myapp_view.test,name='test'),
+    url(r'^diff/$', myapp_view.diff,name='diff'),
     url(r'^salt/', include('salt.urls')),
     url(r'^mongodb/', include('mongodb.urls')),
     url(r'^chartapi/', include('chartapi.urls')),

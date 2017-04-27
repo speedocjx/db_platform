@@ -1,6 +1,6 @@
 #!/bin/env python
 #-*-coding:utf-8-*-
-import MySQLdb,sys,string,time,datetime,uuid,commands
+import MySQLdb,sys,string,time,datetime,uuid,commands,os
 from myapp.include.encrypt import prpcrypt
 from django.contrib.auth.models import User,Permission,ContentType,Group
 from myapp.models import Db_name,Db_account,Db_instance,Oper_log,Login_log,Db_group
@@ -790,8 +790,10 @@ def get_diff(dbtag1,tb1,dbtag2,tb2):
     option = ' --difftype=sql'
     table = ' {}.{}:{}.{}'.format(tar_dbname1,tb1,tar_dbname2,tb2)
     cmd = cmd + server1 + server2 + option + table
-    print cmd
-    result = commands.getoutput(cmd)
+    output = os.popen(cmd)
+    result = output.read()
+    # result = commands.getoutput(cmd)
+
     return result
 
 def get_conn_info(hosttag):

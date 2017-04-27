@@ -1425,26 +1425,30 @@ def pass_reset(request):
 
 
 @login_required(login_url='/accounts/login/')
+@permission_required('myapp.can_see_metadata', login_url='/')
 def get_tblist(request):
     choosed_host = request.GET['dbtag']
-    if len(choosed_host)>0:
+    if len(choosed_host) >0 and choosed_host in func.get_mysql_hostlist(request.user.username, 'meta'):
         tblist = map(lambda x:x[0],meta.get_metadata(choosed_host, 6))
     else :
         tblist = ['wrong dbname',]
     return HttpResponse(json.dumps(tblist), content_type='application/json')
 
 @login_required(login_url='/accounts/login/')
-def test(request):
+@permission_required('myapp.can_see_metadata', login_url='/')
+def diff(request):
     objlist = func.get_mysql_hostlist(request.user.username, 'meta')
     # result = func.get_diff('mysql-lepus-test','mysql_replication','mysql-lepus','mysql_replication')
     # print result
     if request.method == 'POST':
-        choosed_host1 = request.POST['choosedb1']
-        choosed_host2 = request.POST['choosedb2']
-        choosed_tb1 = request.POST['choosetb1']
-        choosed_tb2 = request.POST['choosetb2']
-        result = func.get_diff(choosed_host1, choosed_tb1, choosed_host2, choosed_tb2)
-    return render(request,'test.html', locals())
+        if  request.POST.has_key('check'):
+            choosed_host1 = request.POST['choosedb1']
+            choosed_host2 = request.POST['choosedb2']
+            choosed_tb1 = request.POST['choosetb1']
+            choosed_tb2 = request.POST['choosetb2']
+            if choosed_host1 in objlist and choosed_host2 in objlist:
+                result = func.get_diff(choosed_host1, choosed_tb1, choosed_host2, choosed_tb2)
+    return render(request,'diff.html', locals())
 
 # @ratelimit(key=func.my_key, rate='5/h')
 # def test(request):
