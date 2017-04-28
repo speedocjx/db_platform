@@ -50,14 +50,13 @@ port = settings.DATABASES['default']['PORT']
 user = settings.DATABASES['default']['USER']
 passwd = settings.DATABASES['default']['PASSWORD']
 dbname = settings.DATABASES['default']['NAME']
-base_dir = settings.BASE_DIR
 select_limit = int(config.select_limit)
 export_limit = int(config.export_limit)
 wrong_msg = config.wrong_msg
 public_user = config.public_user
 sqladvisor = config.sqladvisor
 advisor_switch = config.sqladvisor_switch
-
+path_mysqldiff = config.path_to_mysqldiff
 #
 # exceptlist = ["'","`","\""]
 #
@@ -779,20 +778,21 @@ def get_usergp_list():
     return grouplist
 
 def get_diff(dbtag1,tb1,dbtag2,tb2):
-    tar_host1, tar_port1, tar_username1, tar_passwd1,tar_dbname1 = get_conn_info(dbtag1)
-    tar_host2, tar_port2, tar_username2, tar_passwd2,tar_dbname2 = get_conn_info(dbtag2)
 
+    if os.path.isfile(path_mysqldiff) :
+        tar_host1, tar_port1, tar_username1, tar_passwd1,tar_dbname1 = get_conn_info(dbtag1)
+        tar_host2, tar_port2, tar_username2, tar_passwd2,tar_dbname2 = get_conn_info(dbtag2)
 
-
-    cmd = 'python ' + base_dir+'/myapp/mysql_utilities/scripts/mysqldiff.py'
-    server1 = ' -q --server1={}:{}@{}:{}'.format(tar_username1,tar_passwd1,tar_host1,str(tar_port1))
-    server2 = ' --server2={}:{}@{}:{}'.format(tar_username2,tar_passwd2,tar_host2,str(tar_port2))
-    option = ' --difftype=sql'
-    table = ' {}.{}:{}.{}'.format(tar_dbname1,tb1,tar_dbname2,tb2)
-    cmd = cmd + server1 + server2 + option + table
-    output = os.popen(cmd)
-    result = output.read()
-    # result = commands.getoutput(cmd)
+        server1 = ' -q --server1={}:{}@{}:{}'.format(tar_username1,tar_passwd1,tar_host1,str(tar_port1))
+        server2 = ' --server2={}:{}@{}:{}'.format(tar_username2,tar_passwd2,tar_host2,str(tar_port2))
+        option = ' --difftype=sql'
+        table = ' {}.{}:{}.{}'.format(tar_dbname1,tb1,tar_dbname2,tb2)
+        cmd = path_mysqldiff + server1 + server2 + option + table
+        output = os.popen(cmd)
+        result = output.read()
+        # result = commands.getoutput(cmd)
+    else :
+        result = "mysqldiff not installed"
 
     return result
 

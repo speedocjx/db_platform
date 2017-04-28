@@ -1448,6 +1448,8 @@ def diff(request):
             choosed_tb2 = request.POST['choosetb2']
             if choosed_host1 in objlist and choosed_host2 in objlist:
                 result = func.get_diff(choosed_host1, choosed_tb1, choosed_host2, choosed_tb2)
+                (sh_cre1, sh_cre_col, dbname) = meta.get_metadata(choosed_host1, 5, choosed_tb1)
+                (sh_cre2, sh_cre_col, dbname) = meta.get_metadata(choosed_host2, 5, choosed_tb2)
     return render(request,'diff.html', locals())
 
 # @ratelimit(key=func.my_key, rate='5/h')

@@ -7,15 +7,16 @@
 {% endblock %}
 {%block content%}
     <div id="wrapper">
-        <form role="form" method='post'>
-            {% csrf_token %}
-            {% include "include/sidebar.html" %}
-            <div id="page-content-wrapper">
+        <div id="page-content-wrapper">
+
+            <form role="form" method='post'>
+                {% csrf_token %}
+                {% include "include/sidebar.html" %}
                 <div class="row">
-                    <div class="col-md-1">
+                    <div class="col-md-2">
                         选择比对库和表
                     </div>
-                    <div class="col-md-1 col-md-offset-5">
+                    <div class="col-md-2 col-md-offset-4">
                         选择参照库和表
                     </div>
                 </div>
@@ -79,13 +80,33 @@
                     </div>
                 </div>
 
-            </div>
-        </form >
-        {% if result %}
-            <pre>{{ result }}</pre>
-        {% endif %}
-    </div>
 
+            </form >
+
+            {% if sh_cre1 %}
+
+
+            {% endif %}
+            {% if result %}
+                <hr />
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ sh_cre1.0.1|linebreaks }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ sh_cre2.0.1|linebreaks }}
+                    </div>
+                </div>
+                <hr />
+                <div class="row">
+                    <div class="col-md-12">
+                        {{ result|linebreaks }}
+                    </div>
+                </div>
+
+            {% endif %}
+        </div>
+    </div>
 
 
 {% endblock %}
