@@ -1222,7 +1222,7 @@ def meta_data(request):
                 (data_list, collist, dbname) = meta.get_metadata(choosed_host,1)
                 return render(request, 'meta_data.html', locals())
             elif request.POST.has_key('structure'):
-                tbname = request.POST['structure']
+                tbname = request.POST['structure'].split(';')[0]
                 (field, col, dbname) = meta.get_metadata(choosed_host,2,tbname)
                 (ind_data, ind_col, dbname) = meta.get_metadata(choosed_host, 3, tbname)
                 (tbst, tbst_col, dbname) = meta.get_metadata(choosed_host, 4, tbname)
@@ -1427,7 +1427,7 @@ def pass_reset(request):
 @login_required(login_url='/accounts/login/')
 @permission_required('myapp.can_see_metadata', login_url='/')
 def get_tblist(request):
-    choosed_host = request.GET['dbtag']
+    choosed_host = request.GET['dbtag'].split(';')[0]
     if len(choosed_host) >0 and choosed_host in func.get_mysql_hostlist(request.user.username, 'meta'):
         tblist = map(lambda x:x[0],meta.get_metadata(choosed_host, 6))
     else :
@@ -1442,10 +1442,10 @@ def diff(request):
     # print result
     if request.method == 'POST':
         if  request.POST.has_key('check'):
-            choosed_host1 = request.POST['choosedb1']
-            choosed_host2 = request.POST['choosedb2']
-            choosed_tb1 = request.POST['choosetb1']
-            choosed_tb2 = request.POST['choosetb2']
+            choosed_host1 = request.POST['choosedb1'].split(';')[0]
+            choosed_host2 = request.POST['choosedb2'].split(';')[0]
+            choosed_tb1 = request.POST['choosetb1'].split(';')[0]
+            choosed_tb2 = request.POST['choosetb2'].split(';')[0]
             if choosed_host1 in objlist and choosed_host2 in objlist:
                 result = func.get_diff(choosed_host1, choosed_tb1, choosed_host2, choosed_tb2)
                 (sh_cre1, sh_cre_col, dbname) = meta.get_metadata(choosed_host1, 5, choosed_tb1)
