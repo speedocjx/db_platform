@@ -7,9 +7,9 @@
 + 支持SQLADVISOR(https://github.com/Meituan-Dianping/SQLAdvisor)
 + MySQL DDL DML语句执行
 + MySQL DDL DML 任务提交(结合inception)
-+ Inception 任务管理（包括任务修改，任务导出，定时执行，任务终止，任务结果状态查询，任务邮件提示等）
++ Inception 任务管理（包括任务修改、导出、定时执行、终止、结果状态查询、邮件提示、备份查询等）
 + MySQL 实例 部分状态查询
-+ MySQL 表相关元数据收集与展示
++ MySQL 表相关元数据收集与展示（自增值使用、表大小、重复索引、分区表使用等）
 + Binlog解析功能(https://github.com/danfengcao/binlog2sql)
 + Mongodb简单查询
 + 用户权限分离系统
@@ -60,7 +60,9 @@ select_limit=200
 
 export_limit=200
 
-incp_host="x.x.x.x"
+incp_host="10.xx.xx.xx"
+
+public_user="public"
 
 incp_port=6669
 
@@ -68,17 +70,31 @@ incp_user=""
 
 incp_passwd=""
 
-public_user="public"
-
 sqladvisor_switch = 1
 
 sqladvisor = '/usr/sbin/sqladvisor'
+
+pt_tool = 1
+
+pt_tool_path = '/usr/bin/'
+
+incept_backup_host = '10.xx.xx.xx'
+
+incept_backup_port = 'xx'
+
+incept_backup_user = 'xx'
+
+incept_backup_passwd = 'xx'
+
+path_to_mysqldiff = "/usr/local/bin/mysqldiff"
 ```
 **说明:**
 
   `select_limit` 和 `export_limit`为系统默认查询和导出条数限制
 
   *incp_XX*系列配置文件为`inception`的连接配置
+  
+  *incept_backup_XX*为配置为inception的备份库，用于查询备份语句
 
   *sqladvisor_switch*设置为0时不启用`sqladvisor`
 
@@ -149,7 +165,7 @@ python manage.py celery worker -E -c 8 --loglevel=info -Q mysql_monitor
 ![image](https://github.com/speedocjx/myfile/blob/master/sql-manage-platform/mysql_exec.jpg)
 ## 6.任务提交界面
 
-只有审核通过的sql，才能被提交至任务管理页面
+只有审核通过的sql，才能被提交至任务管理页面，提交时可以选择是否执行时备份语句
 
 ![image](https://github.com/speedocjx/myfile/blob/master/sql-manage-platform/task_upload.jpg)
 ## 7.任务管理界面
@@ -194,7 +210,7 @@ python manage.py celery worker -E -c 8 --loglevel=info -Q mysql_monitor
 #### 使用页面功能需要配置role为admin的数据库账号
 
 ![image](https://github.com/speedocjx/myfile/blob/master/sql-manage-platform/mysql_admin.jpg)
-#### 此页面数据由crontab任务收集信息得到
+#### 此页面数据由定时任务收集信息得到
 ![image](https://github.com/speedocjx/myfile/blob/master/sql-manage-platform/mysql_admin1.jpg)
 #### binlog解析功能（测试）
 ![image](https://github.com/speedocjx/myfile/blob/master/sql-manage-platform/binlog_parse.jpg)
