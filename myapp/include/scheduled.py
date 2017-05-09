@@ -57,6 +57,7 @@ incp_user = incept.incp_user
 incp_passwd = incept.incp_passwd
 public_user = incept.public_user
 
+#use /admin/ to set crontab (per minute)
 @task
 def task_sche_run():
     try:
@@ -217,6 +218,28 @@ def mysql_query(sql,user=user,passwd=passwd,host=host,port=int(port),dbname=dbna
         print e
         return([str(e)],''),['error']
 
+#use /admin/ to set crontab (per week)
+@task
+def ck_range_part():
+    partResult = ()
+    mailto = map(lambda x:x.user.email,filter(lambda x:len(x.user.email)>0,User_profile.objects.filter(task_email__gt=0)))
+    for i in Db_name.objects.filter(instance__db_type='mysql').distinct():
+        try:
+            print i.dbtag
+            sql = "select '{}',a.* from (select TABLE_SCHEMA,TABLE_NAME,PARTITION_NAME,from_unixtime(max(PARTITION_DESCRIPTION)) \
+                  as max_date from information_schema.PARTITIONS where PARTITION_NAME is not null \
+                  and PARTITION_METHOD='RANGE' and TABLE_SCHEMA='{}' group by TABLE_SCHEMA,TABLE_NAME ) \
+                  a where a.max_date < date_add(now(), interval 1 month);".format(i.dbtag,i.dbname)
+            data, col = get_data(i, sql)
+            if len(data)>0 and len(col)>1:
+                partResult = partResult + data
+        except Exception, e:
+            print e
+    if len(partResult)>0:
+        html_content = loader.render_to_string('include/mail_template.html', locals())
+        sendmail('TABLE PARTITION USED CHECK',mailto, html_content)
+
+#use /admin/ to set crontab (per day)
 @task
 def table_check():
     #archive history data
@@ -326,14 +349,13 @@ def get_data(a,sql):
         #results,col = mysql_query(wrong_msg,user,passwd,host,int(port),dbname)
     return results,col
 
+#use /admin/ to set crontab (per week)
 @task
 def get_dupreport_all():
     import os
     mailto=[]
     if incept.pttool_switch != 0 and os.path.isfile(incept.pttool_path+'/pt-duplicate-key-checker') :
-        for i in User_profile.objects.filter(task_email__gt=0):
-            if len(i.user.email) > 0:
-                mailto.append(i.user.email)
+        mailto = map(lambda x: x.user.email,filter(lambda x: len(x.user.email) > 0, User_profile.objects.filter(task_email__gt=0)))
         ins_li = list(Db_instance.objects.filter(db_type='mysql'))
         for insname in ins_li:
             for i in insname.db_name_set.all():
@@ -428,12 +450,11 @@ def mysql_exec(sql,param=''):
     except Exception,e:
         print e
 
+
+#use /admin/ to set crontab (per day after table_check)
 @task
 def table_use_dailyreport():
-    mailto = []
-    for i in User_profile.objects.filter(task_email__gt=0):
-        if len(i.user.email) > 0:
-            mailto.append(i.user.email)
+    mailto = map(lambda x:x.user.email,filter(lambda x:len(x.user.email)>0,User_profile.objects.filter(task_email__gt=0)))
     sql = "SELECT a1.DBTAG, a1.TABLE_SCHEMA, a1.TABLE_NAME, a1.`TOTAL(M)`, a1.`DATA(M)`, a1.`INDEX(M)`FROM\
     mon_tbsize a1 INNER JOIN(SELECT a.DBTAG, a.`TOTAL(M)` FROM mon_tbsize a LEFT JOIN mon_tbsize b ON a.DBTAG = b.DBTAG AND\
     a.`TOTAL(M)` <= b.`TOTAL(M)` GROUP BY\
