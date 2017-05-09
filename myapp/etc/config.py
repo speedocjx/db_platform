@@ -14,5 +14,5 @@ pt_tool_path = '/usr/bin/'
 incept_backup_host = '10.xx.xx.xx'
 incept_backup_port = 'xx'
 incept_backup_user = 'xx'
-inceptione_backup_passwd = 'xx'
+incept_backup_passwd = 'xx'
 path_to_mysqldiff = "/usr/local/bin/mysqldiff"

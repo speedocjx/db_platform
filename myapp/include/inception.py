@@ -72,7 +72,7 @@ pttool_path = config.pt_tool_path
 incept_backup_host = config.incept_backup_host
 incept_backup_port = config.incept_backup_port
 incept_backup_user = config.incept_backup_user
-inceptione_backup_passwd = config.inceptione_backup_passwd
+incept_backup_passwd = config.incept_backup_passwd
 
 
 
@@ -414,10 +414,10 @@ def rollback_sql(seq):
 def get_single_rollback(backupDb,opid_time):
     sqllist = []
     tbNamesql = "select tablename from %s.$_$Inception_backup_information$_$ where opid_time='%s';" % (backupDb, opid_time)
-    results,col = func.mysql_query(tbNamesql,incept_backup_user,inceptione_backup_passwd,incept_backup_host,int(incept_backup_port),backupDb)
+    results,col = func.mysql_query(tbNamesql,incept_backup_user,incept_backup_passwd,incept_backup_host,int(incept_backup_port),backupDb)
     tbName = results[0][0]
     backsql = "select rollback_statement from %s.%s where opid_time='%s' order by id desc" % (backupDb, tbName, opid_time)
-    results,col = func.mysql_query(backsql,incept_backup_user,inceptione_backup_passwd,incept_backup_host,int(incept_backup_port),backupDb)
+    results,col = func.mysql_query(backsql,incept_backup_user,incept_backup_passwd,incept_backup_host,int(incept_backup_port),backupDb)
     for row in results :
         sqllist.append(row[0])
     return sqllist
