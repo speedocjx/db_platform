@@ -67,7 +67,47 @@
                     <td>任务状态</td>
                     {% if perms.myapp.can_admin_task %}
                         <td>
-                            <input  type=="text" maxlength="20" value="{{ data.status }}" placeholder="input status here" name="status"> ('executed','executed failed','check not passed','check passed','running','appointed','NULL')
+                            <div class="col-md-3 main">
+                                <select class="form-control col-md-1" name = "status">
+                                    {% if data.status == 'executed'  %}
+                                        <option selected="selected" value ="executed">executed</option>
+                                    {% else  %}
+                                        <option  value ="executed">executed</option>
+                                    {% endif %}
+                                    {% if data.status == 'executed failed'  %}
+                                        <option selected="selected"  value ="executed failed">executed failed</option>
+                                    {% else  %}
+                                        <option  value ="executed failed">executed failed</option>
+                                    {% endif %}
+                                    {% if data.status == 'check not passed'  %}
+                                        <option selected="selected"  value ="check not passed">check not passed</option>
+                                    {% else  %}
+                                        <option  value ="check not passed">check not passed</option>
+                                    {% endif %}
+                                    {% if data.status == 'check passed'  %}
+                                        <option selected="selected"  value ="check passed">check passed</option>
+                                    {% else  %}
+                                        <option  value ="check passed">check passed</option>
+                                    {% endif %}
+                                    {% if data.status == 'running' %}
+                                        <option selected="selected"  value ="running">running</option>
+                                    {% else  %}
+                                        <option  value ="running">running</option>
+                                    {% endif %}
+
+                                    {% if data.status == 'appointed' %}
+                                        <option selected="selected"  value ="appointed">appointed</option>
+                                    {% else  %}
+                                        <option  value ="appointed">appointed</option>
+                                    {% endif %}
+                                    {% if data.status == 'NULL' %}
+                                        <option selected="selected"  value ="NULL">NULL</option>
+                                    {% else  %}
+                                        <option  value ="NULL">NULL</option>
+                                    {% endif %}
+                                </select>
+                            </div>
+{#                            <input  type=="text" maxlength="20" value="{{ data.status }}" placeholder="input status here" name="status"> ('executed','executed failed','check not passed','check passed','running','appointed','NULL')#}
                         </td>
                     {% else %}
                         <td>{{ data.status }}</td>

@@ -697,7 +697,7 @@ def update_task(request):
                 #         if int(i[2]) != 0:
                 #             str = 'UPDATE TASK FAIL,CHECK NOT PASSED'
                 #             return render(request, 'update_task.html', {'str': str})
-                incept.update_task(id, sqltext, specify,mystatus,needbackup)
+                incept.update_task(id, sqltext, specify,mystatus,needbackup,request.user.username)
                 return HttpResponseRedirect("/task/")
             else:
                 # return render(request, 'update_task.html', {'str': str})

@@ -274,7 +274,7 @@ def get_task_forupdate(id):
     task_data = Task.objects.get(id=id)
     return task_data
 
-def update_task(id,sqltext,specify,status,needbackup):
+def update_task(id,sqltext,specify,status,needbackup,username):
     task_data = Task.objects.get(id=id)
     old_sqltext = task_data.sqltext
     old_status = task_data.status
@@ -284,6 +284,7 @@ def update_task(id,sqltext,specify,status,needbackup):
     list = ['executed','executed failed','check not passed','check passed','running','appointed','NULL']
     if status in list:
         task_data.status=status
+        task_data.operator=username
     task_data.update_time = datetime.datetime.now()
     #if old_sqltext != sqltext ,then update the status to NULL
     if cmp(old_sqltext,sqltext) and (not cmp(status,old_status)):

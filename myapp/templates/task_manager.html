@@ -416,7 +416,7 @@
             $(document).on("click",'.backup_sql', function() {
                 {#            $('.backup_sql').on('click',function() {#}
                 var sequenceid = $(this).attr("value");
-{#                alert(sequenceid);#}
+                {#                alert(sequenceid);#}
                 $.get("{% url 'get_single_rollback' %}",{'sequenceid':sequenceid}).done(function (data) {
                     $('#myModal').modal({
                         show: true
