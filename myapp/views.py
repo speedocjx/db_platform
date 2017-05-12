@@ -122,7 +122,12 @@ def mysql_query(request):
                     return render(request, 'mysql_query.html', locals())
                     # return render(request,'mysql_query.html',{'form': form,'objlist':objlist,'data_list':data_list,'collist':collist,'choosed_host':choosed_host,'dbname':dbname})
                     #export csv
-                elif request.POST.has_key('export'):
+                elif request.POST.has_key('export') and request.user.has_perm('myapp.can_export') :
+                    # check if table in black list and if user has permit to query
+                    inBlackList, blacktb = func.check_query_table(choosed_host, a, request.user.username)
+                    if inBlackList:
+                        return render(request, 'mysql_query.html', locals())
+
                     a,numlimit = func.check_mysql_query(a,request.user.username,'export')
                     (data_list,collist,dbname) = func.get_mysql_data(choosed_host,a,request.user.username,request,numlimit)
                     pseudo_buffer = Echo()
@@ -154,7 +159,11 @@ def mysql_query(request):
                     response['Content-Disposition'] = 'attachment; filename="export.csv"'
                     return response
                 elif request.POST.has_key('query'):
-                #get nomal query
+                    #check if table in black list and if user has permit to query
+                    inBlackList,blacktb = func.check_query_table(choosed_host, a, request.user.username)
+                    if inBlackList:
+                        return render(request, 'mysql_query.html', locals())
+                    #get nomal query
                     a,numlimit = func.check_mysql_query(a,request.user.username)
                     (data_list,collist,dbname) = func.get_mysql_data(choosed_host,a,request.user.username,request,numlimit)
                     # donot show wrong message sql

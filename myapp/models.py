@@ -156,6 +156,16 @@ class Incep_error_log(models.Model):
     create_time = models.DateTimeField(db_index=True)
     finish_time = models.DateTimeField()
 
+class Tb_blacklist(models.Model):
+    dbtag = models.CharField(max_length=255,unique=True)
+    tbname = models.TextField(max_length=255)
+    user_permit = models.ManyToManyField(User)
+    def __unicode__(self):
+        return self.dbtag
+    class Meta:
+        db_table = 'tb_blacklist'
+
+
 
 
 class MySQL_monitor(models.Model):

@@ -88,13 +88,20 @@
                 </table>
 
             </form >
+            {% if blacktb %}
+                {% for item in blacktb %}
+                    {{ item }}
+                {% endfor %}
+                </br>
+                以上表被限制查询，请联系平台管理人员
+            {% endif %}
             {% if advice %}
                 <table>
-                 <th> ADVICE: </th>
+                    <th> ADVICE: </th>
                     <tr>
                         <td>
-                        <pre>  {{ advice|linebreaksbr }}</pre>
-                    </td>
+                            <pre>  {{ advice|linebreaksbr }}</pre>
+                        </td>
                     </tr>
                 </table>
             {% endif %}
