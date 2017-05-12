@@ -3,7 +3,7 @@
 ### 另外还带有一些简单的`saltstack api`和监控功能
 ## 功能简述如下
 + MySQL 表结构查询功能
-+ MySQL 语句查询页面
++ MySQL 语句查询页面(表级别查询黑名单设置)
 + 支持SQLADVISOR(https://github.com/Meituan-Dianping/SQLAdvisor)
 + MySQL DDL DML语句执行
 + MySQL DDL DML 任务提交(结合inception)
@@ -29,6 +29,7 @@
 + django-simple-captcha
 + MySQL-python
 + pymongo
++ sqlparse
 + uwgsi (正式部署时使用)
 
 
