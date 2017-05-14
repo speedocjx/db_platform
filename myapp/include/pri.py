@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User,Permission,ContentType,Group
-from myapp.models import Db_name,Db_group,Db_account,Db_instance,Oper_log,Login_log
+from myapp.models import Db_name,Db_group,Db_account,Db_instance,Oper_log,Login_log,MySQL_monitor
 from myapp.include import function as func
 from myapp.include.encrypt import prpcrypt
 import uuid
@@ -213,7 +213,8 @@ def del_dbtag(dbtagname):
     dbtag = Db_name.objects.get(dbtag=dbtagname)
     for i in dbtag.db_account_set.all():
         if i.dbname.count()==1:
-            i.delete()
+            if not i.mysql_monitor_set.all()[:1]:
+                i.delete()
     dbtag.delete()
 
 

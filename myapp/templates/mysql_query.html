@@ -89,11 +89,15 @@
 
             </form >
             {% if blacktb %}
-                {% for item in blacktb %}
-                    {{ item }}
-                {% endfor %}
                 </br>
-                以上表被限制查询，请联系平台管理人员
+                <strong><span style="color:red">
+                {% for item in blacktb %}
+                    {{ item }} &nbsp;
+                {% endfor %}
+                </span>
+                </br>
+                语句中包含以上被限制查询的表，请联系平台管理人员
+                </strong>
             {% endif %}
             {% if advice %}
                 <table>

@@ -125,12 +125,12 @@ def batch_add(request):
     return render(request, 'batch_add.html', locals())
 
 
-@login_required(login_url='/accounts/login/')
-@permission_required('myapp.can_see_mysqladmin', login_url='/')
-def test_tb(request):
-    dbtag = request.GET['dbtag']
-    if dbtag!='all':
-        mydata = {'dupresult':get_dupreport(dbtag,request.GET['email'])}
-    # return render(request, 'batch_add.html', locals())
-    return JsonResponse(mydata)
+# @login_required(login_url='/accounts/login/')
+# @permission_required('myapp.can_see_mysqladmin', login_url='/')
+# def test_tb(request):
+#     dbtag = request.GET['dbtag']
+#     if dbtag!='all':
+#         mydata = {'dupresult':get_dupreport(dbtag,request.GET['email'])}
+#     # return render(request, 'batch_add.html', locals())
+#     return JsonResponse(mydata)
 

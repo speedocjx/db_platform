@@ -2,9 +2,8 @@
 #-*-coding:utf-8-*-
 import MySQLdb,sys,string,time,datetime,uuid,commands,os
 from myapp.include.encrypt import prpcrypt
-from myapp.include.sqlfilter import Sqlparse
 from django.contrib.auth.models import User,Permission,ContentType,Group
-from myapp.models import Db_name,Db_account,Db_instance,Oper_log,Login_log,Db_group,Tb_blacklist
+from myapp.models import Db_name,Db_account,Db_instance,Oper_log,Login_log,Db_group
 from myapp.form import LoginForm,Captcha
 from myapp.etc import config
 from mypro import settings
@@ -390,23 +389,6 @@ def get_mysql_data(hosttag,sql,useraccount,request,limitnum):
         results,col = ([str(e)],''),['error']
         #results,col = mysql_query(wrong_msg,user,passwd,host,int(port),dbname)
     return results,col,tar_dbname
-
-#black white list check
-def check_query_table(dbtag,sql,username):
-    list = Tb_blacklist.objects.filter(dbtag=dbtag)
-    if list :
-        #user in white list
-        if User.objects.get(username=username) in list[0].user_permit.all():
-            existTb=[]
-        else :
-            #if table in black list
-            blackTblist = list[0].tbname.split(',')
-            parser = Sqlparse(sql)
-            tblist = parser.extract_tables()
-            existTb = [val for val in blackTblist if val in tblist]
-        if existTb:
-            return True,existTb
-    return False,[]
 
 
 #检查输入语句,并返回行限制数

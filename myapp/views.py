@@ -11,9 +11,9 @@ from django.http import HttpResponse,HttpResponseRedirect,StreamingHttpResponse,
 from django.contrib.auth.decorators import login_required,permission_required
 from django.contrib.auth.models import User,Permission,ContentType,Group
 from myapp.include import function as func,inception as incept,chart,pri,meta,sqlfilter
-from myapp.models import Db_group,Db_name,Db_account,Db_instance,Oper_log,Upload,Task,MySQL_monitor
+from myapp.models import Db_group,Db_name,Db_account,Db_instance,Upload,Task,MySQL_monitor
 from myapp.tasks import task_run,sendmail_task,parse_binlog,parse_binlogfirst
-from myapp.include import mon
+from blacklist import blFunction as bc
 from myapp.include.scheduled import get_dupreport
 
 
@@ -124,7 +124,8 @@ def mysql_query(request):
                     #export csv
                 elif request.POST.has_key('export') and request.user.has_perm('myapp.can_export') :
                     # check if table in black list and if user has permit to query
-                    inBlackList, blacktb = func.check_query_table(choosed_host, a, request.user.username)
+
+                    inBlackList, blacktb = bc.Sqlparse(a).check_query_table(choosed_host,request.user.username)
                     if inBlackList:
                         return render(request, 'mysql_query.html', locals())
 
@@ -160,7 +161,7 @@ def mysql_query(request):
                     return response
                 elif request.POST.has_key('query'):
                     #check if table in black list and if user has permit to query
-                    inBlackList,blacktb = func.check_query_table(choosed_host, a, request.user.username)
+                    inBlackList,blacktb = bc.Sqlparse(a).check_query_table(choosed_host,request.user.username)
                     if inBlackList:
                         return render(request, 'mysql_query.html', locals())
                     #get nomal query
@@ -1163,7 +1164,7 @@ def set_dbname(request):
                 # dbtagname = request.POST['dbtag_set']
                 account_set = Db_account.objects.get(id=int(request.POST['acc_set']))
 
-                if account_set.mysql_monitor:
+                if account_set.mysql_monitor_set.all()[:1]:
                     info = "DELETE db_account FAILED!ACCOUNT USED FOR MONITOR"
                 else:
                     info = "DELETE db_account OK!"
@@ -1460,6 +1461,11 @@ def diff(request):
                 (sh_cre1, sh_cre_col, dbname) = meta.get_metadata(choosed_host1, 5, choosed_tb1)
                 (sh_cre2, sh_cre_col, dbname) = meta.get_metadata(choosed_host2, 5, choosed_tb2)
     return render(request,'diff.html', locals())
+
+
+
+
+
 
 # @ratelimit(key=func.my_key, rate='5/h')
 # def test(request):

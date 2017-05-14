@@ -1,0 +1,78 @@
+{% extends "include/base.html" %}
+{% block title %}
+    <title>Query BlackList</title>
+{% endblock %}
+{% block name %}
+    查询页面黑名单设置
+{% endblock %}
+{%block content%}
+    <div class="row">
+        <div class="col-md-12 main ">
+            {% if posts %}
+                <table  id="mytable" class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>DB标签</th>
+                        <th>限制查询表</th>
+                        <th>允许访问用户名单</th>
+                        <th></th>
+                    </thead>
+                    <tbody>
+                    {% for item in posts %}
+                        <tr>
+                            <td>
+                                {{ item.id }}
+                            </td>
+                            <td>
+                                {{ item.dbtag }}
+                            </td>
+                            <td>
+                                {{ item.tbname }}
+                            </td>
+                            <td>
+                                {% for user in item.user_permit.all %}
+                                    {{ user.username }},
+                                {% endfor %}
+                            </td>
+                            <td colspan="2">
+                                <a href="{% url 'bl_edit' %}?dbid={{ item.id }}" title="修改" > <span class="glyphicon glyphicon-pencil" ></span> </a>
+                                <a href="{% url 'bl_delete' %}?dbid={{ item.id }}" onclick="return confirm('PLEASE COMFIRM')" title="删除" > <span class="glyphicon glyphicon-minus" ></span> </a>
+                            <td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <nav>
+                    <ul class="pager">
+                        {% if posts.has_previous %}
+                            <li class="previous"><a href="?page={{ posts.previous_page_number }}"><span aria-hidden="true">&larr;</span>前一页</a></li>
+                        {% else %}
+                            <li class="previous disabled"><a><span aria-hidden="true">&larr;</span>前一页</a></li>
+                        {% endif %}
+                        <li><a>第{{ posts.number }}页/共{{ posts.paginator.num_pages }}页</a></li>
+                        {% if posts.has_next %}
+                            <li class="next"><a href="?page={{ posts.next_page_number }}">下一页<span aria-hidden="true">&rarr;</span></a></li>
+                        {% else %}
+                            <li class="next disabled"><a>下一页<span aria-hidden="true">&rarr;</span></a></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-10 main">
+
+        </div>
+
+    </div>
+    <hr />
+
+
+{% endblock %}
+{% block script %}
+
+{% endblock %}
+

@@ -64,14 +64,21 @@
                         <b class="caret"></b>
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a href="{% url 'pre_query' %}">权限查询</a></li>
-                        <li><a href="{% url 'pre_set' %}">用户账户</a></li>
-                        <li><a href="{% url 'fast_dbset' %}">快速创建DB</a></li>
-                        <li role="presentation" class="divider"></li>
-                        <li><a href="{% url 'set_dbname' %}">设置DB</a></li>
-                        <li role="presentation" class="divider"></li>
-                        <li><a href="{% url 'set_ugroup' %}">设置USER_GROUP</a></li>
-                        <li><a href="{% url 'set_dbgroup' %}">设置DB_GROUP</a></li>
+
+                        {% if perms.myapp.can_set_pri or perms.myapp.can_query_pri %}
+                            <li><a href="{% url 'pre_query' %}">权限查询</a></li>
+                        {% endif %}
+                        {% if perms.myapp.can_set_pri %}
+                            <li><a href="{% url 'pre_set' %}">用户账户</a></li>
+                            <li><a href="{% url 'fast_dbset' %}">快速创建DB</a></li>
+                            <li role="presentation" class="divider"></li>
+                            <li><a href="{% url 'set_dbname' %}">设置DB</a></li>
+                            <li><a href="{% url 'blist' %}">设置查询黑名单表</a></li>
+                            <li role="presentation" class="divider"></li>
+                            <li><a href="{% url 'set_ugroup' %}">设置USER_GROUP</a></li>
+                            <li><a href="{% url 'set_dbgroup' %}">设置DB_GROUP</a></li>
+                        {% endif %}
+
                     </ul>
                 </li>
 

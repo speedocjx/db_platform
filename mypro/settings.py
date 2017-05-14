@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'chartapi',
     'monitor',
     'passforget',
+    'blacklist',
     'djcelery',
     'myapp',
 ]
