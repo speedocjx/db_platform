@@ -8,6 +8,11 @@
 {%block content%}
     <div class="row">
         <div class="col-md-12 main ">
+            <button onclick="openpage('{% url 'bl_edit' %}')" class="btn btn-primary" >新增</button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 main ">
             {% if posts %}
                 <table  id="mytable" class="table table-bordered">
                     <thead>

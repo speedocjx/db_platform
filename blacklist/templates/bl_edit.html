@@ -1,10 +1,121 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "include/base.html" %}
+{% block title %}
+    <title>BlackList Edit</title>
+{% endblock %}
+{% block name %}
+    黑名单设置
+{% endblock %}
+{%block content%}
+    <div class="row">
+        <div class="col-md-12 main ">
+            <button onclick="openpage('{% url 'blist' %}')"  class="btn btn-info">返回</button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 main ">
+            {% if info %}
+                <strong> <span style="color:red">{{ info }}</span></strong>
+            {% endif %}
 
-</body>
-</html>
+            <form role="form" method='post'>
+                {% csrf_token %}
+                {% if edit_db %}
+                    <table id="mytable" class="table table-bordered">
+                        <tr>
+                            <td>
+                                ID
+                            </td>
+                            <td>
+                                {{ edit_db.id }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                DB标签
+                            </td>
+                            <td>
+                                <input type=="text" name="setdbtag" class="form-control" maxlength="30" placeholder="input Dbtag" value="{{ edit_db.dbtag }}" >
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                限制查询表(多个表名之间以逗号分隔)
+                            </td>
+                            <td>
+                                <textarea placeholder="输入表名，多个表名之间以逗号分隔" cols="50" id="id_tbname" maxlength="300" name="settbname" rows="10">{{ edit_db.tbname }}</textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                允许访问用户名单
+                            </td>
+                            <td>
+                                <select class="form-control col-md-1" multiple="multiple" size="10"  name = "choose_user">
+                                    {% for user in userlist %}
+                                        {% if user in edit_db.user_permit.all  %}
+                                            <option selected="selected" value ="{{ user.username }}">{{ user.username }}</option>
+                                        {% else %}
+                                            <option value ="{{ user.username }}">{{ user.username }}</option>
+
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+
+                            </td>
+                        </tr>
+
+                    </table>
+
+                    <button type="submit" name='set' onclick="return confirm('PLEASE COMFIRM')" value="{{ edit_db.id }}" class="btn btn-success" >设置</button>
+
+                {% else %}
+                    <table id="mytable" class="table table-bordered">
+                        <tr>
+                            <td>
+                                DB标签
+                            </td>
+                            <td>
+                                <input type=="text" name="setdbtag" class="form-control" maxlength="30" placeholder="input Dbtag"  >
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                限制查询表(多个表名之间以逗号分隔)
+                            </td>
+                            <td>
+                                <textarea placeholder="输入表名，多个表名之间以逗号分隔" cols="50" id="id_tbname" maxlength="300" name="settbname" rows="10"></textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                允许访问用户名单
+                            </td>
+                            <td>
+                                <select class="form-control col-md-1" multiple="multiple" size="10"  name = "choose_user">
+                                    {% for user in userlist %}
+                                        <option value ="{{ user.username }}">{{ user.username }}</option>
+                                    {% endfor %}
+                                </select>
+
+                            </td>
+                        </tr>
+
+                    </table>
+
+
+
+
+                    <button type="submit" name='create' onclick="return confirm('PLEASE COMFIRM')"  class="btn btn-success" >创建</button>
+
+                {% endif %}
+
+            </form >
+        </div>
+    </div>
+
+
+{% endblock %}
+{% block script %}
+
+{% endblock %}
+

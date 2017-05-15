@@ -1087,7 +1087,7 @@ def set_dbname(request):
                 new_dbtagname = request.POST['newdbtag']
                 newdbname = request.POST['newdbname']
                 dbtagdt = pri.set_dbtag(dbtagname,new_dbtagname,newdbname,inssetlist, usersetlist)
-                print dbtagdt
+                # print dbtagdt
                 return render(request, 'previliges/set_dbname.html', locals())
             except Exception,e:
                 info = "SET FAILED!"
