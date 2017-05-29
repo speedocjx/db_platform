@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required,permission_required
 from django.http import HttpResponse,HttpResponseRedirect,StreamingHttpResponse,JsonResponse
 from django.contrib.auth.models import User
 from myapp.models import Db_name
-
+from myapp.etc.config import public_user
 
 # Create your views here.
 
@@ -40,7 +40,7 @@ def bl_delete(request):
 @login_required(login_url='/accounts/login/')
 @permission_required('myapp.can_set_pri', login_url='/')
 def bl_edit(request):
-    userlist = User.objects.all().order_by('username')
+    userlist = User.objects.exclude(username=public_user).all().order_by('username')
     if request.method == 'GET':
         try:
             myid = int(request.GET['dbid'])
