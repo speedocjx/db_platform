@@ -1,6 +1,7 @@
-# db_platform
+
 ## 基于`django`、`celery`和`inception`，带权限控制的数据库平台
 ### 另外还带有一些简单的`saltstack api`和监控功能
+#### 联系qq：599187030
 ## 功能简述如下
 + MySQL 表结构查询功能
 + MySQL 语句查询页面(表级别查询黑名单设置)
@@ -31,7 +32,6 @@
 + pymongo
 + sqlparse
 + uwgsi (正式部署时使用)
-
 
 ### 权限功能简述：
   用户的系统使用权限大致可以分为可以看到的页面，以及能够看到的DB两个维度
@@ -255,4 +255,4 @@ python manage.py celery worker -E -c 8 --loglevel=info -Q mysql_monitor
 ![image](https://github.com/speedocjx/myfile/blob/master/sql-manage-platform/HARDWARE_INFO.jpg)
 ### 17.3 KEY管理页面
 ![image](https://github.com/speedocjx/myfile/blob/master/sql-manage-platform/SALT_KEY.jpg)
-### 个人编写，精力和水平有限。。有任何疑问和建议联系 changjingxiu1@163.com（qq：710467549）
+
