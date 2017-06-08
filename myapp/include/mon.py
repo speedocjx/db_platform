@@ -2,11 +2,17 @@ from celery import task
 import time,string
 from django.template import loader
 from myapp.models import MySQL_monitor
-import MySQLdb,datetime
+import datetime
 from myapp.include.encrypt import prpcrypt
 from myapp.tasks import sendmail
-from monitor.models import Mysql_processlist,Mysql_replication,MysqlStatus,Alarm,AlarmTemp
+from monitor.models import Mysql_processlist, Mysql_replication, MysqlStatus, Alarm, AlarmTemp
 from myapp.include.scheduled import mysql_exec
+
+try:
+    import MySQLdb
+except:
+    import pymysql as MySQLdb
+
 
 class Connect(object):
     def __init__(self,ip=None,port=None,user=None,passwd=None):
@@ -14,68 +20,61 @@ class Connect(object):
         self.port = int(port)
         self.user = user
         self.passwd = passwd
-    def query_mysql(self,sql):
+
+    def query_mysql(self, sql):
         try:
-            conn=MySQLdb.connect(host=self.ip,user=self.user,passwd=self.passwd,port=self.port,connect_timeout=5,charset='utf8')
+            conn = MySQLdb.connect(host=self.ip, user=self.user, passwd=self.passwd, port=self.port,
+                                   connect_timeout=5, charset='utf8')
             conn.select_db('information_schema')
             cursor = conn.cursor()
-            count=cursor.execute(sql)
-            index=cursor.description
-            col=[]
+            count = cursor.execute(sql)
+            index = cursor.description
+            col = []
             #get column name
             for i in index:
                 col.append(i[0])
-            result=cursor.fetchall()
+            result = cursor.fetchall()
             cursor.close()
             conn.close()
-            return (result,col)
-        except Exception,e:
-            return([str(e)],''),['error']
+            return result,col
+        except Exception as e:
+            return([str(e)],''), ['error']
+
     def kill_id(self,idlist):
         try:
-            conn=MySQLdb.connect(host=self.ip,user=self.user,passwd=self.passwd,port=self.port,connect_timeout=5,charset='utf8')
+            conn = MySQLdb.connect(host=self.ip, user=self.user, passwd=self.passwd, port=self.port,
+                                   connect_timeout=5, charset='utf8')
             conn.select_db('information_schema')
             curs = conn.cursor()
             for i in idlist:
                 try:
                     curs.execute(i)
-                except Exception, e:
+                except Exception as e:
                     pass
             conn.commit()
             curs.close()
             conn.close()
             results = 'success'
-        except Exception, e:
+        except Exception as e:
              results = 'error'
         return results
 
 # active sql,long sql,slave stop,slave delay,connections
 alarm_list = {
-    1:'active sql',
-    2:'long sql',
-    3:'long sql killed',
-    4:'slave stop',
-    5:'slave delay',
-    6:'connections',
-    7:'server down'
+    1: 'active sql',
+    2: 'long sql',
+    3: 'long sql killed',
+    4: 'slave stop',
+    5: 'slave delay',
+    6: 'connections',
+    7: 'server down'
 }
 
-# @task
-# def sendmail_monitor(title,mailto,data,alarm_type):
-#     if alarm_type in ['active sql','long sql'] and data!='ok':
-#         mon_sqllist = data
-#     elif data == 'ok':
-#         alarm_information = alarm_type+'  ok'
-#     else:
-#         alarm_information = data
-#         # print alarm_information
-#     html_content = loader.render_to_string('include/mail_template.html', locals())
-#     sendmail(title, mailto, html_content)
 
 @task
 def sendmail_monitor(db,mailto,data,alarm_type):
-    dbinfo  = 'IP: '+db.instance.ip + '\n' + 'PORT: ' + db.instance.port + '\n'
-    if data=='ok':
+    dbinfo = 'IP: '+db.instance.ip + '\n' + 'PORT: ' + db.instance.port + '\n'
+    if data == 'ok':
         alarm_information = alarm_list[alarm_type] + '  ok'
         title = db.tag+':'+alarm_information
     elif alarm_type in [1,2,3]:
@@ -96,26 +95,23 @@ def sendmail_monitor(db,mailto,data,alarm_type):
     html_content = loader.render_to_string('include/mail_template.html', locals())
     sendmail(title, mailto, html_content)
 
+
 @task
 def mon_mysql():
     monlist = MySQL_monitor.objects.filter(monitor=1)
     no_monlist = MySQL_monitor.objects.filter(monitor=0)
-    if len(no_monlist)>0:
+    if len(no_monlist) > 0:
         for i in no_monlist:
-
             Mysql_replication.objects.filter(db_ip=i.instance.ip).filter(db_port=i.instance.port).delete()
             MysqlStatus.objects.filter(db_ip=i.instance.ip).filter(db_port=i.instance.port).delete()
     # plist=[]
     if len(monlist)>0:
         for i in monlist:
-
-            # check_mysql.apply_async((i,),queue='mysql_monitor',routing_key='monitor.mysql')
             check_mysql_host.delay(i)
 
 
 @task
 def check_mysql_host(db):
-
     mon_basic(db)
     # longlist = []
     py = prpcrypt()
@@ -125,24 +121,24 @@ def check_mysql_host(db):
     # result,col = conn_info.query_mysql("select ID,USER,HOST,DB,COMMAND,TIME,STATE,INFO from processlist")
     if db.check_longsql == 1:
         try:
-            longsql_send = filter(lambda x:int(x[5])>int(db.longsql_time),result)
-        except Exception,e:
-            longsql_send=''
+            longsql_send = filter(lambda x:int(x[5]) > int(db.longsql_time), result)
+        except Exception as e:
+            longsql_send = ''
         # print longsql_send
         alarm_type = 2
-        if len(longsql_send)>0:
+        if len(longsql_send) > 0:
             flag = record_alarm(db, alarm_type)
-            if db.longsql_autokill  == 1:
-                idlist = map(lambda x:'kill '+str(x[0])+';',longsql_send)
+            if db.longsql_autokill == 1:
+                idlist = map(lambda x:'kill '+str(x[0])+';', longsql_send)
                 conn_info.kill_id(idlist)
-                sendmail_monitor.delay(db,db.mail_to.split(';'), longsql_send,3)
+                sendmail_monitor.delay(db, db.mail_to.split(';'), longsql_send, 3)
             elif flag:
-                sendmail_monitor.delay(db,db.mail_to.split(';'),longsql_send,alarm_type)
+                sendmail_monitor.delay(db, db.mail_to.split(';'), longsql_send, alarm_type)
         else:
             check_ifok(db, alarm_type)
-    if db.check_active == 1 :
+    if db.check_active == 1:
         alarm_type = 1
-        if len(result)>=int(db.active_threshold) :
+        if len(result) >= int(db.active_threshold) :
             if record_alarm(db, alarm_type):
                 sendmail_monitor.delay(db, db.mail_to.split(';'), result,alarm_type)
         else:
@@ -153,14 +149,13 @@ def check_mysql_host(db):
     #                                     command=i[4],time=i[5],state=i[6],info=i[7]))
     if len(result)>0:
         try:
-            insertlist = map(lambda x:Mysql_processlist(db_ip=db.instance.ip,db_port=db.instance.port,\
+            insertlist = map(lambda x: Mysql_processlist(db_ip=db.instance.ip,db_port=db.instance.port,\
                                                         conn_id=x[0],user=x[1],host=x[2],db=x[3],\
                                                         command=x[4],time=x[5],state=x[6],info=x[7]),result)
             # print insertlist
             Mysql_processlist.objects.bulk_create(insertlist)
-        except Exception,e:
-            print e
-
+        except Exception as e:
+            pass
 
 
 def record_alarm(db,num):
@@ -177,12 +172,12 @@ def record_alarm(db,num):
         new_alarm.save()
         return False
 
+
 def check_ifok(db,num):
     alarm_type = alarm_list[num]
     if AlarmTemp.objects.filter(db_ip=db.instance.ip, db_port=db.instance.port,alarm_type=alarm_type)[:1]:
         AlarmTemp.objects.filter(db_ip=db.instance.ip, db_port=db.instance.port, alarm_type=alarm_type).delete()
         sendmail_monitor.delay(db, db.mail_to.split(';'),'ok', num)
-
 
 
 def mon_basic(db):
@@ -392,8 +387,58 @@ def mon_basic(db):
             role = 'master'
             role_new = 'm'
         ############################# INSERT INTO SERVER ##################################################
-        sql = "replace into mysql_status(db_ip,db_port,connect,role,uptime,version,max_connections,max_connect_errors,open_files_limit,table_open_cache,max_tmp_tables,max_heap_table_size,max_allowed_packet,open_files,open_tables,threads_connected,threads_running,threads_created,threads_cached,connections,aborted_clients,aborted_connects,connections_persecond,bytes_received_persecond,bytes_sent_persecond,com_select_persecond,com_insert_persecond,com_update_persecond,com_delete_persecond,com_commit_persecond,com_rollback_persecond,questions_persecond,queries_persecond,transaction_persecond,created_tmp_tables_persecond,created_tmp_disk_tables_persecond,created_tmp_files_persecond,table_locks_immediate_persecond,table_locks_waited_persecond,key_buffer_size,sort_buffer_size,join_buffer_size,key_blocks_not_flushed,key_blocks_unused,key_blocks_used,key_read_requests_persecond,key_reads_persecond,key_write_requests_persecond,key_writes_persecond,innodb_version,innodb_buffer_pool_instances,innodb_buffer_pool_size,innodb_doublewrite,innodb_file_per_table,innodb_flush_log_at_trx_commit,innodb_flush_method,innodb_force_recovery,innodb_io_capacity,innodb_read_io_threads,innodb_write_io_threads,innodb_buffer_pool_pages_total,innodb_buffer_pool_pages_data,innodb_buffer_pool_pages_dirty,innodb_buffer_pool_pages_flushed,innodb_buffer_pool_pages_free,innodb_buffer_pool_pages_misc,innodb_page_size,innodb_pages_created,innodb_pages_read,innodb_pages_written,innodb_row_lock_current_waits,innodb_buffer_pool_pages_flushed_persecond,innodb_buffer_pool_read_requests_persecond,innodb_buffer_pool_reads_persecond,innodb_buffer_pool_write_requests_persecond,innodb_rows_read_persecond,innodb_rows_inserted_persecond,innodb_rows_updated_persecond,innodb_rows_deleted_persecond,query_cache_hitrate,thread_cache_hitrate,key_buffer_read_rate,key_buffer_write_rate,key_blocks_used_rate,created_tmp_disk_tables_rate,connections_usage_rate,open_files_usage_rate,open_tables_usage_rate,create_time) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);"
-        sql2 = "insert into mysql_status_his(db_ip,db_port,connect,role,uptime,version,max_connections,max_connect_errors,open_files_limit,table_open_cache,max_tmp_tables,max_heap_table_size,max_allowed_packet,open_files,open_tables,threads_connected,threads_running,threads_created,threads_cached,connections,aborted_clients,aborted_connects,connections_persecond,bytes_received_persecond,bytes_sent_persecond,com_select_persecond,com_insert_persecond,com_update_persecond,com_delete_persecond,com_commit_persecond,com_rollback_persecond,questions_persecond,queries_persecond,transaction_persecond,created_tmp_tables_persecond,created_tmp_disk_tables_persecond,created_tmp_files_persecond,table_locks_immediate_persecond,table_locks_waited_persecond,key_buffer_size,sort_buffer_size,join_buffer_size,key_blocks_not_flushed,key_blocks_unused,key_blocks_used,key_read_requests_persecond,key_reads_persecond,key_write_requests_persecond,key_writes_persecond,innodb_version,innodb_buffer_pool_instances,innodb_buffer_pool_size,innodb_doublewrite,innodb_file_per_table,innodb_flush_log_at_trx_commit,innodb_flush_method,innodb_force_recovery,innodb_io_capacity,innodb_read_io_threads,innodb_write_io_threads,innodb_buffer_pool_pages_total,innodb_buffer_pool_pages_data,innodb_buffer_pool_pages_dirty,innodb_buffer_pool_pages_flushed,innodb_buffer_pool_pages_free,innodb_buffer_pool_pages_misc,innodb_page_size,innodb_pages_created,innodb_pages_read,innodb_pages_written,innodb_row_lock_current_waits,innodb_buffer_pool_pages_flushed_persecond,innodb_buffer_pool_read_requests_persecond,innodb_buffer_pool_reads_persecond,innodb_buffer_pool_write_requests_persecond,innodb_rows_read_persecond,innodb_rows_inserted_persecond,innodb_rows_updated_persecond,innodb_rows_deleted_persecond,query_cache_hitrate,thread_cache_hitrate,key_buffer_read_rate,key_buffer_write_rate,key_blocks_used_rate,created_tmp_disk_tables_rate,connections_usage_rate,open_files_usage_rate,open_tables_usage_rate,create_time) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);"
+        sql = "replace into mysql_status(db_ip,db_port,connect,role,uptime,version,max_connections,max_connect_errors," \
+              "open_files_limit,table_open_cache,max_tmp_tables,max_heap_table_size,max_allowed_packet,open_files," \
+              "open_tables,threads_connected,threads_running,threads_created,threads_cached,connections,aborted_clients," \
+              "aborted_connects,connections_persecond,bytes_received_persecond,bytes_sent_persecond," \
+              "com_select_persecond,com_insert_persecond,com_update_persecond,com_delete_persecond," \
+              "com_commit_persecond,com_rollback_persecond,questions_persecond,queries_persecond," \
+              "transaction_persecond,created_tmp_tables_persecond,created_tmp_disk_tables_persecond," \
+              "created_tmp_files_persecond,table_locks_immediate_persecond,table_locks_waited_persecond," \
+              "key_buffer_size,sort_buffer_size,join_buffer_size,key_blocks_not_flushed,key_blocks_unused," \
+              "key_blocks_used,key_read_requests_persecond,key_reads_persecond,key_write_requests_persecond," \
+              "key_writes_persecond,innodb_version,innodb_buffer_pool_instances,innodb_buffer_pool_size," \
+              "innodb_doublewrite,innodb_file_per_table,innodb_flush_log_at_trx_commit,innodb_flush_method," \
+              "innodb_force_recovery,innodb_io_capacity,innodb_read_io_threads,innodb_write_io_threads," \
+              "innodb_buffer_pool_pages_total,innodb_buffer_pool_pages_data,innodb_buffer_pool_pages_dirty," \
+              "innodb_buffer_pool_pages_flushed,innodb_buffer_pool_pages_free,innodb_buffer_pool_pages_misc," \
+              "innodb_page_size,innodb_pages_created,innodb_pages_read,innodb_pages_written," \
+              "innodb_row_lock_current_waits,innodb_buffer_pool_pages_flushed_persecond," \
+              "innodb_buffer_pool_read_requests_persecond,innodb_buffer_pool_reads_persecond," \
+              "innodb_buffer_pool_write_requests_persecond,innodb_rows_read_persecond,innodb_rows_inserted_persecond," \
+              "innodb_rows_updated_persecond,innodb_rows_deleted_persecond,query_cache_hitrate,thread_cache_hitrate," \
+              "key_buffer_read_rate,key_buffer_write_rate,key_blocks_used_rate,created_tmp_disk_tables_rate," \
+              "connections_usage_rate,open_files_usage_rate,open_tables_usage_rate,create_time) " \
+              "values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s," \
+              "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s," \
+              "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);"
+
+        sql2 = "insert into mysql_status_his(db_ip,db_port,connect,role,uptime,version,max_connections," \
+               "max_connect_errors,open_files_limit,table_open_cache,max_tmp_tables,max_heap_table_size," \
+               "max_allowed_packet,open_files,open_tables,threads_connected,threads_running,threads_created," \
+               "threads_cached,connections,aborted_clients,aborted_connects,connections_persecond," \
+               "bytes_received_persecond,bytes_sent_persecond,com_select_persecond,com_insert_persecond," \
+               "com_update_persecond,com_delete_persecond,com_commit_persecond,com_rollback_persecond," \
+               "questions_persecond,queries_persecond,transaction_persecond,created_tmp_tables_persecond," \
+               "created_tmp_disk_tables_persecond,created_tmp_files_persecond,table_locks_immediate_persecond," \
+               "table_locks_waited_persecond,key_buffer_size,sort_buffer_size,join_buffer_size,key_blocks_not_flushed," \
+               "key_blocks_unused,key_blocks_used,key_read_requests_persecond,key_reads_persecond," \
+               "key_write_requests_persecond,key_writes_persecond,innodb_version,innodb_buffer_pool_instances," \
+               "innodb_buffer_pool_size,innodb_doublewrite,innodb_file_per_table,innodb_flush_log_at_trx_commit," \
+               "innodb_flush_method,innodb_force_recovery,innodb_io_capacity,innodb_read_io_threads," \
+               "innodb_write_io_threads,innodb_buffer_pool_pages_total,innodb_buffer_pool_pages_data," \
+               "innodb_buffer_pool_pages_dirty,innodb_buffer_pool_pages_flushed,innodb_buffer_pool_pages_free," \
+               "innodb_buffer_pool_pages_misc,innodb_page_size,innodb_pages_created,innodb_pages_read," \
+               "innodb_pages_written,innodb_row_lock_current_waits,innodb_buffer_pool_pages_flushed_persecond," \
+               "innodb_buffer_pool_read_requests_persecond,innodb_buffer_pool_reads_persecond," \
+               "innodb_buffer_pool_write_requests_persecond,innodb_rows_read_persecond," \
+               "innodb_rows_inserted_persecond,innodb_rows_updated_persecond,innodb_rows_deleted_persecond," \
+               "query_cache_hitrate,thread_cache_hitrate,key_buffer_read_rate,key_buffer_write_rate," \
+               "key_blocks_used_rate,created_tmp_disk_tables_rate,connections_usage_rate,open_files_usage_rate," \
+               "open_tables_usage_rate,create_time) " \
+               "values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s," \
+               "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s," \
+               "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);"
         param = (
         db.instance.ip, int(db.instance.port), connect, role, uptime, version, max_connections, max_connect_errors, open_files_limit,
         table_open_cache, max_tmp_tables, max_heap_table_size, max_allowed_packet, open_files, open_tables,
@@ -422,25 +467,29 @@ def mon_basic(db):
         if db.check_connections:
             alarm_type = 6
             if db.connection_threshold <= int(threads_connected):
-                if record_alarm(db,alarm_type):
-                    sendmail_monitor.delay(db, db.mail_to.split(';'),  threads_connected,alarm_type)
+                if record_alarm(db, alarm_type):
+                    sendmail_monitor.delay(db, db.mail_to.split(';'), threads_connected, alarm_type)
             else:
                 check_ifok(db, alarm_type)
 
-
-
         # check mysql connected
-        connected = cur.execute("select SUBSTRING_INDEX(host,':',1) as connect_server, user connect_user,db connect_db, count(SUBSTRING_INDEX(host,':',1)) as connect_count  from information_schema.processlist where db is not null and db!='information_schema' and db !='performance_schema' group by connect_server,connect_user,connect_db;");
+        connected = cur.execute("select SUBSTRING_INDEX(host,':',1) as connect_server, user connect_user,"
+                                "db connect_db, count(SUBSTRING_INDEX(host,':',1)) as connect_count  "
+                                "from information_schema.processlist where db is not null "
+                                "and db!='information_schema' and db !='performance_schema' "
+                                "group by connect_server,connect_user,connect_db;");
         if connected:
             for line in cur.fetchall():
-                sql = "insert into mysql_connected(db_ip,db_port,connect_server,connect_user,connect_db,connect_count,create_time) values(%s,%s,%s,%s,%s,%s,%s);"
-                param = (db.instance.ip, int(db.instance.port),line[0], line[1], line[2], line[3],now_time)
+                sql = "insert into mysql_connected(db_ip,db_port,connect_server,connect_user," \
+                      "connect_db,connect_count,create_time) values(%s,%s,%s,%s,%s,%s,%s);"
+                param = (db.instance.ip, int(db.instance.port), line[0], line[1], line[2], line[3], now_time)
                 mysql_exec(sql, param)
 
         #check replication
-        master_thread=cur.execute("select * from information_schema.processlist where COMMAND = 'Binlog Dump' or COMMAND = 'Binlog Dump GTID';")
-        slave_status=cur.execute('show slave status;')
-        datalist=[]
+        master_thread = cur.execute("select * from information_schema.processlist "
+                                    "where COMMAND = 'Binlog Dump' or COMMAND = 'Binlog Dump GTID';")
+        slave_status = cur.execute('show slave status;')
+        datalist = []
         if master_thread >= 1:
             datalist.append(int(1))
             if slave_status <> 0:
@@ -453,41 +502,41 @@ def mon_basic(db):
                 datalist.append(int(1))
             else:
                 datalist.append(int(0))
-                sql="delete from mysql_replication where db_ip=%s and db_port=%s;"
-                param =(db.instance.ip,db.instance.port)
+                sql = "delete from mysql_replication where db_ip=%s and db_port=%s;"
+                param = (db.instance.ip,db.instance.port)
                 mysql_exec(sql,param)
         if slave_status <> 0:
-            gtid_mode=cur.execute("select * from information_schema.global_variables where variable_name='gtid_mode';")
-            result=cur.fetchone()
+            gtid_mode = cur.execute("select * from information_schema.global_variables where variable_name='gtid_mode';")
+            result = cur.fetchone()
             if result:
-                gtid_mode=result[1]
+                gtid_mode = result[1]
             else:
-                gtid_mode='OFF'
+                gtid_mode = 'OFF'
             datalist.append(gtid_mode)
-            read_only=cur.execute("select * from information_schema.global_variables where variable_name='read_only';")
-            result=cur.fetchone()
+            read_only = cur.execute("select * from information_schema.global_variables where variable_name='read_only';")
+            result = cur.fetchone()
             datalist.append(result[1])
             #slave_info=cur.execute('show slave status;')
             if db.replchannel <> '0':
-                slave_info=cur.execute("show slave status for channel '%s';" %(db.replchannel))
+                slave_info = cur.execute("show slave status for channel '%s';" %(db.replchannel))
             else :
-                slave_info=cur.execute('show slave status;')
-            result=cur.fetchone()
+                slave_info = cur.execute('show slave status;')
+            result = cur.fetchone()
             # print "result"
             # print slave_info
-            master_server=result[1]
-            master_port=result[3]
-            slave_io_run=result[10]
-            slave_sql_run=result[11]
-            delay=result[32]
-            current_binlog_file=result[9]
-            current_binlog_pos=result[21]
-            master_binlog_file=result[5]
-            master_binlog_pos=result[6]
+            master_server = result[1]
+            master_port = result[3]
+            slave_io_run = result[10]
+            slave_sql_run = result[11]
+            delay = result[32]
+            current_binlog_file = result[9]
+            current_binlog_pos = result[21]
+            master_binlog_file = result[5]
+            master_binlog_pos = result[6]
             try:
-                slave_sQL_rnning_state=result[44]
-            except Exception,e:
-                slave_sQL_running_state="NULL"
+                slave_sQL_rnning_state = result[44]
+            except Exception as e:
+                slave_sQL_running_state = "NULL"
             datalist.append(master_server)
             datalist.append(master_port)
             datalist.append(slave_io_run)
@@ -504,31 +553,30 @@ def mon_basic(db):
                 if (slave_io_run == "Yes") and (slave_sql_run == "Yes"):
                     alarm_type = 4
                     check_ifok(db, alarm_type)
-                    if db.check_delay :
+                    if db.check_delay:
                         alarm_type = 5
-                        if db.delay_threshold <=int(delay) :
-                            if record_alarm(db,alarm_type):
-                                sendmail_monitor.delay(db, db.mail_to.split(';'),delay,alarm_type)
+                        if db.delay_threshold <= int(delay):
+                            if record_alarm(db, alarm_type):
+                                sendmail_monitor.delay(db, db.mail_to.split(';'), delay, alarm_type)
 
                         else:
                             check_ifok(db, alarm_type)
                 else:
                     alarm_type = 4
                     if record_alarm(db,alarm_type):
-                        sendmail_monitor.delay(db, db.mail_to.split(';'),{'iothread':slave_io_run,'sqlthread':slave_sql_run}, alarm_type)
-
-
-
-
+                        sendmail_monitor.delay(db, db.mail_to.split(';'),
+                                               {'iothread': slave_io_run,
+                                                'sqlthread': slave_sql_run},
+                                               alarm_type)
         elif master_thread >= 1:
-            gtid_mode=cur.execute("select * from information_schema.global_variables where variable_name='gtid_mode';")
+            gtid_mode = cur.execute("select * from information_schema.global_variables where variable_name='gtid_mode';")
             result=cur.fetchone()
             if result:
-                gtid_mode=result[1]
+                gtid_mode = result[1]
             else:
-                gtid_mode='OFF'
+                gtid_mode = 'OFF'
             datalist.append(gtid_mode)
-            read_only=cur.execute("select * from information_schema.global_variables where variable_name='read_only';")
+            read_only = cur.execute("select * from information_schema.global_variables where variable_name='read_only';")
             result=cur.fetchone()
             datalist.append(result[1])
             datalist.append('---')
@@ -538,39 +586,48 @@ def mon_basic(db):
             datalist.append('---')
             datalist.append('---')
             datalist.append('---')
-            master=cur.execute('show master status;')
-            master_result=cur.fetchone()
+            master = cur.execute('show master status;')
+            master_result = cur.fetchone()
             datalist.append(master_result[0])
             datalist.append(master_result[1])
-            binlog_file=cur.execute('show master logs;')
-            binlogs=0
+            binlog_file = cur.execute('show master logs;')
+            binlogs = 0
             if binlog_file:
                 for row in cur.fetchall():
                     binlogs = binlogs + row[1]
                 datalist.append(binlogs)
             datalist.append('---')
         else:
-            datalist=[]
-        result=datalist
+            datalist = []
+        result = datalist
         if result:
             datalist.append(now_time)
-            sql= "replace into mysql_replication(db_ip,db_port,is_master,is_slave,gtid_mode,read_only,master_server,master_port,slave_io_run,slave_sql_run,delay,current_binlog_file,current_binlog_pos,master_binlog_file,master_binlog_pos,master_binlog_space,slave_sql_running_state,create_time) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-            sql2= "insert into mysql_replication_his(db_ip,db_port,is_master,is_slave,gtid_mode,read_only,master_server,master_port,slave_io_run,slave_sql_run,delay,current_binlog_file,current_binlog_pos,master_binlog_file,master_binlog_pos,master_binlog_space,slave_sql_running_state,create_time) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+            sql = "replace into mysql_replication(db_ip,db_port,is_master,is_slave,gtid_mode,read_only," \
+                 "master_server,master_port,slave_io_run,slave_sql_run,delay,current_binlog_file,current_binlog_pos," \
+                 "master_binlog_file,master_binlog_pos,master_binlog_space,slave_sql_running_state,create_time) " \
+                 "values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+            sql2 = "insert into mysql_replication_his(db_ip,db_port,is_master,is_slave,gtid_mode,read_only," \
+                  "master_server,master_port,slave_io_run,slave_sql_run,delay,current_binlog_file,current_binlog_pos," \
+                  "master_binlog_file,master_binlog_pos,master_binlog_space,slave_sql_running_state,create_time) " \
+                  "values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 
-            param=(db.instance.ip,db.instance.port,result[0],result[1],result[2],result[3],result[4],result[5],result[6],result[7],result[8],result[9],result[10],result[11],result[12],result[13],result[14],result[15])
-            mysql_exec(sql,param)
+            param = (db.instance.ip, db.instance.port, result[0], result[1], result[2], result[3], result[4],
+                     result[5], result[6], result[7], result[8], result[9], result[10], result[11], result[12],
+                     result[13], result[14], result[15])
+            mysql_exec(sql, param)
             mysql_exec(sql2, param)
         cur.close()
         conn.close()
-    # except Exception, e:
-    except MySQLdb.Error, e:
+    except MySQLdb.Error as e:
         print e
         time.sleep(3)
     try:
-        conn = MySQLdb.connect(host=db.instance.ip, user=db.account.user, passwd=py.decrypt(db.account.passwd), port=int(db.instance.port), connect_timeout=3, charset='utf8')
+        conn = MySQLdb.connect(host=db.instance.ip, user=db.account.user,
+                               passwd=py.decrypt(db.account.passwd), port=int(db.instance.port),
+                               connect_timeout=3, charset='utf8')
         cur = conn.cursor()
         conn.select_db('information_schema')
-    except MySQLdb.Error, e:
+    except MySQLdb.Error as e:
         connect = 0
         downserver = MysqlStatus.objects.filter(db_ip=db.instance.ip, db_port=int(db.instance.port))[:1]
         now_time = now_time + datetime.timedelta(hours=8)
@@ -579,34 +636,38 @@ def mon_basic(db):
             downserver[0].create_time = now_time
             downserver[0].save()
         else:
-            downserver = MysqlStatus(db_ip=db.instance.ip, db_port=int(db.instance.port),version='-1',create_time=now_time)
+            downserver = MysqlStatus(db_ip=db.instance.ip, db_port=int(db.instance.port),
+                                     version='-1', create_time=now_time)
             downserver.save()
         alarm_type = 7
         if record_alarm(db, alarm_type):
-            sendmail_monitor.delay(db, db.mail_to.split(';'), alarm_type,alarm_type)
+            sendmail_monitor.delay(db, db.mail_to.split(';'), alarm_type, alarm_type)
 
 
 def get_mysql_status(cursor):
-    data=cursor.execute('show global status;');
-    data_list=cursor.fetchall()
-    data_dict={}
+    data = cursor.execute('show global status;')
+    data_list = cursor.fetchall()
+    data_dict = {}
     for item in data_list:
         data_dict[item[0]] = item[1]
     return data_dict
+
 
 def get_mysql_variables(cursor):
-    data=cursor.execute('show global variables;');
-    data_list=cursor.fetchall()
-    data_dict={}
+    data = cursor.execute('show global variables;')
+    data_list = cursor.fetchall()
+    data_dict = {}
     for item in data_list:
         data_dict[item[0]] = item[1]
     return data_dict
 
+
 def get_mysql_version(cursor):
-    cursor.execute('select version();');
+    cursor.execute('select version();')
     return cursor.fetchone()[0]
 
-def get_item(data_dict,item):
+
+def get_item(data_dict, item):
     try:
        item_value = data_dict[item]
        return item_value

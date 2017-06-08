@@ -2,6 +2,8 @@
 from django.db import models
 import django.utils.timezone as timezone
 # Create your models here.
+
+
 class Mysql_processlist(models.Model):
     db_ip = models.CharField(max_length=20)
     db_port = models.SmallIntegerField()
@@ -11,54 +13,59 @@ class Mysql_processlist(models.Model):
     db = models.CharField(max_length=64)
     command = models.CharField(max_length=16)
     time = models.IntegerField()
-    state = models.CharField(null=True,max_length=64)
+    state = models.CharField(null=True, max_length=64)
     info = models.TextField(null=True)
     create_time = models.DateTimeField(default=timezone.now)
+
     class Meta:
         db_table = 'mysql_processlist'
+
 
 class Mysql_replication(models.Model):
     db_ip = models.CharField(max_length=20)
     db_port = models.SmallIntegerField()
     is_master = models.SmallIntegerField(default=0)
     is_slave = models.SmallIntegerField(default=0)
-    read_only = models.CharField(max_length=10,null=True)
-    gtid_mode = models.CharField(max_length=10,null=True)
-    master_server = models.CharField(max_length=30,null=True)
-    master_port = models.CharField(max_length=20,null=True)
-    slave_io_run = models.CharField(max_length=20,null=True)
-    slave_sql_run = models.CharField(max_length=20,null=True)
-    delay = models.CharField(max_length=20,null=True)
-    current_binlog_file = models.CharField(max_length=30,null=True)
-    current_binlog_pos = models.CharField(max_length=30,null=True)
-    master_binlog_file = models.CharField(max_length=30,null=True)
-    master_binlog_pos = models.CharField(max_length=30,null=True)
+    read_only = models.CharField(max_length=10, null=True)
+    gtid_mode = models.CharField(max_length=10, null=True)
+    master_server = models.CharField(max_length=30, null=True)
+    master_port = models.CharField(max_length=20, null=True)
+    slave_io_run = models.CharField(max_length=20, null=True)
+    slave_sql_run = models.CharField(max_length=20, null=True)
+    delay = models.CharField(max_length=20, null=True)
+    current_binlog_file = models.CharField(max_length=30, null=True)
+    current_binlog_pos = models.CharField(max_length=30, null=True)
+    master_binlog_file = models.CharField(max_length=30, null=True)
+    master_binlog_pos = models.CharField(max_length=30, null=True)
     master_binlog_space = models.BigIntegerField(default=0)
-    slave_sql_running_state = models.CharField(max_length=100,null=True)
+    slave_sql_running_state = models.CharField(max_length=100, null=True)
     create_time = models.DateTimeField()
+
     class Meta:
         db_table = 'mysql_replication'
         unique_together = ("db_ip", "db_port")
+
 
 class Mysql_replication_his(models.Model):
     db_ip = models.CharField(max_length=20)
     db_port = models.SmallIntegerField()
     is_master = models.SmallIntegerField(default=0)
     is_slave = models.SmallIntegerField(default=0)
-    read_only = models.CharField(max_length=10,null=True)
-    gtid_mode = models.CharField(max_length=10,null=True)
-    master_server = models.CharField(max_length=30,null=True)
-    master_port = models.CharField(max_length=20,null=True)
-    slave_io_run = models.CharField(max_length=20,null=True)
-    slave_sql_run = models.CharField(max_length=20,null=True)
-    delay = models.CharField(max_length=20,null=True)
-    current_binlog_file = models.CharField(max_length=30,null=True)
-    current_binlog_pos = models.CharField(max_length=30,null=True)
-    master_binlog_file = models.CharField(max_length=30,null=True)
-    master_binlog_pos = models.CharField(max_length=30,null=True)
+    read_only = models.CharField(max_length=10, null=True)
+    gtid_mode = models.CharField(max_length=10, null=True)
+    master_server = models.CharField(max_length=30, null=True)
+    master_port = models.CharField(max_length=20, null=True)
+    slave_io_run = models.CharField(max_length=20, null=True)
+    slave_sql_run = models.CharField(max_length=20, null=True)
+    delay = models.CharField(max_length=20, null=True)
+    current_binlog_file = models.CharField(max_length=30, null=True)
+    current_binlog_pos = models.CharField(max_length=30, null=True)
+    master_binlog_file = models.CharField(max_length=30, null=True)
+    master_binlog_pos = models.CharField(max_length=30, null=True)
     master_binlog_space = models.BigIntegerField(default=0)
-    slave_sql_running_state = models.CharField(max_length=100,null=True)
+    slave_sql_running_state = models.CharField(max_length=100, null=True)
     create_time = models.DateTimeField(db_index=True)
+
     class Meta:
         db_table = 'mysql_replication_his'
         index_together = [["db_ip", "db_port", "create_time"], ]
@@ -72,15 +79,17 @@ class MysqlConnected(models.Model):
     connect_db = models.CharField(max_length=50, blank=True, null=True)
     connect_count = models.IntegerField()
     create_time = models.DateTimeField(db_index=True)
+
     class Meta:
         db_table = 'mysql_connected'
         index_together = [["db_ip", "db_port", "create_time"], ]
+
 
 class MysqlStatus(models.Model):
     db_ip = models.CharField(max_length=30)
     db_port = models.CharField(max_length=10)
     connect = models.SmallIntegerField(default=0)
-    role = models.CharField(max_length=30,default=-1)
+    role = models.CharField(max_length=30, default=-1)
     uptime = models.IntegerField(default=-1)
     version = models.CharField(max_length=50)
     max_connections = models.SmallIntegerField(default=-1)
@@ -126,13 +135,13 @@ class MysqlStatus(models.Model):
     key_reads_persecond = models.IntegerField(default=-1)
     key_write_requests_persecond = models.IntegerField(default=-1)
     key_writes_persecond = models.IntegerField(default=-1)
-    innodb_version = models.CharField(max_length=30,default='-1')
+    innodb_version = models.CharField(max_length=30, default='-1')
     innodb_buffer_pool_instances = models.SmallIntegerField(default=-1)
     innodb_buffer_pool_size = models.BigIntegerField(default=-1)
-    innodb_doublewrite = models.CharField(max_length=10,default='-1')
-    innodb_file_per_table = models.CharField(max_length=10,default='-1')
+    innodb_doublewrite = models.CharField(max_length=10, default='-1')
+    innodb_file_per_table = models.CharField(max_length=10, default='-1')
     innodb_flush_log_at_trx_commit = models.IntegerField(default=-1)
-    innodb_flush_method = models.CharField(max_length=30,default='-1')
+    innodb_flush_method = models.CharField(max_length=30, default='-1')
     innodb_force_recovery = models.IntegerField(default=-1)
     innodb_io_capacity = models.IntegerField(default=-1)
     innodb_read_io_threads = models.IntegerField(default=-1)
@@ -156,25 +165,27 @@ class MysqlStatus(models.Model):
     innodb_rows_inserted_persecond = models.IntegerField(default=-1)
     innodb_rows_updated_persecond = models.IntegerField(default=-1)
     innodb_rows_deleted_persecond = models.IntegerField(default=-1)
-    query_cache_hitrate = models.CharField(max_length=10,default='-1')
-    thread_cache_hitrate = models.CharField(max_length=10,default='-1')
-    key_buffer_read_rate = models.CharField(max_length=10,default='-1')
-    key_buffer_write_rate = models.CharField(max_length=10,default='-1')
-    key_blocks_used_rate = models.CharField(max_length=10,default='-1')
-    created_tmp_disk_tables_rate = models.CharField(max_length=10,default='-1')
-    connections_usage_rate = models.CharField(max_length=10,default='-1')
-    open_files_usage_rate = models.CharField(max_length=10,default='-1')
-    open_tables_usage_rate = models.CharField(max_length=10,default='-1')
+    query_cache_hitrate = models.CharField(max_length=10, default='-1')
+    thread_cache_hitrate = models.CharField(max_length=10, default='-1')
+    key_buffer_read_rate = models.CharField(max_length=10, default='-1')
+    key_buffer_write_rate = models.CharField(max_length=10, default='-1')
+    key_blocks_used_rate = models.CharField(max_length=10, default='-1')
+    created_tmp_disk_tables_rate = models.CharField(max_length=10, default='-1')
+    connections_usage_rate = models.CharField(max_length=10, default='-1')
+    open_files_usage_rate = models.CharField(max_length=10, default='-1')
+    open_tables_usage_rate = models.CharField(max_length=10, default='-1')
     create_time = models.DateTimeField()
+
     class Meta:
         db_table = 'mysql_status'
         unique_together = ("db_ip", "db_port")
+
 
 class MysqlStatusHis(models.Model):
     db_ip = models.CharField(max_length=30)
     db_port = models.CharField(max_length=10)
     connect = models.SmallIntegerField(default=0)
-    role = models.CharField(max_length=30,default=-1)
+    role = models.CharField(max_length=30, default=-1)
     uptime = models.IntegerField(default=-1)
     version = models.CharField(max_length=50)
     max_connections = models.SmallIntegerField(default=-1)
@@ -188,7 +199,6 @@ class MysqlStatusHis(models.Model):
     max_allowed_packet = models.IntegerField(default=-1)
     threads_connected = models.IntegerField(default=-1)
     threads_running = models.IntegerField(default=-1)
-    # threads_waits = models.IntegerField(blank=True, null=True,default=-1)
     threads_created = models.IntegerField(default=-1)
     threads_cached = models.IntegerField(default=-1)
     connections = models.IntegerField(default=-1)
@@ -221,13 +231,13 @@ class MysqlStatusHis(models.Model):
     key_reads_persecond = models.IntegerField(default=-1)
     key_write_requests_persecond = models.IntegerField(default=-1)
     key_writes_persecond = models.IntegerField(default=-1)
-    innodb_version = models.CharField(max_length=30,default='-1')
+    innodb_version = models.CharField(max_length=30, default='-1')
     innodb_buffer_pool_instances = models.SmallIntegerField(default=-1)
     innodb_buffer_pool_size = models.BigIntegerField(default=-1)
-    innodb_doublewrite = models.CharField(max_length=10,default='-1')
-    innodb_file_per_table = models.CharField(max_length=10,default='-1')
+    innodb_doublewrite = models.CharField(max_length=10, default='-1')
+    innodb_file_per_table = models.CharField(max_length=10, default='-1')
     innodb_flush_log_at_trx_commit = models.IntegerField(default=-1)
-    innodb_flush_method = models.CharField(max_length=30,default='-1')
+    innodb_flush_method = models.CharField(max_length=30, default='-1')
     innodb_force_recovery = models.IntegerField(default=-1)
     innodb_io_capacity = models.IntegerField(default=-1)
     innodb_read_io_threads = models.IntegerField(default=-1)
@@ -251,16 +261,17 @@ class MysqlStatusHis(models.Model):
     innodb_rows_inserted_persecond = models.IntegerField(default=-1)
     innodb_rows_updated_persecond = models.IntegerField(default=-1)
     innodb_rows_deleted_persecond = models.IntegerField(default=-1)
-    query_cache_hitrate = models.CharField(max_length=10,default='-1')
-    thread_cache_hitrate = models.CharField(max_length=10,default='-1')
-    key_buffer_read_rate = models.CharField(max_length=10,default='-1')
-    key_buffer_write_rate = models.CharField(max_length=10,default='-1')
-    key_blocks_used_rate = models.CharField(max_length=10,default='-1')
-    created_tmp_disk_tables_rate = models.CharField(max_length=10,default='-1')
-    connections_usage_rate = models.CharField(max_length=10,default='-1')
-    open_files_usage_rate = models.CharField(max_length=10,default='-1')
-    open_tables_usage_rate = models.CharField(max_length=10,default='-1')
+    query_cache_hitrate = models.CharField(max_length=10, default='-1')
+    thread_cache_hitrate = models.CharField(max_length=10, default='-1')
+    key_buffer_read_rate = models.CharField(max_length=10, default='-1')
+    key_buffer_write_rate = models.CharField(max_length=10, default='-1')
+    key_blocks_used_rate = models.CharField(max_length=10, default='-1')
+    created_tmp_disk_tables_rate = models.CharField(max_length=10, default='-1')
+    connections_usage_rate = models.CharField(max_length=10, default='-1')
+    open_files_usage_rate = models.CharField(max_length=10, default='-1')
+    open_tables_usage_rate = models.CharField(max_length=10, default='-1')
     create_time = models.DateTimeField(db_index=True)
+
     class Meta:
         db_table = 'mysql_status_his'
         index_together = [["db_ip", "db_port", "create_time"], ]
@@ -271,8 +282,9 @@ class Alarm(models.Model):
     db_ip = models.CharField(max_length=30)
     db_port = models.CharField(max_length=10)
     alarm_type = models.CharField(max_length=30)
-    send_mail =models.SmallIntegerField(default=0)
-    create_time = models.DateTimeField(db_index=True,default=timezone.now)
+    send_mail = models.SmallIntegerField(default=0)
+    create_time = models.DateTimeField(db_index=True, default=timezone.now)
+
     class Meta:
         db_table = 'alarm'
         index_together = [["db_ip", "db_port"], ]
@@ -282,7 +294,8 @@ class AlarmTemp(models.Model):
     db_ip = models.CharField(max_length=30)
     db_port = models.CharField(max_length=10)
     alarm_type = models.CharField(max_length=30)
-    create_time = models.DateTimeField(db_index=True,default=timezone.now)
+    create_time = models.DateTimeField(db_index=True, default=timezone.now)
+
     class Meta:
         db_table = 'alarm_temp'
-        index_together = [["db_ip", "db_port","alarm_type"], ]
+        index_together = ["db_ip", "db_port", "alarm_type"]

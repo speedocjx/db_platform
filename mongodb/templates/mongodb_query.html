@@ -19,23 +19,7 @@
 
                             {% csrf_token %}
                             CHOOSE :
-                            {#                {%  if choosed_table %}#}
-                            {#                    <select class="form-control col-md-1" name = "tablename">#}
-                            {#                        <option value ="{{ choosed_table }}">{{ choosed_table }}</option>#}
-                            {#                    </select></br>#}
-                            {#                    <a href="/mongo_query/"><input type="button" value="重选数据源" class="btn btn-danger"></a>#}
-                            {#                {% else %}#}
-                            {#                    <select class="form-control col-md-1" name = "tablename">#}
-                            {#                        {% for obj in tablelist %}#}
-                            {#                            <option value ="{{ obj }}">{{ obj }}</option>#}
-                            {#                        {% endfor %}#}
-                            {#                    </select>#}
-                            {#                {% endif %}#}
-
                             {%  if choosedb %}
-                                {#                                <select class="form-control col-md-1" name = "cx">#}
-                                {#                                    <option value ="{{ choosed_host }}">{{ choosed_host }}</option>#}
-                                {#                                </select></br>#}
                                 <select class="form-control col-md-1" name = "choosedb">
                                     {% for obj in dblist %}
                                         {% if obj == choosedb %}
@@ -55,10 +39,6 @@
                             {% endif %}
 
 
-
-
-
-
                             </br>
                             <button type="submit" name='dbinfo' class="btn btn-success" value="1">库状态</button >
 
@@ -75,15 +55,17 @@
                                         {% endif %}
                                     {% endfor %}
                                 </select>
-
                                 请在下面输入查询语句:</br>
                                 {{ form.a }} </br> </br>
                                 <button type="submit" name='query' class="btn btn-primary" value="1">提交查询</button >
                                 <button type="submit" name='tbinfo' class="btn btn-danger" value="1">查看表状态</button >
                                 <button type="submit" name='tbindexinfo' class="btn btn-success" value="1">查看表索引信息</button >
 
-
                             {% endif %}
+
+
+
+
                         </td>
                         {%  if tblist %}
                             <td>

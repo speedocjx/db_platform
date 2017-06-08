@@ -19,19 +19,12 @@
 + MySQL数据库健康监控和告警
 
 ### 开发环境：
-+ django:1.8.14
-+ python:2.7.12
++ django:1.8.17
++ python:2.7.13
 + MySQL和redis实例各一个
-### python依赖组件：
-+ django-celery 3.1.17
-+ celery 3.1.25
-+ kombu 3.0.37
-+ celery-with-redis 3.0
-+ django-simple-captcha
-+ MySQL-python
-+ pymongo
-+ sqlparse
-+ uwgsi (正式部署时使用)
+
+### python依赖安装：
+pip install -r requestment.txt
 
 ### 权限功能简述：
   用户的系统使用权限大致可以分为可以看到的页面，以及能够看到的DB两个维度
@@ -52,24 +45,24 @@
     。。。待续
 
 ### 启动配置
-* **config.py**配置文件如下：
+* **config.py**配置文件如下（myapp/etc/config.py）：
 ``` python
 
 wrong_msg="select '请检查输入语句'"
 
-select_limit=200
+select_limit = 200
 
-export_limit=200
+export_limit = 200
 
-incp_host="10.xx.xx.xx"
+incp_host = "10.xx.xx.xx"
 
-public_user="public"
+public_user = "public"
 
-incp_port=6669
+incp_port = 6669
 
-incp_user=""
+incp_user = ""
 
-incp_passwd=""
+incp_passwd = ""
 
 sqladvisor_switch = 1
 

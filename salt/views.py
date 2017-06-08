@@ -8,10 +8,12 @@ from salt.models import Saltrecord
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 # Create your views here.
 
+
 @login_required(login_url='/accounts/login/')
 @permission_required('myapp.can_oper_saltapi', login_url='/')
 def salt_exec(request):
     return render(request, 'exec.html', locals())
+
 
 @login_required(login_url='/accounts/login/')
 @permission_required('myapp.can_oper_saltapi', login_url='/')
@@ -19,67 +21,63 @@ def execute(request):
     if request.method == 'POST':
         try:
             tgt = request.POST.get('tgt', "")
-            # fun = request.POST.get('fun', "cmd.run")
             fun = "cmd.run"
 
             arg = request.POST.get('arg', 'none_arg')
             sapi = saltapi.SaltAPI()
             isgp = int(request.POST.get('isgroup', "0"))
 
-            jid_auto = sapi.asyncMasterToMinion(tgt=tgt, fun=fun, arg=arg,group=isgp)
-            saltapi.record_salt(request.user.username,jid_auto,fun,tgt,arg)
-        except Exception,e:
-            print e
-    # context = {'jid_auto': ''}
-    # tgt = request.POST.get('tgt', "")
-    # fun = request.POST.get('fun', "cmd.run")
-    # arg = request.POST.get('arg', "")
+            jid_auto = sapi.asyncMasterToMinion(tgt=tgt, fun=fun, arg=arg, group=isgp)
+            saltapi.record_salt(request.user.username, jid_auto, fun, tgt, arg)
+        except Exception as e:
+            pass
+            # print e
     return render_to_response('auto_execute.html', locals())
+
 
 @login_required(login_url='/accounts/login/')
 @permission_required('myapp.can_oper_saltapi', login_url='/')
 def getjobinfo(request):
-    context = {}
     jid_auto = request.GET['jid_auto']
     # print jid_auto
     if jid_auto:
         where = int(request.GET.get('where','12376894567235'))
         if where == 12376894567235:
-            result = '/salt/api/getjobinfo?jid_auto=%s&where=%s' % (jid_auto,0)
+            result = '/salt/api/getjobinfo?jid_auto=%s&where=%s' % (jid_auto, 0)
             return HttpResponse(result)
         else:
-            hosts_result, host_result = saltapi.salt_query("select id,success,replace(replace(`return`,'\\\\n','</br>'),'\\\\t','&nbsp') from salt.salt_returns where jid='%s' limit %s,10000;" % (jid_auto,where) )
-            # cursor = connection.cursor()
-            # host_result = cursor.execute()
-            # hosts_result = cursor.fetchall()
+            sql = "select id,success,replace(replace(`return`,'\\\\n','</br>'),'\\\\t','&nbsp') " \
+                  "from salt.salt_returns where jid='%s' limit %s, 10000;" % (jid_auto, where)
+            hosts_result, host_result = saltapi.salt_query(sql)
             where = len(hosts_result) + where
             result = []
             for host_result in hosts_result:
-                # print "host_result"
-                # print host_result
                 if host_result[2]:
-                    result.append(u'host:%s&nbsp;&nbsp;&nbsp;state:%s<br><pre>%s</pre><br>' % (host_result[0],host_result[1],host_result[2].strip('"')))
-                else :
+                    result.append(u'host:%s&nbsp;&nbsp;&nbsp;state:%s<br><pre>%s</pre><br>'
+                                  % (host_result[0], host_result[1], host_result[2].strip('"')))
+                else:
                     if host_result[1]:
-                        result.append(u'host:%s&nbsp;&nbsp;&nbsp;state:%s<br/><pre>执行成功，但该命令无返回结果</pre><br/>' % (host_result[0],host_result[1]))
-                    else :
-                        result.append(u'host:%s&nbsp;&nbsp;&nbsp;state:%s<br/><pre>执行失败！</pre><br/>' % (host_result[0],host_result[1]))
+                        result.append(u'host:%s&nbsp;&nbsp;&nbsp;state:%s<br/><pre>执行成功，但该命令无返回结果</pre><br/>'
+                                      % (host_result[0], host_result[1]))
+                    else:
+                        result.append(u'host:%s&nbsp;&nbsp;&nbsp;state:%s<br/><pre>执行失败！</pre><br/>'
+                                      % (host_result[0], host_result[1]))
             context = {
-                "where":where,
-                "result":result
+                "where": where,
+                "result": result
             }
         return HttpResponse(json.dumps(context))
+
 
 @login_required(login_url='/accounts/login/')
 @permission_required('myapp.can_oper_saltapi', login_url='/')
 def hardware_info(request):
     try:
         if request.method == 'POST':
-            se_host = request.POST.get('search','none')
+            se_host = request.POST.get('search', 'none')
             isgp = int(request.POST.get('isgroup', "0"))
             up_host = saltapi.get_host_list(se_host, isgp)
             sapi = saltapi.SaltAPI()
-            # up_host = sapi.runner_status('status')['up']
             jyp = []
             disk_all = {}
             for hostname in up_host:
@@ -96,9 +94,10 @@ def hardware_info(request):
                     info_all.update(disk_dic)
                 disk_all = {}
                 jyp += [info_all]
-    except Exception,e:
-        print e
+    except:
+        pass
     return render(request, 'hardware_info.html', locals())
+
 
 @login_required(login_url='/accounts/login/')
 @permission_required('myapp.can_oper_saltapi', login_url='/')
@@ -120,8 +119,8 @@ def key_con(request):
             return render(request, 'key_manager.html', locals())
         keys_all = sapi.list_all_key()
         return render(request, 'key_manager.html', locals())
-
-    return  render(request,'key_manager.html',locals())
+    print(locals())
+    return render(request, 'key_manager.html', locals())
 
 
 @login_required(login_url='/accounts/login/')
@@ -129,7 +128,7 @@ def key_con(request):
 def hist_salt(request):
     page_size = 10
     all_record = Saltrecord.objects.order_by('-id')
-    paginator = Paginator(all_record,page_size)
+    paginator = Paginator(all_record, page_size)
     try:
         page = int(request.GET.get('page', 1))
     except ValueError:
@@ -141,37 +140,27 @@ def hist_salt(request):
 
     return render(request, 'hist_task.html', locals())
 
+
 @login_required(login_url='/accounts/login/')
 @permission_required('myapp.can_oper_saltapi', login_url='/')
 def record_detail(request):
     if 'jid' in request.GET:
         job_id = request.GET.get('jid')
-        hosts_result, host_result = saltapi.salt_query("select id,success,replace(replace(`return`,'\\\\n','</br>'),'\\\\t','&nbsp') from salt.salt_returns where jid='%s';" % (job_id))
-        result=[]
+        sql = "select id,success,replace(replace(`return`,'\\\\n','</br>'),'\\\\t','&nbsp') " \
+              "from salt.salt_returns where jid='%s';" % (job_id)
+        hosts_result, host_result = saltapi.salt_query(sql)
+        result = []
         for host_result in hosts_result:
-            # print "host_result"
-            # print host_result
             if host_result[2]:
-                print type(host_result[2])
-                print unicode(host_result[2],'utf-8')
+                # print type(host_result[2])
+                # print unicode(host_result[2], 'utf-8')
                 result.append('host:%s&nbsp;&nbsp;&nbsp;state:%s<br><pre>%s</pre><br>' % (
                 host_result[0], host_result[1], host_result[2].strip('"').encode('utf-8')))
             else:
                 if host_result[1]:
-                    result.append(u'host:%s&nbsp;&nbsp;&nbsp;state:%s<br/><pre>执行成功，但该命令无返回结果</pre><br/>' % (
-                    host_result[0], host_result[1]))
+                    result.append(u'host:%s&nbsp;&nbsp;&nbsp;state:%s<br/><pre>执行成功，但该命令无返回结果</pre><br/>'
+                                  % (host_result[0], host_result[1]))
                 else:
-                    result.append(u'host:%s&nbsp;&nbsp;&nbsp;state:%s<br/><pre>执行失败！</pre><br/>' % (
-                    host_result[0], host_result[1]))
-
-        print result
+                    result.append(u'host:%s&nbsp;&nbsp;&nbsp;state:%s<br/><pre>执行失败！</pre><br/>'
+                                  % (host_result[0], host_result[1]))
         return render(request, 'record_detail.html', locals())
-
-
-
-# def record_detail(request):
-#     if 'jid' in request.GET:
-#         job_id = request.GET.get('jid')
-#         sapi = saltapi.SaltAPI()
-#         print sapi.getdetail(job_id)
-#         return render(request, 'record_detail.html', locals())

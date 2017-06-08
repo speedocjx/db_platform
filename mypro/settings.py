@@ -11,17 +11,19 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 import os
 import djcelery
-from kombu import Queue,Exchange
+from kombu import Queue, Exchange
+
+# celery
 djcelery.setup_loader()
 BROKER_URL = 'redis://127.0.0.1:6379/0'
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
-CELERY_IMPORTS = ("myapp.tasks","myapp.include.scheduled","myapp.include.mon")
+CELERY_IMPORTS = ("myapp.tasks", "myapp.include.scheduled", "myapp.include.mon")
 CELERY_QUEUES = (
-    Queue('default',Exchange('default'),routing_key='default'),
-    Queue('mysql_monitor',Exchange('monitor'),routing_key='monitor.mysql'),
+    Queue('default', Exchange('default'), routing_key='default'),
+    Queue('mysql_monitor', Exchange('monitor'), routing_key='monitor.mysql'),
 )
 CELERY_ROUTES = {
-    'myapp.include.mon.mon_mysql':{'queue':'mysql_monitor','routing_key':'monitor.mysql'},
+    'myapp.include.mon.mon_mysql': {'queue': 'mysql_monitor', 'routing_key': 'monitor.mysql'},
     'myapp.include.mon.check_mysql_host': {'queue': 'mysql_monitor', 'routing_key': 'monitor.mysql'},
     'myapp.include.mon.sendmail_monitor': {'queue': 'mysql_monitor', 'routing_key': 'monitor.mysql'},
 }
@@ -44,7 +46,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
- ##
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -54,7 +56,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # 'django_crontab',
     'captcha',
     'salt',
     'mongodb',
@@ -64,13 +65,8 @@ INSTALLED_APPS = [
     'blacklist',
     'djcelery',
     'myapp',
+    'mypro',
 ]
-
-# CRONJOBS = [
-#     ('*/1 * * * *', 'myapp.scheduled.task_sche_run','>> /tmp/last_scheduled_job.log'),
-#     ('30 0 * * *', 'myapp.scheduled.table_check','>> /tmp/scheduled_check_job.log'),
-#
-# ]
 
 
 MIDDLEWARE_CLASSES = [
@@ -120,10 +116,10 @@ WSGI_APPLICATION = 'mypro.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'django',
-        'USER': 'chang',
-        'PASSWORD': 'chang',
-        'HOST': '127.0.0.1',
+        'NAME': 'dbplat',
+        'USER': 'think',
+        'PASSWORD': '123456',
+        'HOST': '192.168.1.6',
         'PORT': '3306',
     }
 }
@@ -157,37 +153,37 @@ USE_I18N = True
 USE_L10N = False
 
 USE_TZ = True
-#session
+# session
 SESSION_COOKIE_AGE = 3600
-SESSION_EXPIRE_AT_BROWSER_CLOSE  = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
-#yanzhengma
-#CAPTCHA_CHALLENGE_FUNCT = 'captcha.helpers.random_char_challenge'
-#CAPTCHA_CHALLENGE_FUNCT = 'captcha.helpers.math_challenge'
-#2minutes timeout
-CAPTCHA_LETTER_ROTATION=(-10,20)
-# CAPTCHA_NOISE_FUNCTIONS=('captcha.helpers.noise_dots',)
-CAPTCHA_TIMEOUT=2
-CAPTCHA_LENGTH=4
-CAPTCHA_FONT_SIZE=24
-CAPTCHA_BACKGROUND_COLOR='#FFFFFF'
-CAPTCHA_FOREGROUND_COLOR='#000010'
-CAPTCHA_OUTPUT_FORMAT=u'%(text_field)s %(image)s %(hidden_field)s'
+# yanzhengma
+# CAPTCHA_CHALLENGE_FUNCT = 'captcha.helpers.random_char_challenge'
+# CAPTCHA_CHALLENGE_FUNCT = 'captcha.helpers.math_challenge'
+# 2minutes timeout
+CAPTCHA_LETTER_ROTATION = (-10, 20)
+# CAPTCHA_NOISE_FUNCTIONS = ('captcha.helpers.noise_dots',)
+CAPTCHA_TIMEOUT = 2
+CAPTCHA_LENGTH = 4
+CAPTCHA_FONT_SIZE = 24
+CAPTCHA_BACKGROUND_COLOR = '#FFFFFF'
+CAPTCHA_FOREGROUND_COLOR = '#000010'
+CAPTCHA_OUTPUT_FORMAT = u'%(text_field)s %(image)s %(hidden_field)s'
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = (
 os.path.join(BASE_DIR, "static"),
 )
 # STATIC_ROOT = os.path.join(BASE_DIR, 'static').replace('\\','/')
-#MEDIA_ROOT = os.path.join(BASE_DIR, 'media').replace('\\','/')
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media').replace('\\','/')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
-EMAIL_HOST='mail.xxxxxxx.com'
-EMAIL_HOST_USER='xxxxxx'
-EMAIL_HOST_PASSWORD='xxxxx'
+EMAIL_HOST = 'mail.xxxxxxx.com'
+EMAIL_HOST_USER = 'xxxxxx'
+EMAIL_HOST_PASSWORD = 'xxxxx'
 EMAIL_PORT = 25
 EMAIL_SENDER = 'xxxxx@xxxxx.com'
 # EMAIL_USE_TLS = True
