@@ -2,12 +2,13 @@ from django.shortcuts import render
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from blacklist.models import Tb_blacklist
 from django.contrib.auth.decorators import login_required,permission_required
-from django.http import HttpResponse,HttpResponseRedirect,StreamingHttpResponse,JsonResponse
+from django.http import HttpResponseRedirect
 from django.contrib.auth.models import User
 from myapp.models import Db_name
 from myapp.etc.config import public_user
 
 # Create your views here.
+
 
 @login_required(login_url='/accounts/login/')
 @permission_required('myapp.can_set_pri', login_url='/')
@@ -25,6 +26,7 @@ def blist(request):
         posts = paginator.page(paginator.num_pages)
     return render(request, 'blist.html', locals())
 
+
 @login_required(login_url='/accounts/login/')
 @permission_required('myapp.can_set_pri', login_url='/')
 def bl_delete(request):
@@ -36,6 +38,7 @@ def bl_delete(request):
         pass
     finally:
         return HttpResponseRedirect("/blacklist/blist/")
+
 
 @login_required(login_url='/accounts/login/')
 @permission_required('myapp.can_set_pri', login_url='/')
@@ -70,13 +73,12 @@ def bl_edit(request):
                 if not Db_name.objects.filter(dbtag=dbtag).all()[:1]:
                     info = "dbtag not exists"
                     return render(request, 'bl_edit.html', locals())
-                edit_db = Tb_blacklist(dbtag=dbtag,tbname=request.POST['settbname'][:300])
+                edit_db = Tb_blacklist(dbtag=dbtag, tbname=request.POST['settbname'][:300])
                 edit_db.save()
                 for i in User.objects.filter(username__in=request.POST.getlist('choose_user')).all():
                     edit_db.user_permit.add(i)
                 edit_db.save()
 
-        except Exception,e:
-            print e
+        except Exception as e:
             info = "set failed"
     return render(request, 'bl_edit.html', locals())

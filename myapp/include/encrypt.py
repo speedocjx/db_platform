@@ -3,6 +3,7 @@
 from Crypto.Cipher import AES
 from binascii import b2a_hex, a2b_hex
 
+
 class prpcrypt():
     key = 'keyskeyskeyskeys'
     def __init__(self):
@@ -32,7 +33,5 @@ if __name__ == '__main__':
     pc = prpcrypt()  # 初始化密钥
     e = pc.encrypt("00000")
     d = pc.decrypt(e)
-    print e, d
     e = pc.encrypt("000000000000000000asdfasdfadfasfdasfdasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdf00000000")
     d = pc.decrypt(e)
-    print e, d

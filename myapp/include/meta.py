@@ -1,26 +1,30 @@
 #!/bin/env python
 #-*-coding:utf-8-*-
-import MySQLdb,sys,string,time,datetime
 from myapp.include import function as func
 from myapp.models import Db_name,Db_account,Db_instance,Oper_log,Task,Incep_error_log
 from myapp.include.encrypt import prpcrypt
-from celery import task
+
+try:
+    import MySQLdb
+except:
+    import pymysql as MySQLdb
 
 public_user = func.public_user
 
-def mysql_query(sql,user,passwd,host,port,dbname):
+def mysql_query(sql, user, passwd, host, port, dbname):
     try:
-        conn=MySQLdb.connect(host=host,user=user,passwd=passwd,port=int(port),connect_timeout=5,charset='utf8')
+        conn = MySQLdb.connect(host=host, user=user, passwd=passwd, port=int(port),
+                               connect_timeout=5, charset='utf8')
         conn.select_db(dbname)
         cursor = conn.cursor()
-        count=cursor.execute(sql)
-        index=cursor.description
-        col=[]
+        count = cursor.execute(sql)
+        index = cursor.description
+        col = []
         #get column name
         try:
             for i in index:
                 col.append(i[0])
-        except Exception,e:
+        except:
             conn.commit()
             cursor.close()
             conn.close()
@@ -30,28 +34,37 @@ def mysql_query(sql,user,passwd,host,port,dbname):
         # result=cursor.fetchmany(size=int(limitnum))
         cursor.close()
         conn.close()
-        return (result,col)
-    except Exception,e:
-        return([str(e)],''),['error']
+        return result, col
+    except Exception as e:
+        return([str(e)],''), ['error']
+
 
 def get_metadata(hosttag,flag,tbname=''):
     dbname = Db_name.objects.get(dbtag=hosttag).dbname
     #get table list
-    if flag ==1:
-        if len(tbname)>0:
-            sql = "select TABLE_NAME,TABLE_TYPE,ENGINE,TABLE_COLLATION,TABLE_COMMENT from information_schema.tables where table_schema='"+dbname+"'" +" and TABLE_NAME like '%"+tbname+"%'"
-        else :
-            sql = "select TABLE_NAME,TABLE_TYPE,ENGINE,TABLE_COLLATION,TABLE_COMMENT from information_schema.tables where table_schema='"+dbname+"'"
+    if flag == 1:
+        if len(tbname) > 0:
+            sql = "select TABLE_NAME,TABLE_TYPE,ENGINE,TABLE_COLLATION,TABLE_COMMENT " \
+                  "from information_schema.tables " \
+                  "where table_schema='"+dbname+"'" + " and TABLE_NAME like '%"+tbname+"%'"
+        else:
+            sql = "select TABLE_NAME,TABLE_TYPE,ENGINE,TABLE_COLLATION,TABLE_COMMENT " \
+                  "from information_schema.tables where table_schema='"+dbname+"'"
         results, col, tar_dbname = get_data(hosttag,sql)
-        return results,col,tar_dbname
+        return results, col, tar_dbname
     #get column list
-    elif flag==2:
-        sql = "SELECT ORDINAL_POSITION AS POS,COLUMN_NAME,COLUMN_TYPE,COLUMN_DEFAULT,IS_NULLABLE,CHARACTER_SET_NAME,COLLATION_NAME,COLUMN_KEY,EXTRA,COLUMN_COMMENT FROM information_schema.COLUMNS  where TABLE_SCHEMA='"+dbname+"'"+" and TABLE_NAME='"+tbname+"'"+' ORDER BY POS'
+    elif flag == 2:
+        sql = "SELECT ORDINAL_POSITION AS POS,COLUMN_NAME,COLUMN_TYPE,COLUMN_DEFAULT,IS_NULLABLE," \
+              "CHARACTER_SET_NAME,COLLATION_NAME,COLUMN_KEY,EXTRA,COLUMN_COMMENT " \
+              "FROM information_schema.COLUMNS  " \
+              "where TABLE_SCHEMA='"+dbname+"'"+" and TABLE_NAME='"+tbname+"'"+' ORDER BY POS'
         results, col, tar_dbname = get_data(hosttag, sql)
         return results, col, tar_dbname
     #get indexes list
-    elif flag==3:
-        sql = "SELECT INDEX_NAME,NON_UNIQUE,SEQ_IN_INDEX,COLUMN_NAME,COLLATION,CARDINALITY,SUB_PART,PACKED,NULLABLE,INDEX_TYPE,COMMENT,INDEX_COMMENT FROM information_schema.statistics  where TABLE_SCHEMA='"+dbname+"'"+" and TABLE_NAME='"+tbname+"'"
+    elif flag == 3:
+        sql = "SELECT INDEX_NAME,NON_UNIQUE,SEQ_IN_INDEX,COLUMN_NAME,COLLATION,CARDINALITY,SUB_PART,PACKED," \
+              "NULLABLE,INDEX_TYPE,COMMENT,INDEX_COMMENT " \
+              "FROM information_schema.statistics  where TABLE_SCHEMA='"+dbname+"'"+" and TABLE_NAME='"+tbname+"'"
         results, col, tar_dbname = get_data(hosttag, sql)
         return results, col, tar_dbname
     #table details
@@ -64,11 +77,12 @@ def get_metadata(hosttag,flag,tbname=''):
         results, col, tar_dbname = get_data(hosttag, sql)
         return results, col, tar_dbname
     elif flag == 6:
-        sql = "show tables ";
-        results , col, tar_dbname = get_data(hosttag, sql)
+        sql = "show tables;"
+        results, col, tar_dbname = get_data(hosttag, sql)
         return results
 
-def get_data(hosttag,sql):
+
+def get_data(hosttag, sql):
     a = Db_name.objects.filter(dbtag=hosttag)[0]
     #a = Db_name.objects.get(dbtag=hosttag)
     tar_dbname = a.dbname
@@ -78,7 +92,7 @@ def get_data(hosttag,sql):
             tar_host = a.instance.all().filter(role='read')[0].ip
             tar_port = a.instance.all().filter(role='read')[0].port
     #如果没有设置或没有role=read，则选择第一个读到的实例读取
-    except Exception,e:
+    except:
         tar_host = a.instance.filter(role__in=['write','all'])[0].ip
         tar_port = a.instance.filter(role__in=['write','all'])[0].port
     pc = prpcrypt()
@@ -89,18 +103,19 @@ def get_data(hosttag,sql):
             break
     #print tar_port+tar_passwd+tar_username+tar_host
     try:
-        results,col = mysql_query(sql,tar_username,tar_passwd,tar_host,tar_port,tar_dbname)
-    except Exception, e:
+        results, col = mysql_query(sql, tar_username, tar_passwd, tar_host, tar_port, tar_dbname)
+    except Exception as e:
         #防止失败，返回一个wrong_message
-        results,col = ([str(e)],''),['error']
+        results,col = ([str(e)],''), ['error']
         #results,col = mysql_query(wrong_msg,user,passwd,host,int(port),dbname)
-    return results,col,tar_dbname
+    return results, col, tar_dbname
 
-def process(insname,flag=1,sql=''):
-    if flag ==1:
+
+def process(insname, flag=1, sql=''):
+    if flag == 1:
         sql = 'select * from information_schema.processlist ORDER BY TIME DESC'
         return get_process_data(insname,sql)
-    elif flag ==2:
+    elif flag == 2:
         sql = "select * from information_schema.processlist where COMMAND!='Sleep' ORDER BY TIME DESC"
         return get_process_data(insname, sql)
     elif flag == 3:
@@ -112,12 +127,15 @@ def process(insname,flag=1,sql=''):
         sql = "show engine innodb mutex"
         return get_process_data(insname, sql)
     elif flag == 6:
-        sql = "SELECT table_schema as 'DB',table_name as 'TABLE',CONCAT(ROUND(( data_length + index_length ) / ( 1024 * 1024 ), 2), '') 'TOTAL(M)' , table_comment as COMMENT FROM information_schema.TABLES ORDER BY data_length + index_length DESC limit 20;"
+        sql = "SELECT table_schema as 'DB',table_name as 'TABLE'," \
+              "CONCAT(ROUND(( data_length + index_length ) / ( 1024 * 1024 ), 2), '') 'TOTAL(M)' , " \
+              "table_comment as COMMENT FROM information_schema.TABLES " \
+              "ORDER BY data_length + index_length DESC limit 20;"
         return get_process_data(insname, sql)
-    elif flag==7 :
+    elif flag == 7:
         return get_process_data(insname, sql)
     elif flag == 8:
-        sql ="SELECT\
+        sql = "SELECT\
         TABLE_SCHEMA,\
         TABLE_NAME,\
         COLUMNS.COLUMN_NAME,\
@@ -148,9 +166,9 @@ def process(insname,flag=1,sql=''):
 		GROUP BY TABLE_SCHEMA,TABLE_NAME,COLUMN_NAME order by AUTO_INCREMENT/MAX_VALUE desc limit 100;"
         return get_process_data(insname, sql)
 
-#COLUMN_KEY='PRI' AND
 
-def run_process(insname,sql):
+#COLUMN_KEY='PRI' AND
+def run_process(insname, sql):
     flag = True
     pc = prpcrypt()
     for a in insname.db_name_set.all():
@@ -165,7 +183,8 @@ def run_process(insname,sql):
     # print tar_port+tar_passwd+tar_username+tar_host
     if vars().has_key('tar_username'):
         try:
-            conn = MySQLdb.connect(host=insname.ip, user=tar_username, passwd=tar_passwd, port=int(insname.port),connect_timeout=5, charset='utf8')
+            conn = MySQLdb.connect(host=insname.ip, user=tar_username, passwd=tar_passwd,
+                                   port=int(insname.port),connect_timeout=5, charset='utf8')
             conn.select_db('information_schema')
             param=[]
             curs = conn.cursor()
@@ -179,7 +198,7 @@ def run_process(insname,sql):
             curs.close()
             conn.close()
             return ([sql], ''), ['success']
-        except Exception, e:
+        except Exception as e:
             # 防止失败，返回一个wrong_message
             results, col = ([str(e)], ''), ['error']
             # results,col = mysql_query(wrong_msg,user,passwd,host,int(port),dbname)
@@ -203,38 +222,40 @@ def get_process_data(insname,sql):
     #print tar_port+tar_passwd+tar_username+tar_host
     if  vars().has_key('tar_username'):
         try:
-            results,col = mysql_query(sql,tar_username,tar_passwd,insname.ip,int(insname.port),'information_schema')
-        except Exception, e:
+            results,col = mysql_query(sql, tar_username, tar_passwd, insname.ip,
+                                      int(insname.port), 'information_schema')
+        except Exception as e:
             #防止失败，返回一个wrong_message
-            results,col = ([str(e)],''),['error']
+            results,col = ([str(e)], ''), ['error']
             #results,col = mysql_query(wrong_msg,user,passwd,host,int(port),dbname)
-        return results,col
+        return results, col
     else:
         return (['PLEASE set the admin role account FIRST'], ''), ['error']
 
 
 def check_selfsql(selfsql):
     selfsql = selfsql.split(';')[0]
-    if len(selfsql)==0:
+    if len(selfsql) == 0:
         selfsql = "select 'please input'"
         return selfsql
-    elif selfsql.split()[0].lower() not in ['set','show','select','create','purge','drop','purge','insert','update','delete','rename'] :
+    elif selfsql.split()[0].lower() not in ['set', 'show', 'select', 'create', 'purge', 'drop', 'purge',
+                                            'insert', 'update', 'delete', 'rename']:
         selfsql = "select 'selfsql not allowed'"
-    return  selfsql
-
+    return selfsql
 
 
 def get_his_meta(dbtag,flag):
-    if flag ==1 :
-        if dbtag=='all':
+    if flag == 1 :
+        if dbtag == 'all':
             sql = "select * from mon_tbsize order by `TOTAL(M)` desc limit 50"
         else:
             sql = "select * from mon_tbsize where DBTAG='" + dbtag + "' order by `TOTAL(M)` desc "
-    elif flag ==2:
-        if dbtag=='all':
+    elif flag == 2:
+        if dbtag == 'all':
             sql = "select * from mon_autoinc_status order by AUTO_INCREMENT/MAX_VALUE desc limit 20"
         else:
-            sql = "select * from mon_autoinc_status where DBTAG='" + dbtag + "' order by AUTO_INCREMENT/MAX_VALUE desc limit 20"
+            sql = "select * from mon_autoinc_status where DBTAG='" + dbtag + \
+                  "' order by AUTO_INCREMENT/MAX_VALUE desc limit 20"
 
     elif flag == 3:
         if dbtag == 'all':
@@ -247,8 +268,8 @@ def get_his_meta(dbtag,flag):
             sql = "SELECT * FROM (select a.DBTAG,a.TABLE_SCHEMA,\
             a.TABLE_NAME, a.`TOTAL(M)` - b.`TOTAL(M)` AS 'inc_size(M)' ,\
             (UNIX_TIMESTAMP(a.update_time) - UNIX_TIMESTAMP(b.update_time))/3600 as 'DIF(h)',\
-             a.update_time as 'LAST_CHECKTIME' from\
-            mon_tbsize a join mon_tbsize_last b using (DBTAG,TABLE_NAME) where a.DBTAG='"+ dbtag +"') B  order by 4 desc limit 20; "
+             a.update_time as 'LAST_CHECKTIME' from mon_tbsize a join mon_tbsize_last b " \
+                  "using (DBTAG,TABLE_NAME) where a.DBTAG='"+ dbtag +"') B order by 4 desc limit 20; "
     elif flag == 4:
         #top 10 DBsize
         sql = "select DBTAG,sum(`TOTAL(M)`) as 'TOTAL(M)',sum(`DATA(M)`) as 'DATA(M)'\
@@ -264,8 +285,9 @@ def get_his_meta(dbtag,flag):
         'INDEX' ,avg(update_time) as `update_time` from mon_tbsize group by DBTAG) a WHERE \
         a.DBTAG=b.DBTAG ) c order by 5 desc ,2 desc limit 10"
 
-    elif flag ==6:
-        sql = "select TABLE_NAME ,ROUND(AUTO_INCREMENT/MAX_VALUE*100,1),DBTAG as 'used_percent' from mon_autoinc_status order by AUTO_INCREMENT/MAX_VALUE desc limit 10"
+    elif flag == 6:
+        sql = "select TABLE_NAME ,ROUND(AUTO_INCREMENT/MAX_VALUE*100,1),DBTAG as 'used_percent' " \
+              "from mon_autoinc_status order by AUTO_INCREMENT/MAX_VALUE desc limit 10"
     return mysql_query(sql, func.user, func.passwd, func.host, int(func.port), func.dbname)
 
 def get_hist_dbinfo(dbtag,day):
@@ -277,13 +299,8 @@ def get_hist_dbinfo(dbtag,day):
 
 
 def get_hist_tbinfo(dbtag, tbname, day):
-    sql = "select time,round(avg(total),1) from (select date_format(update_time, '%Y-%m-%d') time, round(`TOTAL(M)`, 1) total \
-    from mon_tbsize_his where \
-    DBTAG = '" + dbtag + "' and TABLE_NAME = '" + tbname +"' and update_time > DATE_SUB(CURDATE(), INTERVAL %d DAY) ) b  group by b.time order by 1" % day
+    sql = "select time,round(avg(total),1) " \
+          "from (select date_format(update_time, '%Y-%m-%d') time, round(`TOTAL(M)`, 1) total from mon_tbsize_his " \
+          "where DBTAG = '" + dbtag + "' and TABLE_NAME = '" + tbname + \
+          "' and update_time > DATE_SUB(CURDATE(), INTERVAL %d DAY) ) b  group by b.time order by 1" % day
     return mysql_query(sql, func.user, func.passwd, func.host, int(func.port), func.dbname)
-
-
-
-'''
-sql = "select * from mon_tbsize where DBTAG='" + dbtag + "' order by `TOTAL(M)` desc "
-'''

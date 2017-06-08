@@ -4,6 +4,8 @@ from captcha.fields import CaptchaField
 from myapp.models import Db_group,Db_name,Db_account,Db_instance,Oper_log,Upload,Task
 from django.contrib.admin import widgets
 from django.contrib.auth.models import User
+
+
 class LoginForm(forms.Form):
     username = forms.CharField(
         required=True,
@@ -28,6 +30,7 @@ class LoginForm(forms.Form):
         ),
     )
     # captcha = CaptchaField(label="输入验证码:",)
+
     def clean(self):
         if not self.is_valid():
             raise forms.ValidationError(u"用户名和密码为必填项")
@@ -37,25 +40,32 @@ class LoginForm(forms.Form):
 # class Userpri_form(forms.Form):
 #     accountname = forms.CharField(max_length=25)
 
+
 class AddForm (forms.Form):
     a = forms.CharField(widget=forms.Textarea(attrs={'cols': 100, 'rows': 15}))
+
 
 class SqlForm (forms.Form):
     a = forms.CharField(widget=forms.Textarea(attrs={'cols': 100, 'rows': 15}))
     filename = forms.FileField()
 
+
 class Logquery(forms.Form):
     begin = forms.DateTimeField(label='dateinfo')
     end = forms.DateTimeField()
 
+
 class Taskquery(forms.Form):
     end = forms.DateTimeField()
+
 
 class Taskscheduler(forms.Form):
     sche_time = forms.DateTimeField()
 
+
 class Uploadform(forms.Form):
     filename = forms.FileField()
+
 
 class Captcha(forms.Form):
     mycaptcha = CaptchaField(label="验证码:",)

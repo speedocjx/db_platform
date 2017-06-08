@@ -7,37 +7,53 @@ from django.core.mail import EmailMessage,send_mail,EmailMultiAlternatives
 from django.template import loader
 from myapp.include.encrypt import prpcrypt
 from mypro.settings import EMAIL_SENDER
+
+
 @task
-def process_runtask(hosttag,sqltext,mytask):
+def process_runtask(hosttag, sqltext, mytask):
     flag = (1 if mytask.backup_status == 1 else 3)
-    results,col,tar_dbname = incept.inception_check(hosttag,sqltext,flag)
-    status='executed'
+    results, col, tar_dbname = incept.inception_check(hosttag, sqltext, flag)
+    status = 'executed'
     c_time = mytask.create_time
     mytask.update_time = datetime.datetime.now()
     if flag == 1:
-        mytask.backup_status=2
+        mytask.backup_status = 2
     mytask.save()
     for row in results:
         try:
-            inclog = Incep_error_log(myid=row[0],stage=row[1],errlevel=row[2],stagestatus=row[3],errormessage=row[4],\
-                         sqltext=row[5],affectrow=row[6],sequence=row[7],backup_db=row[8],execute_time=row[9],sqlsha=row[10],\
-                         create_time=c_time,finish_time=mytask.update_time)
+            inclog = Incep_error_log(myid=row[0], stage=row[1], errlevel=row[2], stagestatus=row[3],
+                                     errormessage=row[4], sqltext=row[5], affectrow=row[6], sequence=row[7],
+                                     backup_db=row[8], execute_time=row[9], sqlsha=row[10], create_time=c_time,
+                                     finish_time=mytask.update_time)
             inclog.save()
-            #if some error occured in inception_check stage
-        except Exception,e:
-            inclog = Incep_error_log(myid=999,stage='',errlevel=999,stagestatus='',errormessage=row[0],\
-                         sqltext=e,affectrow=999,sequence='',backup_db='',execute_time='',sqlsha='',\
-                         create_time=c_time,finish_time=mytask.update_time)
+            # if some error occured in inception_check stage
+        except Exception as e:
+            inclog = Incep_error_log(myid=999, stage='', errlevel=999, stagestatus='', errormessage=row[0],
+                                     sqltext=e, affectrow=999, sequence='', backup_db='', execute_time='', sqlsha='',
+                                     create_time=c_time, finish_time=mytask.update_time)
             inclog.save()
-        if (int(row[2])!=0):
-            status='executed failed'
-            #record error message of incept exec
+
+        if int(row[2]) != 0:
+            status = 'executed failed'
+            # record error message of incept exec
     mytask.status = status
     mytask.save()
     sendmail_task.delay(mytask)
 
+
 @task
-def parse_binlog(insname,binname,begintime,tbname,dbselected,username,countnum,flash_back):
+def parse_binlog(insname, binname, begintime, tbname, dbselected, username, countnum, flash_back):
+    """
+    :param insname: instance name
+    :param binname: binlog file
+    :param begintime: start_datetime
+    :param tbname: table name
+    :param dbselected: database name
+    :param username: username
+    :param countnum: binlog events, defaults 10
+    :param flash_back: flashback status, default Flase
+    :return:
+    """
     flag = True
     pc = prpcrypt()
     for a in insname.db_name_set.all():
@@ -53,13 +69,20 @@ def parse_binlog(insname,binname,begintime,tbname,dbselected,username,countnum,f
     binlogsql = binlog2sql.Binlog2sql(connectionSettings=connectionSettings, startFile=binname,
                                       startPos=4, endFile='', endPos=0,
                                       startTime=begintime, stopTime='', only_schemas=dbselected,
-                                      only_tables=tbname, nopk=False, flashback=flash_back, stopnever=False,countnum=countnum)
+                                      only_tables=tbname, nopk=False, flashback=flash_back,
+                                      stopnever=False, countnum=countnum)
     binlogsql.process_binlog()
     sqllist = binlogsql.sqllist
     sendmail_sqlparse.delay(username, dbselected, tbname, sqllist,flash_back)
 
 
-def parse_binlogfirst(insname,binname,countnum):
+def parse_binlogfirst(insname, binname, countnum):
+    """
+    :param insname:  instance name
+    :param binname:  binlog file
+    :param countnum: binlog events, default 10
+    :return:
+    """
     flag = True
     pc = prpcrypt()
     for a in insname.db_name_set.all():
@@ -75,24 +98,23 @@ def parse_binlogfirst(insname,binname,countnum):
     binlogsql = binlog2sql.Binlog2sql(connectionSettings=connectionSettings, startFile=binname,
                                       startPos=4, endFile='', endPos=0,
                                       startTime='', stopTime='', only_schemas='',
-                                      only_tables='', nopk=False, flashback=False, stopnever=False,countnum=countnum)
+                                      only_tables='', nopk=False, flashback=False, stopnever=False, countnum=countnum)
     binlogsql.process_binlog()
     sqllist = binlogsql.sqllist
     return sqllist
 
 
-
-
 @task
-def sendmail_sqlparse(user,db,tb,sqllist,flashback):
+def sendmail_sqlparse(user, db, tb, sqllist, flashback):
     mailto=[]
-    if flashback==True:
+    if flashback == True:
         title = "BINLOG PARSE (UNDO) FOR "+ db + "." + tb
     else:
         title = "BINLOG PARSE (REDO) FOR " + db + "." + tb
     mailto.append(User.objects.get(username=user).email)
     html_content = loader.render_to_string('include/mail_template.html', locals())
     sendmail(title, mailto, html_content)
+
 
 @task
 def sendmail_task(task):
@@ -114,52 +136,67 @@ def sendmail_task(task):
         html_content = loader.render_to_string('include/mail_template.html', locals())
         sendmail(title, mailto, html_content)
 
-    except Exception ,e:
-        print e
+    except Exception as e:
+        pass
+        # print e
+
 
 @task
-def sendmail_forget(sendto,title,message):
-    mailto=[]
-    message=message
+def sendmail_forget(sendto, title, message):
+    """
+    :param sendto: Mail recipients
+    :param title: Mail title
+    :param message:  Mail content
+    :return:
+    """
+    mailto = []
+    message = message
     mailto.append(sendto)
     html_content = loader.render_to_string('include/mail_template.html', locals())
     sendmail(title, mailto, html_content)
 
 
-def sendmail (title,mailto,html_content):
+def sendmail(title, mailto, html_content):
+    """
+    :param title: Mail title
+    :param mailto:  Mail recipients
+    :param html_content: Mail content
+    :return:
+    """
     try:
         msg = EmailMultiAlternatives(title, html_content, EMAIL_SENDER, mailto)
         msg.attach_alternative(html_content, "text/html")
         msg.send()
-    except Exception,e:
-        print e
+    except Exception as e:
+        pass
+        # print e
 
 
-
-
-
-
-
-def task_run(idnum,request):
+def task_run(idnum, request):
+    """
+    :param idnum: task_id
+    :param request:
+    :return:
+    """
     while 1:
         try:
             task = Task.objects.get(id=idnum)
         except:
             continue
         break
-    if task.status!='executed' and task.status!='running' and task.status!='NULL':
+    if task.status != 'executed' and task.status != 'running' and task.status != 'NULL':
         hosttag = task.dbtag
         sql = task.sqltext
         mycreatetime = task.create_time
-        incept.log_incep_op(sql,hosttag,request,mycreatetime)
-        status='running'
+        incept.log_incep_op(sql, hosttag, request, mycreatetime)
+        status = 'running'
         task.status = status
-        task.operator  = request.user.username
+        task.operator = request.user.username
         task.update_time = datetime.datetime.now()
         task.save()
-        process_runtask.delay(hosttag,sql,task)
+        process_runtask.delay(hosttag, sql, task)
         return ''
-    elif task.status=='NULL':
+    elif task.status == 'NULL':
         return 'PLEASE CHECK THE SQL FIRST'
     else:
         return 'Already executed or in running'

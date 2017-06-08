@@ -9,8 +9,8 @@ urlpatterns = patterns(
     url(r'^api/execute$', 'execute', name='execute'),
     url(r'^salt_exec/$', 'salt_exec', name='salt_exec'),
     url(r'^hardware_info/$', 'hardware_info', name='hardware_info'),
-    url(r'^api/getjobinfo$','getjobinfo', name='getjobinfo'),
-    url(r'^key_con/$','key_con', name='key_con'),
-    url(r'^hist_salt/$','hist_salt', name='hist_salt'),
-    url(r'^record_detail/$','record_detail', name='record_detail'),
+    url(r'^api/getjobinfo$', 'getjobinfo', name='getjobinfo'),
+    url(r'^key_con/$', 'key_con', name='key_con'),
+    url(r'^hist_salt/$', 'hist_salt', name='hist_salt'),
+    url(r'^record_detail/$', 'record_detail', name='record_detail'),
 )
