@@ -6,8 +6,32 @@
 </head>
 <body>
 {% if tmp %}
-    <pre> {{ tmp }}</pre>
+    <table id="mytable1" class="table table-condensed" border="1">
+        <thead>
+        <tr class="danger">
+            <th> 申请人 </th>
+            <th> 操作数据库 </th>
+            <th> 执行说明 </th>
+            <th> SQL语句 </th>
+            <th> 是否备份 </th>
+        </tr>
+        </thead>
+        <tbody  >
+        <tr>
+            <td> {{ tmp.user }}</td>
+            <td> {{ tmp.dbtag }}</td>
+            <td> {{ tmp.specification }}</td>
+            <td> {{ tmp.sqltext|linebreaks }}</td>
+            {% if tmp.backup_status == 1 %}
+                <td> 需要备份</td>
+            {% else  %}
+                <td> 不需要备份</td>
+            {% endif %}
+        </tr>
+        </tbody>
+    </table>
 {% endif %}
+
 {% if result_status %}
     <table id="mytable1" class="table table-condensed" border="1">
         <thead>

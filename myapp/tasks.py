@@ -96,19 +96,19 @@ def sendmail_sqlparse(user,db,tb,sqllist,flashback):
 
 @task
 def sendmail_task(task):
-    tmp=u'x'
+    # tmp=u'x'
     try:
         mailto = []
         for i in User_profile.objects.filter(task_email__gt=0):
             if len(i.user.email) > 0:
                 mailto.append(i.user.email)
-        if type(task) != type(tmp):
-            del tmp
+        # if type(task) != type(tmp):
+        if task.status != 'NULL':
+            # del tmp
             mailto.append(User.objects.get(username=task.user).email)
-            print mailto
             result_status = Incep_error_log.objects.filter(create_time=task.create_time).filter(finish_time=task.update_time).order_by("-myid")
             title = 'Task ID:' + str(task.id) + '  has finished'
-        elif type(task) == type(tmp):
+        else:
             title = "You have received new task!"
             tmp = task
         html_content = loader.render_to_string('include/mail_template.html', locals())

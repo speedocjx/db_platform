@@ -401,13 +401,26 @@ def inception(request):
                 #check the nee to split sqltext first
                 if len(data_mysql)>1:
                     split = 1
-                    return render(request, 'inception.html', {'form': form,'upform':upform,'objlist':objlist,'data_list':data_mysql,'collist':collist,'choosed_host':choosed_host,'split':split})
+                    return render(request, 'inception.html', {'form': form,
+                                                              'upform':upform,
+                                                              'objlist':objlist,
+                                                              'data_list':data_mysql,
+                                                              'collist':collist,
+                                                              'choosed_host':choosed_host,
+                                                              'split':split})
                 else:
                     data_mysql,collist,dbname = incept.inception_check(choosed_host,a)
-                    return render(request, 'inception.html', {'form': form,'upform':upform,'objlist':objlist,'data_list':data_mysql,'collist':collist,'choosed_host':choosed_host})
+                    return render(request, 'inception.html', {'form': form,
+                                                              'upform':upform,
+                                                              'objlist':objlist,
+                                                              'data_list':data_mysql,
+                                                              'collist':collist,
+                                                              'choosed_host':choosed_host})
             else:
                 # print "not valid"
-                return render(request, 'inception.html', {'form': form,'upform':upform,'objlist':objlist})
+                return render(request, 'inception.html', {'form': form,
+                                                          'upform':upform,
+                                                          'objlist':objlist})
         elif request.POST.has_key('upload'):
             upform = Uploadform(request.POST,request.FILES)
             #c = request.POST['cx']
@@ -430,11 +443,16 @@ def inception(request):
                 except Exception, e:
                     pass
                 form = AddForm(initial={'a': sqltext})
-                return render(request, 'inception.html', {'form': form,'upform':upform,'objlist':objlist,'choosed_host':choosed_host})
+                return render(request, 'inception.html', {'form': form,
+                                                          'upform':upform,
+                                                          'objlist':objlist,
+                                                          'choosed_host':choosed_host})
             else:
                 form = AddForm()
                 upform = Uploadform()
-                return render(request, 'inception.html', {'form': form,'upform':upform,'objlist':objlist})
+                return render(request, 'inception.html', {'form': form,
+                                                          'upform':upform,
+                                                          'objlist':objlist})
         elif request.POST.has_key('addtask'):
             form = AddForm(request.POST)
             needbackup = (int(request.POST['ifbackup']) if int(request.POST['ifbackup']) in (0,1) else 1)
@@ -457,7 +475,12 @@ def inception(request):
                 if len(data_mysql)>1:
                     split = 1
                     status = 'UPLOAD TASK FAIL'
-                    return render(request, 'inception.html',{'form': form, 'upform': upform, 'objlist': objlist, 'status': status,'split':split,'choosed_host':choosed_host})
+                    return render(request, 'inception.html',{'form': form,
+                                                             'upform': upform,
+                                                             'objlist': objlist,
+                                                             'status': status,
+                                                             'split':split,
+                                                             'choosed_host':choosed_host})
                 #check sqltext before uploaded
                 else:
                     tmp_data, tmp_col, dbname = incept.inception_check(choosed_host, sqltext)
@@ -465,20 +488,35 @@ def inception(request):
                         if int(i[2]) !=0:
                             status = 'UPLOAD TASK FAIL,CHECK NOT PASSED'
                             return render(request, 'inception.html',locals())
-                incept.record_task(request,sqltext,choosed_host,specification,needbackup)
+                myNewTask = incept.record_task(request,sqltext,choosed_host,specification,needbackup)
                 status='UPLOAD TASK OK'
-                sendmail_task.delay(choosed_host+'\n'+sqltext)
-                return render(request, 'inception.html', {'form': form,'upform':upform,'objlist':objlist,'status':status,'choosed_host':choosed_host})
+                # sendmail_task.delay(choosed_host+'\n'+sqltext)
+                sendmail_task.delay(myNewTask)
+
+                return render(request, 'inception.html', {'form': form,
+                                                          'upform':upform,
+                                                          'objlist':objlist,
+                                                          'status':status,
+                                                          'choosed_host':choosed_host})
             else:
                 status='UPLOAD TASK FAIL'
-                return render(request, 'inception.html', {'form': form,'upform':upform,'objlist':objlist,'status':status,'choosed_host':choosed_host})
+                return render(request, 'inception.html', {'form': form,
+                                                          'upform':upform,
+                                                          'objlist':objlist,
+                                                          'status':status,
+                                                          'choosed_host':choosed_host})
         form = AddForm()
         upform = Uploadform()
-        return render(request, 'inception.html', {'form': form, 'upform': upform, 'objlist': objlist,'choosed_host':choosed_host})
+        return render(request, 'inception.html', {'form': form,
+                                                  'upform': upform,
+                                                  'objlist': objlist,
+                                                  'choosed_host':choosed_host})
     else:
         form = AddForm()
         upform = Uploadform()
-        return render(request, 'inception.html', {'form': form,'upform':upform,'objlist':objlist})
+        return render(request, 'inception.html', {'form': form,
+                                                  'upform':upform,
+                                                  'objlist':objlist})
 
 
 # @ratelimit(key=func.my_key,method='POST', rate='5/15m')
@@ -488,7 +526,9 @@ def login(request):
         form = LoginForm()
         myform = Captcha()
         error = 1
-        return render_to_response('login.html', RequestContext(request, {'form': form,'myform':myform,'error':error}))
+        return render_to_response('login.html', RequestContext(request, {'form': form,
+                                                                         'myform':myform,
+                                                                         'error':error}))
     else:
         if request.user.is_authenticated():
             return render(request, 'include/base.html')
@@ -733,8 +773,9 @@ def update_task(request):
                     if int(i[2]) != 0:
                         str = 'CREATE NEW TASK FAIL,CHECK NOT PASSED'
                         return render(request, 'update_task.html', {'str': str})
-            incept.record_task(request, data.sqltext, choosed_host, data.specification,needbackup)
-            sendmail_task.delay(choosed_host + '\n' + data.sqltext)
+            myNewTask = incept.record_task(request, data.sqltext, choosed_host, data.specification,needbackup)
+            # sendmail_task.delay(choosed_host + '\n' + data.sqltext)
+            sendmail_task.delay(myNewTask)
             return HttpResponseRedirect("/task/")
 
         elif request.POST.has_key('searchdb'):

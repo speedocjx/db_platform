@@ -323,7 +323,7 @@ def record_task(request,sqltext,dbtag,specify,ifbackup):
     status='NULL'
     mytask = Task (user=username,sqltext=sqltext,create_time=create_time,update_time=update_time,dbtag=dbtag,status=status,specification=specify,backup_status=ifbackup)
     mytask.save()
-    return 1
+    return mytask
 
 
 def log_incep_op(sqltext,dbtag,request,mycreatetime):
