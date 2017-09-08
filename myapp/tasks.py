@@ -11,6 +11,7 @@ from mypro.settings import EMAIL_SENDER
 def process_runtask(hosttag,sqltext,mytask):
     flag = (1 if mytask.backup_status == 1 else 3)
     results,col,tar_dbname = incept.inception_check(hosttag,sqltext,flag)
+    incept.make_sure_mysql_usable()
     status='executed'
     c_time = mytask.create_time
     mytask.update_time = datetime.datetime.now()
